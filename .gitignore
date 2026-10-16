@@ -1,0 +1,12 @@
+# Configuración propia de cada despliegue: NUNCA al repo.
+config.js
+*.local.js
+# Firmware y entornos
+*.uf2
+.venv/
+__pycache__/
+*.pyc
+.panel-meshcore-relay/
+# Ficheros de datos y registros del gateway
+*.jsonl
+*.log

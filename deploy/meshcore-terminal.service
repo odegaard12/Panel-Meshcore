@@ -1,0 +1,15 @@
+[Unit]
+Description=MeshCore Pi - terminal web (ttyd, tras nginx con TLS)
+After=network.target
+
+[Service]
+User=__USER__
+WorkingDirectory=/home/__USER__/meshcore-panel
+# -O (check-origin): el WebSocket solo se acepta desde la propia pagina; sin
+# eso otra web abierta con la cookie de sesion podia abrir una shell.
+ExecStart=/usr/local/bin/ttyd -i 127.0.0.1 -p 7681 -O -W -m 2 -t titleFixed=Panel-MeshCore -t fontSize=15 bash -l
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
