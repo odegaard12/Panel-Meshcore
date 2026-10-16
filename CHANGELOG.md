@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.1.1] - 2026-10-16
+
+### Cambiado
+- Aspecto más sobrio: sin cuadros de icono, sin franjas laterales ni sombras
+  flotantes. Los botones del chat llevan texto (Descargar, Borrar, Ampliar)
+  y desaparece el atajo a Analítica desde el chat.
+- El repositorio pasa a llamarse Panel-Meshcore.
+
 ## [1.1.0] - 2026-10-16
 
 ### Cambiado

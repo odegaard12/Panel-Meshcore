@@ -565,6 +565,17 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 
 /* Red */
 .redSidebar{background:var(--bg2)}
+
+/* Sobrio: sin cuadros de icono, sin franjas laterales, sin sombras flotantes */
+.icon,.statIcon,h1::before{display:none!important}
+.devTab.on{box-shadow:none;background:var(--hover)}
+.statsNote{border-left-width:1px}
+.card,.kpi,.chatComposer,.leaflet-bar,.leaflet-control-layers,.mapLegend,.leaflet-popup-content-wrapper{box-shadow:none!important}
+.chatHead{padding-bottom:8px;border-bottom:1px solid var(--brd)}
+.chatTools button{border-color:var(--brd2);font-size:12px}
+.chatComposer{border-radius:var(--r2)}
+.msg.in::before{display:none}
+.msg{border-radius:var(--r2)!important}
 footer{color:var(--dim2)}
 
 @media (max-width:860px){
@@ -868,10 +879,9 @@ footer{color:var(--dim2)}
             <option value="1">Solo WIO1</option>
             <option value="2">Solo WIO2</option>
           </select>
-          <button id="chatDownload" aria-label="Descargar historial" title="Descargar historial">⬇️</button>
-          <button id="chatClear" aria-label="Borrar historial de este navegador" title="Borrar historial de este navegador">🗑️</button>
-          <button id="btn-chat-stats" aria-label="Ver analítica de radio" title="Ver analítica de radio">📊</button>
-          <button id="btn-chat-full" aria-label="Pantalla completa (Esc para salir)" title="Pantalla completa (Esc para salir)">⛶</button>
+          <button id="chatDownload" title="Descargar historial">Descargar</button>
+          <button id="chatClear" title="Borrar historial de este navegador">Borrar</button>
+          <button id="btn-chat-full" title="Pantalla completa (Esc para salir)">Ampliar</button>
         </div>
         <div class="statusdot" id="dot-chat"></div>
       </div>
@@ -1021,7 +1031,7 @@ footer{color:var(--dim2)}
         <div class="mapSidebar">
           <div class="mapQuick">
             <button id="btn-map-fit">🔍 Ver todo</button>
-            <button id="btn-map-fullscreen">⛶ Pantalla completa</button>
+            <button id="btn-map-fullscreen">Pantalla completa</button>
           </div>
 
           <details class="mapGroup" data-g="capas" open>
@@ -1251,7 +1261,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.1.0';
+const PANEL_VERSION='1.1.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1607,7 +1617,7 @@ $('#btn-map-fullscreen').onclick=()=>{
   const el=$('.mapcard');
   el.classList.toggle('map-fullscreen');
   const on=el.classList.contains('map-fullscreen');
-  $('#btn-map-fullscreen').textContent = on ? '⛶ Salir de pantalla completa' : '⛶ Pantalla completa';
+  $('#btn-map-fullscreen').textContent = on ? 'Salir de pantalla completa' : 'Pantalla completa';
   fitMapWrapToViewport();
 };
 document.addEventListener('keydown',e=>{
@@ -2913,12 +2923,11 @@ window.addEventListener('resize',()=>{
 });
 $('#btn-stats-refresh').onclick=()=>{ renderStats(); pintarHistoricoRak(); };
 $('#statsRange').onchange=renderStats;
-$('#btn-chat-stats').onclick=()=>showTab('stats');
 // Pantalla completa del chat: igual que la del mapa, Esc para salir.
 $('#btn-chat-full').onclick=()=>{
   const c=$('#card-chat'); c.classList.toggle('chat-full');
   const on=c.classList.contains('chat-full');
-  $('#btn-chat-full').textContent=on?'✕':'⛶';
+  $('#btn-chat-full').textContent=on?'Cerrar':'Ampliar';
   $('#btn-chat-full').title=on?'Salir de pantalla completa (Esc)':'Pantalla completa (Esc para salir)';
   document.body.style.overflow=on?'hidden':'';
   const b=$('#chatBox'); b.scrollTop=b.scrollHeight;
