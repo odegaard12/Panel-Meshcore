@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.0.1] - 2026-10-16
+
+### Corregido
+- Sesiones que a veces no valían recién creadas (~5 % de las veces): el
+  secreto de sesión se guarda ahora en hexadecimal; al releer los antiguos en
+  bruto se recortaban bytes de los extremos. Los secretos ya existentes se
+  siguen leyendo igual, nadie pierde la sesión.
+
 ## [1.0.0] - 2026-10-16
 
 Primera versión pública.
