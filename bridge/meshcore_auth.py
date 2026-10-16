@@ -42,6 +42,15 @@ _fails: dict[str, list[float]] = {}
 def _secret() -> bytes:
     if SECRET_FILE.exists():
         raw = SECRET_FILE.read_bytes().strip()
+        # Formato actual: hex. Los secretos antiguos eran bytes en bruto y al
+        # releerlos .strip() se comia los bytes de "espacio" de los extremos:
+        # si el aleatorio empezaba o acababa en uno (~5 %), la sesion recien
+        # firmada con el valor sin recortar dejaba de valer.
+        try:
+            if len(raw) == 64:
+                return bytes.fromhex(raw.decode('ascii'))
+        except (UnicodeDecodeError, ValueError):
+            pass
         if raw:
             return raw
     raw = secrets.token_bytes(32)
@@ -49,7 +58,7 @@ def _secret() -> bytes:
     # 0o600 desde la creacion: con write+chmod habia un instante legible por todos.
     fd = os.open(SECRET_FILE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, 'wb') as fh:
-        fh.write(raw)
+        fh.write(raw.hex().encode('ascii'))
     return raw
 
 
