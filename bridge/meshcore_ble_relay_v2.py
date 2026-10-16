@@ -369,6 +369,10 @@ async def keep(wio: Wio, stop: asyncio.Event) -> None:
             # sin texto. Se traduce a algo que el panel pueda ensenar.
             if isinstance(exc, (asyncio.TimeoutError, TimeoutError)) or 'Timeout' in motivo:
                 motivo = 'no responde: ¿apagado o sin batería?'
+            elif 'not powered on' in motivo or 'POWERED_OFF' in motivo:
+                motivo = 'el Bluetooth del PC está apagado'
+            elif 'No Bluetooth adapters' in motivo or 'NO_BLUETOOTH' in motivo:
+                motivo = 'el PC no tiene adaptador Bluetooth'
             wio.set_state(ERROR, motivo)
         await wio.disconnect()
         # disconnect() deja OFFLINE sin motivo; se conserva el del fallo para
