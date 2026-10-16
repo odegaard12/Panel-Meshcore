@@ -3,6 +3,20 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.1.0] - 2026-10-16
+
+### Cambiado
+- Piel nueva del panel: tipografía y colores coherentes, pestañas más limpias,
+  métricas legibles, chat tipo mensajería (mensajes seguidos agrupados,
+  compositor fijo), mapa con interruptores de capas y popups con el tema,
+  analítica con gráficas más finas.
+
+### Corregido
+- El relay se quedaba en «error» tras un timeout y el gateway dejaba de
+  preguntar al repetidor para siempre: «conectado» refleja ahora el enlace
+  Bluetooth real.
+- Motivo legible si el Bluetooth del PC está apagado o no hay adaptador.
+
 ## [1.0.1] - 2026-10-16
 
 ### Corregido

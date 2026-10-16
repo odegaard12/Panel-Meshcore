@@ -192,8 +192,10 @@ class Wio:
         return {
             'idx': self.idx,
             'state': self.state,
-            # connected se mantiene por compatibilidad con el panel actual
-            'connected': self.state in (CONNECTED, READY),
+            # connected = enlace BLE real, no el resultado del ultimo comando: con
+            # el estado, un timeout dejaba ERROR, el gateway dejaba de mandar
+            # comandos y el estado ya no volvia nunca a READY (16/10/2026).
+            'connected': self.connected and self.state != OFFLINE,
             'ready': self.state == READY,
             'name': getattr(self.device, 'name', None) or self.names[0],
             'device_id': getattr(self.device, 'address', None),
