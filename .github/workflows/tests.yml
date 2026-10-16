@@ -1,0 +1,19 @@
+name: tests
+on: [push, pull_request]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # openssl y htpasswd (apache2-utils) los usan los tests de login bcrypt.
+      - run: sudo apt-get update && sudo apt-get install -y openssl apache2-utils
+      # requirements.txt solo trae aiohttp y bleak; bleak va en Linux y winrt se importa
+      # de forma perezosa solo en Windows, así que los tests del relay corren aquí.
+      - run: pip install -r bridge/requirements.txt
+      - run: bash tools/run-tests.sh
