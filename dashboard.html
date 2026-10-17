@@ -25,7 +25,7 @@
   --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);background-image:radial-gradient(1200px 620px at 12% -12%,#101b2b 0%,transparent 62%),radial-gradient(900px 500px at 92% 0%,#0d1a20 0%,transparent 58%);background-attachment:fixed;color:var(--fg);font:14px/1.55 var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);background-image:radial-gradient(1200px 620px at 12% -12%,#101b2b 0%,transparent 62%),radial-gradient(900px 500px at 92% 0%,#0d1a20 0%,transparent 58%);background-attachment:fixed;color:var(--fg);font:14px/1.55 var(--sans);min-height:100dvh;-webkit-font-smoothing:antialiased}
 
 /* scrollbars discretas, en vez de las blancas del sistema */
 *{scrollbar-width:thin;scrollbar-color:#2b3a4d transparent}
@@ -240,14 +240,14 @@ button:disabled{opacity:.4;cursor:not-allowed}
 @media (max-width:700px){.rakAyuda dl{grid-template-columns:1fr}.rakAyuda dd{margin-bottom:6px}}
 /* --- Red y notas: mismo patron a pagina completa que Mapa/Chat --- */
 .redWrap{display:flex;width:100vw;margin:-28px calc(50% - 50vw) -28px;min-height:calc(100vh - 90px)}
-.redSidebar{width:230px;flex-shrink:0;background:#0c1119;border-right:1px solid var(--brd);padding:14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;align-self:flex-start;max-height:100vh;overflow-y:auto}
+.redSidebar{width:230px;flex-shrink:0;background:#0c1119;border-right:1px solid var(--brd);padding:14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;align-self:flex-start;max-height:100dvh;overflow-y:auto}
 .redSidebar .red-nav{text-align:left}
 .redContent{flex:1;min-width:0;padding:20px 24px;overflow-y:auto}
 .sidebarLabel{font-size:9.5px;color:var(--dim2);text-transform:uppercase;letter-spacing:.05em;margin-top:10px}
 .sidebarLabel:first-child{margin-top:0}
 .layer-toggle{background:transparent;color:var(--dim);border:1px solid var(--brd);border-radius:var(--r1);padding:8px 10px;font-size:11.5px;text-align:left}
 .layer-toggle.on{color:var(--fg);background:#18222f;border-color:var(--acc);box-shadow:inset 2px 0 0 var(--acc)}
-.mapcard.map-fullscreen{position:fixed;inset:0;z-index:1200;margin:0;width:100vw;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.mapcard.map-fullscreen{position:fixed;inset:0;z-index:1200;margin:0;width:100vw;height:100dvh;overflow-y:auto;display:flex;flex-direction:column}
 .mapcard.map-fullscreen .mapWrap{flex:1;margin-top:0}
 #map{flex:1;border-radius:0;background:#0b0f16}
 .mapWrap{position:relative}
@@ -303,7 +303,7 @@ footer{text-align:center;color:var(--dim2);font-size:11px;padding:24px}
 .chatCount.lleno{color:var(--warn)}
 #chatSend{height:44px;border-radius:22px;padding:0 22px}
 #chatPull{height:44px;width:44px;border-radius:50%;padding:0;font-size:17px}
-.chatcard.chat-full{position:fixed;inset:0;z-index:1200;margin:0;width:100vw;height:100vh!important;border-radius:0}
+.chatcard.chat-full{position:fixed;inset:0;z-index:1200;margin:0;width:100vw;height:100dvh!important;border-radius:0}
 .chatcard.chat-full #chatBox{padding:20px max(20px,calc(50vw - 520px))}
 .msg .meta{font-size:10px;color:var(--dim2);margin-top:4px;font-family:var(--mono)}
 .msg.in{align-self:flex-start;background:#1b2430;border:1px solid var(--brd);border-bottom-left-radius:4px}
@@ -603,6 +603,18 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 #chatContacts{border-right:none;background:var(--bg2);border-radius:var(--r2);padding:8px}
 .chatCount{font-family:var(--sans)}
 .devSidebar{background:var(--bg2);border-right:none!important}
+/* Revisión con taste-skill: sin sombras en reposo, sin línea bajo la cabecera,
+   monoespaciada solo en salidas reales (<pre>), texto legible y con contraste */
+:root{--dim2:#7f8b9a}
+.devWrap,button.p,.card,.kpi{box-shadow:none!important}
+header{border-bottom:none;background:var(--bg2);backdrop-filter:none}
+pre.loglet{margin:10px 0 0;font-size:12.5px}
+.cardsub,.devPanelSub,.metric .v,.kpi .kpiV,.alcanceReg .n,.coord,.chatCount,.msg .meta,.posrow input{font-family:var(--sans)!important}
+.cardsub,.devTabSub,.devPanelSub,.metric .k,.kpi .kpiS,.kpi .kpiK,.statHint,.msg .meta,.ccItem span,.ccSec,.chatnote,#statusBar .k,.rakSparkHead,.fieldlabel,.sidebarLabel,.statsNote,.layer-toggle,.mapGroup>summary{font-size:13px!important}
+.msg .chip{font-size:11px}
+p,.statsNote{max-width:75ch}
+.sub,#cfgAviso,.pctBat,dt,dd,pre.loglet,button,.quick-rak-cmd,footer,#panelVersion,.linklike{font-size:13px!important}
+@media (max-width:860px){nav.tabs{border-top:none!important;background:var(--bg)} .devSidebar{border-bottom:none!important} #statusBar>div:not(#keyReminder){border-bottom:2px solid var(--bg)!important;border-right:none!important}}
 @media (max-width:860px){#chatContacts{display:none}}
 .msg.in.priv:hover{outline:1px solid #3b3161}
 footer{color:var(--dim2)}
@@ -717,7 +729,7 @@ footer{color:var(--dim2)}
                       <dt>Paquetes rx / tx</dt><dd>Paquetes recibidos y enviados desde el arranque. En un repetidor casi coinciden, porque reenvía lo que oye.</dd>
                     </dl>
                   </details>
-                  <div class="loglet" id="rak-log">Aquí salen las respuestas del diagnóstico y de la gestión remota.</div>
+                  <pre class="loglet" id="rak-log">Aquí salen las respuestas del diagnóstico y de la gestión remota.</pre>
 
                   <!-- Estado remoto por peticion binaria (0x32/STATUS): son contadores
                        publicos del nodo, no hace falta login ni Bluetooth con el RAK. -->
@@ -733,7 +745,7 @@ footer{color:var(--dim2)}
                       <button id="btn-rak-telemetry">Telemetría</button>
                       <button id="btn-rak-history">Histórico</button>
                     </div>
-                    <div class="loglet" id="rak-telemetry-out" style="display:none;margin-top:8px"></div>
+                    <pre class="loglet" id="rak-telemetry-out" style="display:none;margin-top:8px"></pre>
                     <div id="rak-history-box" style="display:none;margin-top:10px">
                       <div class="cardsub" id="rak-history-info" style="margin-bottom:6px"></div>
                       <svg id="rak-history-chart" viewBox="0 0 600 140" preserveAspectRatio="none" style="width:100%;height:140px;background:#080b0f;border:1px solid var(--brd);border-radius:8px"></svg>
@@ -790,7 +802,7 @@ footer{color:var(--dim2)}
                       <button class="quick-rak-cmd" data-cmd="advert" disabled>Anunciarse</button>
                     </div>
                     <button class="p" id="btn-rak-legal" disabled style="margin-top:12px">Comprobar que el repetidor es legal</button>
-                    <div class="loglet" id="rak-legal-out" style="display:none;max-height:none"></div>
+                    <pre class="loglet" id="rak-legal-out" style="display:none;max-height:none"></pre>
                     <div class="cardsub" style="margin-top:8px;color:var(--dim2);font-size:10.5px">
                       Firmware no actualizable en remoto: el bootloader UF2 exige USB físico y doble reset. Aquí solo se leen/ajustan parámetros por CLI.
                     </div>
@@ -825,7 +837,7 @@ footer{color:var(--dim2)}
                     <button id="btn-w1-place">Colocar en mapa</button>
                     <button id="btn-w1-export" onclick="wioExportKey(1)">Exportar clave</button>
                   </div>
-                  <div class="loglet" id="w1-log">Sin conectar aún.</div>
+                  <pre class="loglet" id="w1-log">Sin conectar aún.</pre>
     
           </div>
         </div>
@@ -856,7 +868,7 @@ footer{color:var(--dim2)}
                     <button id="btn-w2-place">Colocar en mapa</button>
                     <button id="btn-w2-export" onclick="wioExportKey(2)">Exportar clave</button>
                   </div>
-                  <div class="loglet" id="w2-log">Sin conectar aún.</div>
+                  <pre class="loglet" id="w2-log">Sin conectar aún.</pre>
     
           </div>
         </div>
@@ -1198,7 +1210,7 @@ footer{color:var(--dim2)}
         <button id="btn-scan-w1">Analizar vía WIO1</button>
         <button id="btn-scan-w2">Analizar vía WIO2</button>
       </div>
-      <div class="loglet" id="neighborsResult" style="display:none">Conecta un WIO (pestaña Equipos) y pulsa "Analizar" para ver qué nodos y repetidores ve tu radio, y a cuántos saltos está cada uno.</div>
+      <pre class="loglet" id="neighborsResult" style="display:none">Conecta un WIO (pestaña Equipos) y pulsa "Analizar" para ver qué nodos y repetidores ve tu radio, y a cuántos saltos está cada uno.</pre>
     </div>
 
   </div>
@@ -1296,7 +1308,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.9.2';
+const PANEL_VERSION='1.10.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1760,10 +1772,10 @@ async function scanNeighbors(idx){
       if(far) farCount++;
       if(c.advType===2) repCount++; // AdvType.REPEATER
       const tipo = c.advType===2?'📡 repetidor':c.advType===3?'🏠 sala':c.advType===1?'💬 chat':'· nodo';
-      lines.push((far?'⚠️ ':'· ')+(c.name||'(sin nombre)')+'  —  '+tipo+'  —  '+hopsTxt);
+      lines.push((far?'· lejos · ':'· ')+(c.name||'(sin nombre)')+'  —  '+tipo+'  —  '+hopsTxt);
     }
     let header='WIO'+idx+' ve '+contacts.length+' nodo(s), '+repCount+' de ellos repetidores.';
-    if(farCount>0) header+='\n⚠️ '+farCount+' a más de '+HOP_WARN+' saltos: enlace probablemente poco fiable con ellos.';
+    if(farCount>0) header+='\n'+farCount+' a más de '+HOP_WARN+' saltos: enlace probablemente poco fiable con ellos.';
     else header+='\nTodos a '+HOP_WARN+' saltos o menos: buena señal de que el enlace es sólido.';
     header+='\n📍 '+withPos+' de '+contacts.length+' anuncian posición: puestos en el mapa (pestaña Mapa).';
     out.textContent=header+'\n\n'+lines.join('\n');
@@ -1894,7 +1906,7 @@ function renderNeighborsList(){
             : (f.hops>3? '<span style="color:var(--warn)">'+f.hops+'</span>' : f.hops);
     let d;
     if(f.dist==null) d='—';
-    else if(f.dist>DIST_INCREIBLE) d='<span style="color:var(--warn)" title="Posición anunciada poco creíble para esta malla">'+f.dist.toFixed(0)+' km ⚠</span>';
+    else if(f.dist>DIST_INCREIBLE) d='<span style="color:var(--warn)" title="Posición anunciada poco creíble para esta malla">'+f.dist.toFixed(0)+' km (poco creíble)</span>';
     else d=f.dist.toFixed(1)+' km';
     const via = f.via.size===2 ? '<span style="color:var(--info)">los dos</span>' : 'WIO'+[...f.via][0];
     const mio = esMio(f.name) ? ' <span class="nlMine">tuyo</span>' : '';
@@ -2304,7 +2316,7 @@ function veredictoLegal(radio,tx,af,dutyMedido){
     lineas.push((dentro?'✅':'❌')+' Frecuencia '+f+' MHz, ancho '+bw+' kHz: ocupa '+lo.toFixed(4)+'–'+hi.toFixed(4)+' MHz '+
       (dentro?'(dentro de 869,40–869,65)':'(¡se sale de la sub-banda 869,40–869,65!)'));
     const red=Math.abs(f-869.618)<0.001 && bw==62.5 && sf==7 && cr==6;
-    lineas.push((red?'✅':'⚠️')+' SF'+sf+' CR'+cr+(red?': preset Portugal 868, el de la red gallega'
+    lineas.push((red?'Bien:':'Ojo:')+' SF'+sf+' CR'+cr+(red?': preset Portugal 868, el de la red gallega'
       :': distinto del preset Portugal 868 (869,618 · 62,5 · SF7 · CR6), no hablaría con la red gallega'));
   }
   if(tx!=null){
@@ -2315,7 +2327,7 @@ function veredictoLegal(radio,tx,af,dutyMedido){
   if(af!=null){
     const max=100/(1+af);
     // El limite legal es el ciclo real; af solo pone el techo que permite el firmware.
-    lineas.push((max<=10+1e-9?'✅':'⚠️')+' Airtime factor '+af+': el firmware permitiría hasta '+max.toFixed(1)+' % de emisión'+
+    lineas.push((max<=10+1e-9?'Bien:':'Ojo:')+' Airtime factor '+af+': el firmware permitiría hasta '+max.toFixed(1)+' % de emisión'+
       (max<=10+1e-9?'':' (con mucho tráfico podría pasar del 10 %; recomendado «set af 9»)'));
   }
   if(dutyMedido!=null){
@@ -3211,7 +3223,7 @@ async function updateStatusBar(){
     }else{
       relayEl.textContent='CAÍDO';
       relayEl.style.color='var(--err)';
-      if(statusBarLastRelay===true) chatAdd('sys',null,'⚠️ El puente BLE se ha desconectado del todo (no solo un comando).','',false);
+      if(statusBarLastRelay===true) chatAdd('sys',null,'El puente BLE se ha desconectado del todo (no solo un comando).','',false);
     }
     statusBarLastRelay=s.relay;
     const w1=s.wios[0], w2=s.wios[1];
@@ -3257,8 +3269,7 @@ async function updateStatusBar(){
       return !last || (now-last)>THIRTY_D;
     });
     if(pending.length){
-      keyEl.style.display='';
-      keyEl.textContent='💾 Exporta la clave de WIO'+pending.join(' y WIO')+' (nunca hecho o hace >30 días)';
+      keyEl.style.display='none';  // exportar la clave está desactivado por defecto (1.4.1)
     }else keyEl.style.display='none';
   }catch(e){ relayEl.textContent='sin conexión al puente'; relayEl.style.color='var(--err)'; }
 }
@@ -3302,7 +3313,7 @@ async function pintarRakVivo(){
     $('#dot-rak')?.classList.toggle('on',!vieja);
     $('#dot-rak')?.classList.toggle('warn',vieja);
     $('#rl-note').textContent = vieja
-      ? '⚠️ Sin medidas nuevas desde '+humanAgo(s.at*1000).replace(/^hace /,'hace ')+': '+motivoSinMedidas(h.last_error)
+      ? 'Sin medidas nuevas desde '+humanAgo(s.at*1000).replace(/^hace /,'hace ')+': '+motivoSinMedidas(h.last_error)
       : 'Medido por radio desde la Raspberry cada '+Math.round((h.every_seconds||900)/60)+' min. Límite legal del duty cycle: 10 %.';
     $('#rl-note').classList.toggle('avisoViejo',vieja);
     rakResumen='por LoRa · '+(s.bat_mv/1000).toFixed(2)+' V · duty '+(duty==null?'—':duty.toFixed(1)+' %')+' · '+humanAgo(s.at*1000);

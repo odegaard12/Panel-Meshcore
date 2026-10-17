@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.10.0] - 2026-10-17
+
+### Cambiado
+- Revisión con el linter y el inspector de taste-skill, aplicando lo que
+  vale para un panel: sin sombras en reposo ni línea bajo la cabecera,
+  monoespaciada solo en las salidas reales (ahora `<pre>`), ningún texto por
+  debajo de 13 px, más contraste en los textos secundarios, sin emoji en los
+  avisos («Bien:» / «Ojo:» en la comprobación legal) y 100dvh en móvil.
+- Fuera el recordatorio de exportar la clave del WIO: está desactivado por
+  defecto desde 1.4.1.
+
 ## [1.9.2] - 2026-10-17
 
 ### Cambiado
