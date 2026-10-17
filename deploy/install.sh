@@ -23,7 +23,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq curl nginx openssl ap
 echo ">> ttyd (no esta en apt de Debian 13)"
 # Conviene fijar TTYD_SHA256 (sha256 de ttyd.aarch64 1.7.7): el binario da
 # una shell con sudo, y sin hash cualquier cambio en la descarga entra tal cual.
-TTYD_SHA256="${TTYD_SHA256:-}"
+TTYD_SHA256="${TTYD_SHA256:-b38acadd89d1d396a0f5649aa52c539edbad07f4bc7348b27b4f4b7219dd4165}"
 if ! command -v ttyd >/dev/null; then
   TTYD_TMP="$(mktemp)"
   curl -fsSL -o "$TTYD_TMP" https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.aarch64

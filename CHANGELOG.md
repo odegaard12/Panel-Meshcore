@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.3.1] - 2026-10-17
+
+### Seguridad
+- El instalador verifica por defecto el sha256 oficial de ttyd 1.7.7: si la
+  descarga no coincide, se para.
+
 ## [1.3.0] - 2026-10-17
 
 ### Añadido
