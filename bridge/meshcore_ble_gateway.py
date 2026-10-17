@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.8.0'
+PANEL_VERSION = '1.9.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -475,12 +475,16 @@ class Monitor:
         self.last_error = 'sin respuesta del repetidor'
 
     async def loop(self):
+        # Primera muestra al minuto de arrancar: esperando los 15 min enteros,
+        # cada reinicio (cada despliegue) retrasaba la medida y un día con
+        # varios despliegues se quedó 23 h sin medir el repetidor.
+        await asyncio.sleep(min(60.0, self.SAMPLE_EVERY))
         while True:
-            await asyncio.sleep(self.SAMPLE_EVERY)
             with contextlib.suppress(Exception):
                 await self.sample_once()
             with contextlib.suppress(Exception):
                 await avisos.revisar(self.read(1))
+            await asyncio.sleep(self.SAMPLE_EVERY)
 
 
 def problemas(ultima: dict | None, ahora: float, bat_min_mv: int, sin_datos_s: float) -> dict:

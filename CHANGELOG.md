@@ -3,6 +3,20 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.9.0] - 2026-10-17
+
+### Cambiado
+- Barra lateral del chat más clara: arriba los canales (Todo, Public,
+  Canal 1, Canal 2), debajo solo las conversaciones privadas, y el resto de
+  contactos solo al buscar. Lo que eliges queda marcado, filtra el chat
+  (pulsar un privado muestra solo esa conversación) y es el destino del
+  mensaje.
+
+### Corregido
+- El gateway pregunta al repetidor al minuto de arrancar. Antes esperaba
+  15 min y cada reinicio volvía a empezar la cuenta: un día con varios
+  despliegues se quedó 23 h sin medir.
+
 ## [1.8.0] - 2026-10-17
 
 ### Añadido
