@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.2.0] - 2026-10-17
+
+### Cambiado
+- Chat: se envía por el WIO que esté conectado, sin tener que elegirlo;
+  en el compositor solo queda el canal.
+- Analítica: menos colores. SNR en rojo/ámbar/verde, actividad en gris con
+  las 3 horas de más tráfico en ámbar, saltos en dos tonos.
+
 ## [1.1.4] - 2026-10-17
 
 ### Cambiado

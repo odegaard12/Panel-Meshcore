@@ -889,7 +889,7 @@ footer{color:var(--dim2)}
         <div class="msg sys">Conecta un WIO (pestaña Equipos) para leer y enviar mensajes.</div>
       </div>
       <div class="chatComposer">
-        <select id="chatNode" title="El chat siempre muestra los mensajes de ambos WIO; esto solo elige por cuál se envía">
+        <select id="chatNode" hidden title="El chat siempre muestra los mensajes de ambos WIO; esto solo elige por cuál se envía">
           <option value="1">WIO1</option>
           <option value="2" selected>WIO2</option>
         </select>
@@ -1261,7 +1261,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.1.4';
+const PANEL_VERSION='1.2.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2724,7 +2724,7 @@ async function renderStats(){
     if(v<-10) snrB[0].n++; else if(v<-5) snrB[1].n++; else if(v<0) snrB[2].n++;
     else if(v<5) snrB[3].n++; else if(v<10) snrB[4].n++; else if(v<15) snrB[5].n++; else snrB[6].n++;
   }
-  statBars('#snrChart',snrB,{vacio,color:(b,i)=>COL_SNR[i],unidad:'dB',eje:'SNR (dB) · rojo = al límite, verde = holgado'});
+  statBars('#snrChart',snrB,{vacio,color:(b,i)=>i<2?'#f26b6b':i<3?'#f2b23a':'#3fd67a',unidad:'dB',eje:'SNR (dB) · rojo = al límite, verde = holgado'});
 
   // RSSI: mas fuerte = azul mas intenso
   const rssiB=[{label:'<-125',n:0},{label:'-125…-115',n:0},{label:'-115…-105',n:0},{label:'-105…-95',n:0},
@@ -2749,7 +2749,8 @@ async function renderStats(){
       if(m.at>=actB[i]._ini){ actB[i].n++; break; }
     }
   }
-  statBars('#actChart',actB,{vacio,color:b=>b.actual?'#ffc94d':'rgba(240,180,41,.78)',unidad:'',eje:'hora del día (la resaltada es la actual)',rotulo:40});
+  const top=actB.map(b=>b.n).sort((a,b)=>b-a)[2]||1;
+  statBars('#actChart',actB,{vacio,color:b=>b.n>=top&&b.n>0?'#f2b23a':'#3a4452',unidad:'',eje:'hora del día · en ámbar, las 3 horas con más tráfico',rotulo:40});
 
   // Saltos de vecinos. "flood" va aparte: suele ser la mayoria y aplastaba el resto.
   const hopsB=[{label:'directo',n:0},{label:'1 salto',n:0},{label:'2',n:0},{label:'3',n:0},
@@ -2765,7 +2766,7 @@ async function renderStats(){
       else hopsB[h].n++;
     }
   }
-  statBars('#hopsChart',hopsB,{color:(b,i)=>i===0?'#3fd67a':i<3?'#a78bfa':'#7c6bc4',unidad:'',eje:'saltos hasta el nodo'});
+  statBars('#hopsChart',hopsB,{color:(b,i)=>i===0?'#3fd67a':'#a78bfa',unidad:'',eje:'saltos hasta el nodo'});
   const extra=$('#hopsExtra');
   if(extra) extra.innerHTML=conocidos
     ? '<b>'+(conocidos-flood)+'</b> con ruta conocida · <b>'+flood+'</b> sin ruta fija (flood) · '+conocidos+' contactos'
@@ -2951,9 +2952,11 @@ $('#chatInput').addEventListener('input',()=>{
   }
 })();
 function activeChatNode(){
-  const idx=+$('#chatNode').value;
-  const n=wNodes[idx];
-  return (n && n.device && n.device.gatt.connected) ? n : null;
+  // Envía por el WIO elegido si está conectado; si no, por el que lo esté.
+  const ok=i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected;
+  const sel=+$('#chatNode').value;
+  const idx=ok(sel)?sel:ok(2)?2:ok(1)?1:0;
+  return idx?wNodes[idx]:null;
 }
 function refreshChatUI(){
   const n=activeChatNode();
