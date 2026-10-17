@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.11.1] - 2026-10-17
+
+### Corregido
+- Un WIO enlazado por Bluetooth que no contesta a los comandos ya no sale
+  en verde con «Conectado por el PC»: el punto se pone ámbar, el estado dice
+  «Enlazado, pero no contesta (reintentando)» y el registro explica qué hacer.
+- La lectura automática de cada WIO se guarda: al recargar ya no vuelve el
+  «último estado conocido (hace 29 días)» si el WIO está vivo.
+- La barra de estado busca cada WIO por su número (un solo companion).
+
 ## [1.11.0] - 2026-10-17
 
 ### Cambiado

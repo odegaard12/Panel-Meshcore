@@ -1311,7 +1311,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.11.0';
+const PANEL_VERSION='1.11.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3229,7 +3229,8 @@ async function updateStatusBar(){
       if(statusBarLastRelay===true) chatAdd('sys',null,'El puente BLE se ha desconectado del todo (no solo un comando).','',false);
     }
     statusBarLastRelay=s.relay;
-    const w1=s.wios[0], w2=s.wios[1];
+    const wioDe=i=>(s.wios||[]).find(w=>w&&w.idx===i)||{};  // con un solo companion ya no van en orden
+    const w1=wioDe(1), w2=wioDe(2);
     // Resumen de un WIO: conectado / no responde (motivo del relay) / visto hace X,
     // mas la bateria del ultimo estado guardado si esta baja.
     const resumenWio=(w,idx)=>{
@@ -3259,8 +3260,12 @@ async function updateStatusBar(){
         : (ultimo ? sub.dataset.base+' · visto '+humanAgo(ultimo*1000) : sub.dataset.base))
         + (extra ? ' · '+extra : '');
     };
-    marcaTab('w1', w1.connected, w1.last_push_at, w1.connected ? r1.bateria : (r1.motivo ? 'no responde' : r1.bateria));
-    marcaTab('w2', w2.connected, w2.last_push_at, w2.connected ? r2.bateria : (r2.motivo ? 'no responde' : r2.bateria));
+    // Verde solo si además contesta (ready); con enlace pero sin respuesta, ámbar.
+    const vivo=w=>w.connected && w.ready!==false;
+    marcaTab('w1', vivo(w1), w1.last_push_at, vivo(w1) ? r1.bateria : (w1.connected ? 'enlazado, no contesta' : (r1.motivo ? 'no responde' : r1.bateria)));
+    marcaTab('w2', vivo(w2), w2.last_push_at, vivo(w2) ? r2.bateria : (w2.connected ? 'enlazado, no contesta' : (r2.motivo ? 'no responde' : r2.bateria)));
+    $('#devtabdot-w1')?.classList.toggle('warn', w1.connected && !vivo(w1));
+    $('#devtabdot-w2')?.classList.toggle('warn', w2.connected && !vivo(w2));
     marcaTab('rak', rakVivo, null);
     $('#devtabdot-rak')?.classList.toggle('warn', !rakVivo && !!rakResumen);
 
