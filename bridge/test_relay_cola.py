@@ -5,7 +5,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import meshcore_ble_relay_v2 as r  # noqa: E402
+import meshcore_ble_relay as r  # noqa: E402
 
 
 class Cliente:

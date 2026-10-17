@@ -3,9 +3,9 @@
 El navegador no usa Web Bluetooth: habla por HTTPS con el gateway de la Raspberry, y el
 gateway habla con los companion a través del relay.
 
-- **Gateway** (`meshcore_ble_gateway_v3.py`, en la Pi): API, histórico, registro de radio y
+- **Gateway** (`meshcore_ble_gateway.py`, en la Pi): API, histórico, registro de radio y
   login. No abre Bluetooth: solo recibe al relay.
-- **Relay** (`meshcore_ble_relay_v2.py`, en un PC con Bluetooth cerca de los companion): es el
+- **Relay** (`meshcore_ble_relay.py`, en un PC con Bluetooth cerca de los companion): es el
   único dueño de las conexiones BLE y las retransmite al gateway por WebSocket con token.
 - Las conexiones siguen vivas aunque se cierre o recargue el navegador.
 

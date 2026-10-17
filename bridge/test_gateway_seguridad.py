@@ -17,7 +17,7 @@ os.environ['MESHCORE_SESSION_SECRET_FILE'] = os.path.join(TMP, 'secret')
 os.environ['MESHCORE_HTPASSWD'] = os.path.join(TMP, 'htpasswd')
 
 from aiohttp.test_utils import TestClient, TestServer  # noqa: E402
-import meshcore_ble_gateway_v3 as gw  # noqa: E402
+import meshcore_ble_gateway as gw  # noqa: E402
 import meshcore_auth as auth_mod  # noqa: E402
 
 H = {'X-MeshCore-Token': 't'}

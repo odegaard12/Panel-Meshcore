@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.4.0] - 2026-10-17
+
+### Cambiado
+- Los archivos pierden el número de versión en el nombre:
+  `bridge/meshcore_ble_gateway.py` y `bridge/meshcore_ble_relay.py`.
+  Los nombres viejos (`_v3`, `_v2`) se quedan como puente que lanza los
+  nuevos, así que los servicios y tareas ya instalados siguen funcionando.
+
 ## [1.3.1] - 2026-10-17
 
 ### Seguridad

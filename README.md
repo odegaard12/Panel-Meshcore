@@ -116,7 +116,7 @@ MESHCORE_BLE_TOKEN="$(cat ~/.meshcore-ble-token)" \
 MESHCORE_GATEWAY_WS='ws://<IP-de-tu-Pi>:8780/api/ble/relay' \
 MESHCORE_WIO1_NAME='nombre-BLE-del-companion-1' \
 MESHCORE_WIO2_NAME='nombre-BLE-del-companion-2' \
-.venv/bin/python meshcore_ble_relay_v2.py
+.venv/bin/python meshcore_ble_relay.py
 ```
 
 Empareja antes cada companion con el sistema usando su PIN.

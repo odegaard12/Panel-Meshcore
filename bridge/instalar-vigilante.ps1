@@ -22,7 +22,7 @@ foreach ($v in 'MESHCORE_WIO1_NAME', 'MESHCORE_WIO2_NAME') {
 $dir    = if ($env:MESHCORE_RELAY_DIR) { $env:MESHCORE_RELAY_DIR } else { Join-Path $env:LOCALAPPDATA 'PanelMeshCore' }
 $bridge = Split-Path -Parent $MyInvocation.MyCommand.Path
 $python = Join-Path $bridge '.venv\Scripts\python.exe'
-$relay  = Join-Path $bridge 'meshcore_ble_relay_v2.py'
+$relay  = Join-Path $bridge 'meshcore_ble_relay.py'
 New-Item -ItemType Directory -Force $dir | Out-Null
 
 $run = @"

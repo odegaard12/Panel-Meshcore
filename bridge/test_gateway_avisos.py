@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 os.environ['MESHCORE_BLE_TOKEN'] = 't'
 os.environ['MESHCORE_HISTORY_FILE'] = os.path.join(tempfile.mkdtemp(), 'h.jsonl')
 
-import meshcore_ble_gateway_v3 as gw  # noqa: E402
+import meshcore_ble_gateway as gw  # noqa: E402
 
 ahora = time.time()
 assert gw.problemas(None, ahora, 3800, 3600) == {}

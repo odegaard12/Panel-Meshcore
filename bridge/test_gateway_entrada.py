@@ -11,7 +11,7 @@ os.environ['MESHCORE_BLE_TOKEN'] = 't'
 os.environ['MESHCORE_HISTORY_FILE'] = os.path.join(tempfile.mkdtemp(), 'h.jsonl')
 
 from aiohttp.test_utils import TestClient, TestServer  # noqa: E402
-import meshcore_ble_gateway_v3 as gw  # noqa: E402
+import meshcore_ble_gateway as gw  # noqa: E402
 
 H = {'X-MeshCore-Token': 't'}
 enviados = []
