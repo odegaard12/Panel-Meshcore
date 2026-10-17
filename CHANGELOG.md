@@ -3,6 +3,13 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.1.2] - 2026-10-17
+
+### Cambiado
+- Fuera los emoji de botones, títulos y capas del mapa, y los cuadros de
+  icono de Equipos. El filtro por WIO del chat se oculta (casi nunca hacía
+  falta). Capturas del README al día.
+
 ## [1.1.1] - 2026-10-16
 
 ### Cambiado

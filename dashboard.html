@@ -567,7 +567,7 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 .redSidebar{background:var(--bg2)}
 
 /* Sobrio: sin cuadros de icono, sin franjas laterales, sin sombras flotantes */
-.icon,.statIcon,h1::before{display:none!important}
+.icon,.statIcon,h1::before,.devTabIcon,.devPhoto{display:none!important}
 .devTab.on{box-shadow:none;background:var(--hover)}
 .statsNote{border-left-width:1px}
 .card,.kpi,.chatComposer,.leaflet-bar,.leaflet-control-layers,.mapLegend,.leaflet-popup-content-wrapper{box-shadow:none!important}
@@ -697,12 +697,12 @@ footer{color:var(--dim2)}
                        reenvia el login y los comandos CLI por la malla. -->
     
                   <details class="rakBox">
-                    <summary>📊 Diagnóstico remoto del repetidor</summary>
+                    <summary>Diagnóstico remoto del repetidor</summary>
                     <div class="maprow" style="align-items:center">
                       <select id="rak-status-via" style="margin-left:auto"><option value="2">vía WIO2</option><option value="1">vía WIO1</option></select>
                       <button class="p" id="btn-rak-status">Estado</button>
-                      <button id="btn-rak-telemetry">🌡️ Telemetría</button>
-                      <button id="btn-rak-history">📈 Histórico</button>
+                      <button id="btn-rak-telemetry">Telemetría</button>
+                      <button id="btn-rak-history">Histórico</button>
                     </div>
                     <div class="loglet" id="rak-telemetry-out" style="display:none;margin-top:8px"></div>
                     <div id="rak-history-box" style="display:none;margin-top:10px">
@@ -727,7 +727,7 @@ footer{color:var(--dim2)}
                     </div>
                   </details>
                   <details class="rakBox">
-                    <summary>📶 Gestión remota vía WIO (sin Bluetooth al RAK)</summary>
+                    <summary>Gestión remota vía WIO (sin Bluetooth al RAK)</summary>
                     <div class="maprow" style="gap:8px;margin-top:10px">
                     </div>
                     <div class="maprow" style="gap:8px;margin-top:10px;align-items:end">
@@ -760,7 +760,7 @@ footer{color:var(--dim2)}
                       <button class="quick-rak-cmd" data-cmd="neighbors" disabled>Vecinos</button>
                       <button class="quick-rak-cmd" data-cmd="advert" disabled>Anunciarse</button>
                     </div>
-                    <button class="p" id="btn-rak-legal" disabled style="margin-top:12px">⚖️ Comprobar que el repetidor es legal</button>
+                    <button class="p" id="btn-rak-legal" disabled style="margin-top:12px">Comprobar que el repetidor es legal</button>
                     <div class="loglet" id="rak-legal-out" style="display:none;max-height:none"></div>
                     <div class="cardsub" style="margin-top:8px;color:var(--dim2);font-size:10.5px">
                       Firmware no actualizable en remoto: el bootloader UF2 exige USB físico y doble reset. Aquí solo se leen/ajustan parámetros por CLI.
@@ -793,8 +793,8 @@ footer{color:var(--dim2)}
                   </div>
                   <div class="cardactions">
                     <button class="p" id="btn-w1-connect">Conectar</button> <span id="w1-device-status" class="device-status" style="margin-left:8px">No detectado</span>
-                    <button id="btn-w1-place">📍 Colocar en mapa</button>
-                    <button id="btn-w1-export" onclick="wioExportKey(1)">💾 Exportar clave</button>
+                    <button id="btn-w1-place">Colocar en mapa</button>
+                    <button id="btn-w1-export" onclick="wioExportKey(1)">Exportar clave</button>
                   </div>
                   <div class="loglet" id="w1-log">Sin conectar aún.</div>
     
@@ -824,8 +824,8 @@ footer{color:var(--dim2)}
                   </div>
                   <div class="cardactions">
                     <button class="p" id="btn-w2-connect">Conectar</button> <span id="w2-device-status" class="device-status" style="margin-left:8px">No detectado</span>
-                    <button id="btn-w2-place">📍 Colocar en mapa</button>
-                    <button id="btn-w2-export" onclick="wioExportKey(2)">💾 Exportar clave</button>
+                    <button id="btn-w2-place">Colocar en mapa</button>
+                    <button id="btn-w2-export" onclick="wioExportKey(2)">Exportar clave</button>
                   </div>
                   <div class="loglet" id="w2-log">Sin conectar aún.</div>
     
@@ -874,7 +874,7 @@ footer{color:var(--dim2)}
             <option value="chan2">Canal 2</option>
             <option value="priv">Privados</option>
           </select>
-          <select id="chatViaFilter" title="Por qué WIO llegaron">
+          <select id="chatViaFilter" hidden title="Por qué WIO llegaron">
             <option value="all">Cualquier WIO</option>
             <option value="1">Solo WIO1</option>
             <option value="2">Solo WIO2</option>
@@ -915,11 +915,11 @@ footer{color:var(--dim2)}
   <div class="redWrap">
     <div class="redSidebar">
       <div class="sidebarLabel">Red y notas</div>
-      <button class="layer-toggle red-nav" data-target="red-top">📻 Resumen</button>
-      <button class="layer-toggle red-nav" data-target="red-wiki">📖 Cómo funciona MeshCore</button>
-      <button class="layer-toggle red-nav" data-target="red-notas" id="nav-red-notas" hidden>📝 Mis notas</button>
-      <button class="layer-toggle red-nav" data-target="red-normas">🤝 Normas</button>
-      <button class="layer-toggle red-nav" data-target="red-herramientas">🛠️ Herramientas</button>
+      <button class="layer-toggle red-nav" data-target="red-top">Resumen</button>
+      <button class="layer-toggle red-nav" data-target="red-wiki">Cómo funciona MeshCore</button>
+      <button class="layer-toggle red-nav" data-target="red-notas" id="nav-red-notas" hidden>Mis notas</button>
+      <button class="layer-toggle red-nav" data-target="red-normas">Normas</button>
+      <button class="layer-toggle red-nav" data-target="red-herramientas">Herramientas</button>
     </div>
     <div class="redContent">
     <div class="grid">
@@ -1030,19 +1030,19 @@ footer{color:var(--dim2)}
       <div class="mapWrap">
         <div class="mapSidebar">
           <div class="mapQuick">
-            <button id="btn-map-fit">🔍 Ver todo</button>
+            <button id="btn-map-fit">Ver todo</button>
             <button id="btn-map-fullscreen">Pantalla completa</button>
           </div>
 
           <details class="mapGroup" data-g="capas" open>
             <summary>Capas visibles</summary>
             <div class="mapGroupBody">
-              <button class="layer-toggle on" data-layer="rak" title="Tu repetidor">📡 Repetidor propio</button>
-              <button class="layer-toggle on" data-layer="wio" title="Tus dos WIO">📶 Terminales WIO</button>
-              <button class="layer-toggle on" data-layer="infra" title="Infraestructura de referencia (config.js)">🗼 Infraestructura ajena</button>
-              <button class="layer-toggle on" data-layer="neighbors" title="Nodos leídos al pulsar Actualizar, abajo">🔭 Vecinos detectados</button>
-              <button class="layer-toggle on" data-layer="fresnel" title="Lineas de Analizar enlace: verde despejado, roja obstruida">🌄 Líneas de enlace (Fresnel)</button>
-              <button class="layer-toggle" data-layer="near" title="Oculta vecinos a más de 150 km (red PT es muy extensa)">📍 Solo cercanos (&lt;150 km)</button>
+              <button class="layer-toggle on" data-layer="rak" title="Tu repetidor">Repetidor propio</button>
+              <button class="layer-toggle on" data-layer="wio" title="Tus dos WIO">Terminales WIO</button>
+              <button class="layer-toggle on" data-layer="infra" title="Infraestructura de referencia (config.js)">Infraestructura ajena</button>
+              <button class="layer-toggle on" data-layer="neighbors" title="Nodos leídos al pulsar Actualizar, abajo">Vecinos detectados</button>
+              <button class="layer-toggle on" data-layer="fresnel" title="Lineas de Analizar enlace: verde despejado, roja obstruida">Líneas de enlace (Fresnel)</button>
+              <button class="layer-toggle" data-layer="near" title="Oculta vecinos a más de 150 km (red PT es muy extensa)">Solo cercanos (&lt;150 km)</button>
             </div>
           </details>
 
@@ -1055,12 +1055,12 @@ footer{color:var(--dim2)}
               <option value="1">Ver: solo WIO1</option>
               <option value="2">Ver: solo WIO2</option>
               </select>
-              <button id="btn-scan-w1-map">🔄 Actualizar vía WIO1</button>
-              <button id="btn-scan-w2-map">🔄 Actualizar vía WIO2</button>
+              <button id="btn-scan-w1-map">Actualizar vía WIO1</button>
+              <button id="btn-scan-w2-map">Actualizar vía WIO2</button>
               <div class="cardsub" id="neighborsMapStatus"></div>
               <div class="groupSep">Con esos datos</div>
-              <button id="btn-neighbors-list" title="Tabla ordenable: nombre, tipo, saltos, distancia">📋 Ver tabla (saltos y distancia)</button>
-              <button id="btn-mesh-graph" title="Pregunta a cada repetidor a quién oye directamente">🕸️ Grafo de malla</button>
+              <button id="btn-neighbors-list" title="Tabla ordenable: nombre, tipo, saltos, distancia">Ver tabla (saltos y distancia)</button>
+              <button id="btn-mesh-graph" title="Pregunta a cada repetidor a quién oye directamente">Grafo de malla</button>
               <button id="btn-export-contacts" title="Descarga un CSV para compartir con la comunidad">⬇️ Exportar a CSV</button>
             </div>
           </details>
@@ -1076,8 +1076,8 @@ footer{color:var(--dim2)}
               <div class="fieldgroup" style="flex:1;min-width:0"><span class="fieldlabel">Antena allí (m)</span>
               <input type="text" id="link-h2" value="6" style="width:100%"></div>
               </div>
-              <button id="btn-link-analyze">📐 Analizar enlace</button>
-              <button id="btn-trace">🛰️ Traceroute al destino elegido arriba</button>
+              <button id="btn-link-analyze">Analizar enlace</button>
+              <button id="btn-trace">Traceroute al destino elegido arriba</button>
               <div class="cardsub" id="traceOut" style="display:none;font-size:11px;margin-top:4px"></div>
             </div>
           </details>
@@ -1086,14 +1086,14 @@ footer{color:var(--dim2)}
             <summary>Alcance por regiones</summary>
             <div class="mapGroupBody">
               <div class="cardsub">De dónde son los nodos que oyes, con los vecinos escaneados.</div>
-              <button id="btn-alcance">🗺️ Ver alcance por regiones</button>
+              <button id="btn-alcance">Ver alcance por regiones</button>
             </div>
           </details>
 
           <details class="mapGroup" data-g="herram">
             <summary>Herramientas</summary>
             <div class="mapGroupBody">
-              <button id="btn-measure" title="Dos clics en el mapa: distancia y rumbo entre ellos">📏 Medir distancia (2 clics)</button>
+              <button id="btn-measure" title="Dos clics en el mapa: distancia y rumbo entre ellos">Medir distancia (2 clics)</button>
             </div>
           </details>
 
@@ -1113,7 +1113,7 @@ footer{color:var(--dim2)}
       <div id="neighborsListPanel" style="display:none;padding:14px 24px;border-top:1px solid var(--brd)">
         <div class="nlHead">
           <div>
-            <div class="nlTitle">📋 Vecinos vistos por radio</div>
+            <div class="nlTitle">Vecinos vistos por radio</div>
             <div class="cardsub" id="nlSummary"></div>
           </div>
           <div class="nlTools">
@@ -1129,7 +1129,7 @@ footer{color:var(--dim2)}
       <div id="alcancePanel" style="display:none;padding:14px 24px;border-top:1px solid var(--brd)">
         <div class="nlHead">
           <div>
-            <div class="nlTitle">🗺️ Alcance por regiones</div>
+            <div class="nlTitle">Alcance por regiones</div>
             <div class="cardsub" id="alcanceResumen"></div>
           </div>
           <div class="nlTools"><button id="alcanceClose" aria-label="Cerrar" title="Cerrar">✕</button></div>
@@ -1147,7 +1147,7 @@ footer{color:var(--dim2)}
       </div>
       <div id="linkPanel" style="display:none;padding:14px 24px;border-top:1px solid var(--brd)">
         <div class="maprow" style="align-items:center">
-          <div class="cardsub" style="font-weight:700;color:var(--fg);font-size:12.5px">📐 Perfil del enlace</div>
+          <div class="cardsub" style="font-weight:700;color:var(--fg);font-size:12.5px">Perfil del enlace</div>
           <div class="cardsub" id="linkVerdict" style="margin-left:auto"></div>
         </div>
         <svg id="linkChart" viewBox="0 0 900 220" preserveAspectRatio="none"
@@ -1172,7 +1172,7 @@ footer{color:var(--dim2)}
   <section class="tabview" id="tab-stats">
     <div class="statsHead">
       <div>
-        <div class="statsTitle">📊 Analítica de radio</div>
+        <div class="statsTitle">Analítica de radio</div>
         <div class="statsSub" id="statsSub">Medidas reales de cada paquete que oye tu nodo, no texto del chat.</div>
       </div>
       <div class="statsActions">
@@ -1182,7 +1182,7 @@ footer{color:var(--dim2)}
           <option value="24" selected>Últimas 24 h</option>
           <option value="0">Todo lo guardado</option>
         </select>
-        <button id="btn-stats-refresh">🔄 Actualizar</button>
+        <button id="btn-stats-refresh">Actualizar</button>
       </div>
     </div>
 
@@ -1261,7 +1261,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.1.1';
+const PANEL_VERSION='1.1.2';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
