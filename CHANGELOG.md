@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.12.1] - 2026-10-17
+
+### Quitado
+- La portada de `docs/` (1.12.0): el proyecto se presenta en el propio
+  repositorio. Queda en el historial de git.
+
 ## [1.12.0] - 2026-10-17
 
 ### Añadido
