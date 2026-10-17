@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.13.0] - 2026-10-18
+
+### Cambiado
+- Equipos sobre el mapa: el mapa (mismos fondos de Esri e iconos) llena la
+  pestaña con el repetidor, los WIO y los vecinos coloreados por saltos, y
+  encima flotan el panel del repetidor/WIO (con su diagnóstico y gestión
+  remota de siempre), el estado y la leyenda. En el móvil el panel es una
+  hoja inferior. El mapa completo con sus herramientas sigue en Mapa.
+
 ## [1.12.1] - 2026-10-17
 
 ### Quitado
