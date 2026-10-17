@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.2.1] - 2026-10-17
+
+### Cambiado
+- El segundo companion es opcional: con MESHCORE_WIO2_NAME vacío el relay
+  ni lo busca, y un comando a un WIO no configurado da un error claro.
+
 ## [1.2.0] - 2026-10-17
 
 ### Cambiado

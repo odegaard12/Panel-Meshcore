@@ -415,7 +415,9 @@ async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.Clien
             rid = str(req['id'])
             stream_until = req.get('stream_until')
             try:
-                if idx in wios and not wios[idx].connected:
+                if idx not in wios:
+                    raise RuntimeError('WIO%s no configurado en este relay' % idx)
+                if not wios[idx].connected:
                     wios[idx].despertar.set()
                 if stream_until:
                     frames = await wios[idx].command(
@@ -464,7 +466,8 @@ async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.Clien
 async def main() -> None:
     if not TOKEN:
         raise SystemExit('Falta MESHCORE_BLE_TOKEN')
-    wios = {idx: Wio(idx, names) for idx, names in NAMES.items()}
+    # MESHCORE_WIO2_NAME='' (vacío) = solo un companion: ni se busca el segundo.
+    wios = {idx: Wio(idx, names) for idx, names in NAMES.items() if names[0]}
     stop = asyncio.Event()
     async with aiohttp.ClientSession() as http:
         while not stop.is_set():
