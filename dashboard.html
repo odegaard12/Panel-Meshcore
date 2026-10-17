@@ -643,6 +643,37 @@ p,.statsNote{max-width:75ch}
 #eqMap .leaflet-control-attribution{background:rgba(13,17,22,.8);color:#6d7a88}
 #eqMap .leaflet-control-attribution a{color:#8592a0}
 .red-nav::after{display:none!important}
+/* Sin barra superior: marca y pestañas en una sola pastilla centrada que flota */
+header{position:fixed!important;top:12px!important;left:50%!important;transform:translateX(-50%);z-index:1200!important;
+  display:flex!important;align-items:center!important;gap:6px!important;padding:4px 4px 4px 18px!important;min-height:0!important;
+  background:rgba(13,17,22,.96)!important;border-radius:999px!important;border:none!important;width:auto!important;max-width:calc(100vw - 24px);flex-wrap:nowrap!important}
+header .sub,header .spacer{display:none!important}
+header h1{font-size:15px!important;margin-right:6px}
+header h1::before{display:none!important}
+header nav.tabs{background:transparent!important;margin:0!important;padding:0!important;border:none!important;width:auto!important}
+header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:var(--dim)!important;text-decoration:none}
+.wrap{padding-top:28px}
+#tab-stats.on,#tab-red.on{padding-top:64px}
+#tab-equipos.on,#tab-chat.on{height:100dvh!important}
+#tab-equipos .devWrap,#tab-equipos .equiposWrap .grid,#tab-chat .chatcard{top:72px!important}
+@media (max-width:860px){
+  header{top:8px!important;padding:3px!important}
+  header h1,header nav.top{display:none!important}
+  header nav.tabs{overflow-x:auto;scrollbar-width:none}
+  #tab-equipos.on,#tab-chat.on{height:100dvh!important}
+  #tab-equipos #cfgAviso{top:56px!important}
+  #tab-equipos .devWrap,#tab-chat .chatcard{top:auto!important}
+}
+/* Barras laterales flotantes (Mapa y Red y notas), como los paneles de Equipos */
+@media (min-width:861px){
+  .mapWrap{position:relative!important;display:block!important}
+  #map{position:absolute!important;inset:0!important;height:auto!important}
+  .mapSidebar{position:absolute!important;top:72px;left:16px;bottom:16px;width:280px!important;z-index:500;border-radius:16px!important;border:none!important;background:rgba(13,17,22,.96)!important;overflow-y:auto}
+  #map .leaflet-top.leaflet-left{left:304px;top:62px}
+  #map .leaflet-top.leaflet-right{top:62px}
+  #map .leaflet-bottom.leaflet-left{left:304px}
+  .redSidebar{position:sticky!important;top:72px!important;margin:72px 0 16px 16px;border-radius:16px;border:none!important;max-height:calc(100dvh - 88px)}
+}
 .eqAviso{background:#2a2210!important;color:#f2b23a!important;font-weight:600}
 /* Cabecera del diseño nuevo: pestañas en pastillas, la activa resaltada */
 header{background:var(--bg2)!important;border-bottom:none!important}
@@ -660,6 +691,8 @@ nav.tabs button .badge2{margin-left:6px}
 #tab-chat #chatBox{padding:8px 4px!important}
 #tab-chat .chatComposer{margin:8px 0 0!important}
 #tab-chat .eqLeyenda{right:auto;left:16px}
+#tab-chat #chatContacts{background:transparent!important;padding:0 12px 0 0!important}
+#tab-chat .chatHeadTxt .cardsub{display:none}
 @media (max-width:860px){
   #tab-chat.on{height:calc(100dvh - 96px)}
   #tab-chat .chatcard{top:auto;left:0;right:0;bottom:0;width:auto!important;height:78%!important;background:var(--panel,#0d1116)!important;border-radius:20px 20px 0 0!important}
@@ -707,7 +740,7 @@ footer{color:var(--dim2)}
   <h1 id="cfg-titulo">Mesh<span>Core</span> Panel</h1>
   <span class="sub" id="cfg-subtitulo">Panel de equipos</span>
   <nav class="tabs">
-    <button class="on" data-tab="equipos">Equipos</button>
+    <button class="on" data-tab="equipos">Panel</button>
     <button data-tab="chat">Chat<span class="badge2" id="chatBadge" style="display:none">0</span></button>
     <button data-tab="mapa">Mapa</button>
         <button data-tab="stats">Analítica</button>
@@ -994,7 +1027,7 @@ footer{color:var(--dim2)}
         <div id="ccLista"></div>
       </aside>
       <div id="chatBox">
-        <div class="msg sys">Conecta un WIO (pestaña Equipos) para leer y enviar mensajes.</div>
+        <div class="msg sys">Conecta un WIO (pestaña Panel) para leer y enviar mensajes.</div>
       </div>
       </div>
       <div class="chatComposer">
@@ -1272,7 +1305,7 @@ footer{color:var(--dim2)}
         <button id="btn-scan-w1">Analizar vía WIO1</button>
         <button id="btn-scan-w2">Analizar vía WIO2</button>
       </div>
-      <pre class="loglet" id="neighborsResult" style="display:none">Conecta un WIO (pestaña Equipos) y pulsa "Analizar" para ver qué nodos y repetidores ve tu radio, y a cuántos saltos está cada uno.</pre>
+      <pre class="loglet" id="neighborsResult" style="display:none">Conecta un WIO (pestaña Panel) y pulsa "Analizar" para ver qué nodos y repetidores ve tu radio, y a cuántos saltos está cada uno.</pre>
     </div>
 
   </div>
@@ -1370,7 +1403,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.14.0';
+const PANEL_VERSION='1.15.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1813,7 +1846,7 @@ async function scanNeighbors(idx){
   const mapStatus=$('#neighborsMapStatus');
   const n=wNodes[idx];
   if(!n||!n.device||!n.device.gatt.connected){
-    out.textContent='WIO'+idx+' no conectado. Conéctalo en la pestaña Equipos primero.';
+    out.textContent='WIO'+idx+' no conectado. Conéctalo en la pestaña Panel primero.';
     if(mapStatus) mapStatus.textContent='WIO'+idx+' no conectado';
     return;
   }
@@ -2708,7 +2741,7 @@ $('#chatClear').onclick=()=>{
   if(!confirm('¿Borrar todo el historial de chat guardado en este navegador? No afecta a los mensajes en los nodos.')) return;
   saveChatLog([]);
   seenMsgs.clear();
-  $('#chatBox').innerHTML='<div class="msg sys">Conecta un WIO (pestaña Equipos) para leer y enviar mensajes.</div>';
+  $('#chatBox').innerHTML='<div class="msg sys">Conecta un WIO (pestaña Panel) para leer y enviar mensajes.</div>';
   delete $('#chatBox').dataset.lastDay;
 };
 // ==================== ANALITICA DE RADIO ====================
@@ -3506,7 +3539,7 @@ $('#chatPull').onclick=async()=>{
 function updateListening(){
   const ns=connectedNodes();
   const note=$('#chatNote');
-  if(!ns.length){ note.textContent='Ningún WIO conectado. Conéctalos en la pestaña Equipos.'; return; }
+  if(!ns.length){ note.textContent='Ningún WIO conectado. Conéctalos en la pestaña Panel.'; return; }
   note.textContent='Escuchando en: '+ns.map(n=>n.info?n.info.name:'nodo').join(', ')+
                    ' · máx. 130 caracteres · se envía por el nodo del desplegable';
 }

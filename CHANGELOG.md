@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.15.0] - 2026-10-18
+
+### Cambiado
+- Sin barra superior: la marca y las pestañas van en una pastilla centrada
+  que flota sobre el contenido; fuera el subtítulo.
+- La pestaña Equipos pasa a llamarse Panel.
+- Barras laterales flotantes en Mapa y Red y notas, como los paneles del
+  Panel; el chat integra su lista de canales y contactos sin caja dentro de
+  caja.
+
 ## [1.14.0] - 2026-10-18
 
 ### Cambiado
