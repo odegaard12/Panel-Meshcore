@@ -54,7 +54,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway :8780 (Raspberr
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.0.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: 1.9.2**1.0.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
@@ -133,6 +133,15 @@ Avisos al móvil (opcional): pon en el servicio del gateway
 `MESHCORE_NTFY_URL=https://tu-ntfy/tu-tema` (y `MESHCORE_NTFY_TOKEN` si hace falta)
 y te llegará un aviso si la batería del repetidor baja de 3,8 V o si deja de
 haber datos durante 3 h.
+
+**Limitar el gateway a tu PC (recomendado).** En el servicio del gateway pon
+`MESHCORE_ALLOWED_IPS=<IP-de-tu-PC>`: el puerto 8780 solo atenderá a ese PC
+(el relay) y a la propia Pi (nginx). **Si cambias de PC**, pon ahí la IP del
+nuevo (varias separadas por comas) y reinicia el gateway; si no, el relay del
+PC nuevo recibirá 403. Fija esa IP en el router (reserva DHCP) para que no cambie.
+
+Para no recibir el aviso de «sin datos» (si no tienes el PC siempre encendido):
+`MESHCORE_ALERT_STALE_HOURS=0`. El de batería baja sigue activo.
 
 Detalle del montaje, seguridad y diagnóstico: [`deploy/DESPLIEGUE.md`](deploy/DESPLIEGUE.md).
 

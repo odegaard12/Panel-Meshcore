@@ -576,6 +576,35 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 .chatComposer{border-radius:var(--r2)}
 .msg.in::before{display:none}
 .msg{border-radius:var(--r2)!important}
+.msg.in.priv{cursor:pointer}
+.chatBody{flex:1;min-height:0;display:flex;gap:16px;margin-top:8px}
+.chatBody #chatBox{flex:1;min-width:0;margin-top:0}
+#chatContacts{width:230px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;border-right:1px solid var(--brd);padding-right:12px;min-height:0}
+#ccLista{overflow:auto;display:flex;flex-direction:column;gap:2px;min-height:0}
+.ccItem{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;background:transparent;border:none;border-radius:var(--r1);padding:7px 10px}
+.ccItem:hover:not(:disabled){background:var(--hover);border:none}
+.ccItem.on{background:var(--hover)}
+.ccItem b{font-size:13px;font-weight:600}
+.ccItem span{font-size:11px;color:var(--dim2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ccItem .ccTop{display:flex;width:100%;gap:6px;align-items:baseline;color:var(--fg);font-size:13px}
+.ccItem .ccTop b{flex:1;overflow:hidden;text-overflow:ellipsis}
+.ccItem .ccTop i{font-style:normal;font-size:10.5px;color:var(--dim2)}
+.ccItem.conv span:last-child{color:var(--dim)}
+.ccVacio{font-size:12px;color:var(--dim2);padding:8px}
+.ccSec{font-size:11px;font-weight:600;color:var(--dim2);padding:10px 10px 4px}
+@media (min-width:861px){#chatFilter{display:none}}
+/* Sin recuadros de 1 px: las superficies se separan por tono, no por línea */
+.card,.kpi,.statcard,.rakBox,.rakSpark,.metrics,.devWrap,#statusBar,.alcanceReg,.coord{border:none!important}
+.metrics{gap:2px;background:var(--bg)}
+.metric{background:var(--raise)}
+#statusBar>div:not(#keyReminder){border-right:2px solid var(--bg)!important}
+.rakBox,.rakSpark{background:var(--raise)}
+.chatHead{border-bottom:none;padding-bottom:0}
+#chatContacts{border-right:none;background:var(--bg2);border-radius:var(--r2);padding:8px}
+.chatCount{font-family:var(--sans)}
+.devSidebar{background:var(--bg2);border-right:none!important}
+@media (max-width:860px){#chatContacts{display:none}}
+.msg.in.priv:hover{outline:1px solid #3b3161}
 footer{color:var(--dim2)}
 
 @media (max-width:860px){
@@ -885,8 +914,14 @@ footer{color:var(--dim2)}
         </div>
         <div class="statusdot" id="dot-chat"></div>
       </div>
+      <div class="chatBody">
+      <aside id="chatContacts" aria-label="Contactos">
+        <input type="text" id="ccBuscar" placeholder="Buscar contacto" autocomplete="off">
+        <div id="ccLista"></div>
+      </aside>
       <div id="chatBox">
         <div class="msg sys">Conecta un WIO (pestaña Equipos) para leer y enviar mensajes.</div>
+      </div>
       </div>
       <div class="chatComposer">
         <select id="chatNode" hidden title="El chat siempre muestra los mensajes de ambos WIO; esto solo elige por cuál se envía">
@@ -1261,7 +1296,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.4.1';
+const PANEL_VERSION='1.9.2';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2564,7 +2599,12 @@ function chatAdd(cls,who,text,meta,persist=true,dedupKey=null,kind='out',at=null
 function applyChatFilterTo(el){
   const f=$('#chatFilter')?.value||'all';
   const via=$('#chatViaFilter')?.value||'all';
-  const passKind = f==='all' || el.classList.contains('sys') || el.dataset.kind===f;
+  let passKind = f==='all' || el.classList.contains('sys') || el.dataset.kind===f;
+  if(typeof convSel!=='undefined' && convSel && !el.classList.contains('sys')){
+    const quien=el.querySelector('.who b')?.textContent||'';
+    const meta=el.querySelector('.meta')?.textContent||'';
+    passKind = el.dataset.kind==='priv' && (quien===convSel || meta.includes('· a '+convSel));
+  }
   const passVia = via==='all' || el.classList.contains('sys') || el.dataset.via==='' || String(el.dataset.via)===via;
   el.style.display = (passKind && passVia) ? '' : 'none';
 }
@@ -2983,11 +3023,11 @@ async function pullMessages(node){
     const when=new Date(m.ts*1000).toLocaleString();
     const via=node.info?node.info.name:'nodo';
     const snr=(m.snr!=null)?(' · SNR '+m.snr+' dB'):'';
-    const who = m.kind==='CHAN' ? 'Canal '+m.channel : m.from.slice(0,8);
+    const who = m.kind==='CHAN' ? 'Canal '+m.channel : nombreContacto(m.from);
     if(m.kind==='CHAN')
       chatAdd('in',who,m.text,when+snr+' · vía '+via,true,key,'chan'+m.channel,m.ts*1000);
     else
-      chatAdd('in',who,m.text,when+snr+' · vía '+via,true,key,'priv',m.ts*1000);
+      { chatAdd('in',who,m.text,when+snr+' · vía '+via,true,key,'priv',m.ts*1000); pintarContactos(); }
     if(m.kind!=='CHAN') respuestaRepetidor(m);
     if(!$('#tab-chat').classList.contains('on')){ unreadChat++; updateChatBadge(); }
     notifyNewMessage(who,m.text);
@@ -3007,15 +3047,125 @@ function notifyNewMessage(who,text){
   try{ new Notification('MeshCore · '+who,{body:text,tag:'meshcore-chat'}); }catch(e){}
 }
 
+// Contactos que conocen los WIO (los guarda el escaneo de vecinos del Mapa).
+function contactosChat(){
+  const vistos=new Map();
+  for(const i of [1,2]){
+    const d=loadNeighbors(i);
+    for(const c of ((d&&d.contacts)||[])) if(c.pubkey&&c.name&&c.advType!==2&&!vistos.has(c.pubkey)) vistos.set(c.pubkey,c);
+  }
+  return [...vistos.values()].sort((a,b)=>a.name.localeCompare(b.name));
+}
+function nombreContacto(prefijo){
+  const c=contactosChat().find(x=>x.pubkey.startsWith(prefijo));
+  return c?c.name:prefijo.slice(0,8);
+}
+function rellenarDestinos(){
+  const sel=$('#chatChan'), actual=sel.value;
+  sel.querySelector('optgroup')?.remove();
+  const cs=contactosChat();
+  if(!cs.length) return;
+  const g=document.createElement('optgroup'); g.label='Privado a…';
+  for(const c of cs){ const o=document.createElement('option'); o.value='p:'+c.pubkey.slice(0,12); o.textContent=c.name; g.appendChild(o); }
+  sel.appendChild(g);
+  if([...sel.options].some(o=>o.value===actual)) sel.value=actual;
+}
+$('#chatChan').addEventListener('focus',rellenarDestinos);
+$('#chatChan').addEventListener('pointerdown',rellenarDestinos);
+// Pulsar un mensaje privado recibido = contestarle en privado.
+$('#chatBox').addEventListener('click',e=>{
+  const b=e.target.closest('.msg.in.priv'); if(!b) return;
+  const nombre=b.querySelector('.who b')?.textContent||'';
+  const c=contactosChat().find(x=>x.name===nombre||x.pubkey.startsWith(nombre));
+  if(!c){ chatAdd('sys',null,'No tengo a '+nombre+' en los contactos: escanea vecinos en el Mapa.','',false); return; }
+  elegirDestino(c);
+});
+// Barra lateral del chat: canales arriba, conversaciones privadas debajo y el
+// resto de contactos solo al buscar. Lo elegido filtra el chat y es el destino.
+var convSel=null;            // nombre del contacto cuya conversación se ve
+var canalSel='all';          // 'all' | '0' | '1' | '2' cuando no hay conversación
+function ultimosPrivados(){
+  const ultimo=new Map();
+  for(const e of loadChatLog()){
+    if(e.kind!=='priv') continue;
+    const n=e.cls==='in'?e.who:((String(e.meta||'').match(/· a (.+)$/)||[])[1]);
+    if(n&&(!ultimo.has(n)||(e.at||0)>=(ultimo.get(n).at||0))) ultimo.set(n,e);
+  }
+  return ultimo;
+}
+function pintarContactos(){
+  const q=$('#ccBuscar').value.trim().toLowerCase();
+  const ultimo=ultimosPrivados();
+  const cs=contactosChat();
+  const hora=at=>{ const d=new Date(at); return d.toDateString()===new Date().toDateString()?d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString([], {day:'numeric',month:'short'}); };
+  const item=(attrs,on,titulo,sub,derecha)=>'<button class="ccItem'+(on?' on':'')+'" '+attrs+'><span class="ccTop"><b>'+esc(titulo)+'</b>'+(derecha?'<i>'+esc(derecha)+'</i>':'')+'</span>'+(sub?'<span>'+esc(sub)+'</span>':'')+'</button>';
+  let h='';
+  if(!q){
+    h+='<div class="ccSec">Canales</div>';
+    for(const [v,t] of [['all','Todo'],['0','Public'],['1','Canal 1'],['2','Canal 2']])
+      h+=item('data-canal="'+v+'"',!convSel&&canalSel===v,t,v==='all'?'todos los mensajes':'',null);
+    const convs=[...ultimo.entries()].sort((x,y)=>(y[1].at||0)-(x[1].at||0));
+    h+='<div class="ccSec">Privados</div>';
+    h+=convs.length?convs.map(([n,u])=>item('data-conv="'+esc(n)+'"',convSel===n,n,(u.cls==='out'?'Tú: ':'')+String(u.text).slice(0,42),u.at?hora(u.at):null)).join('')
+      :'<div class="ccVacio">Sin privados. Busca un contacto para escribirle.</div>';
+  }else{
+    const m=cs.filter(c=>c.name.toLowerCase().includes(q));
+    h+='<div class="ccSec">Contactos</div>';
+    h+=m.length?m.map(c=>item('data-conv="'+esc(c.name)+'"',convSel===c.name,c.name,c.advType===3?'sala':'',null)).join('')
+      :'<div class="ccVacio">Nadie con ese nombre'+(cs.length?'':' (escanea vecinos en el Mapa)')+'</div>';
+  }
+  $('#ccLista').innerHTML=h;
+}
+function filtrarChat(){ $('#chatBox').querySelectorAll('.msg').forEach(applyChatFilterTo); const b=$('#chatBox'); b.scrollTop=b.scrollHeight; }
+function elegirCanal(v){
+  convSel=null; canalSel=v;
+  $('#chatFilter').value=v==='all'?'all':'chan'+v;
+  $('#chatChan').value=v==='all'?'0':v;
+  $('#chatInput').placeholder='Escribe un mensaje...';
+  filtrarChat(); pintarContactos();
+}
+function elegirDestino(c){
+  convSel=c.name;
+  rellenarDestinos(); $('#chatChan').value='p:'+c.pubkey.slice(0,12);
+  $('#chatInput').placeholder='Privado a '+c.name+'…'; $('#chatInput').focus();
+  $('#ccBuscar').value='';
+  filtrarChat(); pintarContactos();
+}
+$('#ccLista').addEventListener('click',e=>{
+  const b=e.target.closest('.ccItem'); if(!b) return;
+  if(b.dataset.canal) return elegirCanal(b.dataset.canal);
+  const n=b.dataset.conv;
+  const c=contactosChat().find(x=>x.name===n);
+  if(c) return elegirDestino(c);
+  // Conversación con alguien que ya no está en contactos: se puede leer, no contestar.
+  convSel=n; filtrarChat(); pintarContactos();
+  chatAdd('sys',null,'No tengo a '+n+' en los contactos: escanea vecinos en el Mapa para poder contestarle.','',false);
+});
+$('#ccBuscar').addEventListener('input',pintarContactos);
+$('#chatChan').addEventListener('change',()=>{
+  const v=$('#chatChan').value;
+  if(v.startsWith('p:')){ const c=contactosChat().find(x=>x.pubkey.startsWith(v.slice(2))); if(c) elegirDestino(c); }
+  else elegirCanal(v);
+});
+document.querySelector('[data-tab="chat"]').addEventListener('click',()=>{ rellenarDestinos(); pintarContactos(); });
+rellenarDestinos(); pintarContactos();
+
 $('#chatSend').onclick=async()=>{
   const n=activeChatNode();
   const txt=$('#chatInput').value.trim();
   if(!n||!txt) return;
   $('#chatSend').disabled=true;
   try{
-    const chan=+$('#chatChan').value;
-    await n.sendChannelMsg(chan,txt);
-    chatAdd('out',null,txt,new Date().toLocaleTimeString()+' · enviado por '+(n.info?n.info.name:'nodo'),true,null,'chan'+chan);
+    const dest=$('#chatChan').value;
+    const meta=new Date().toLocaleTimeString()+' · enviado por '+(n.info?n.info.name:'nodo');
+    if(dest.startsWith('p:')){
+      const c=contactosChat().find(x=>x.pubkey.startsWith(dest.slice(2)));
+      await n.sendTxtMsg(dest.slice(2),txt);
+      chatAdd('out',null,txt,meta+' · a '+(c?c.name:dest.slice(2,10)),true,null,'priv'); pintarContactos();
+    }else{
+      await n.sendChannelMsg(+dest,txt);
+      chatAdd('out',null,txt,meta,true,null,'chan'+dest);
+    }
     $('#chatInput').value='';
     // El otro nodo tarda un poco en recibir por radio: sondear pronto y otra vez
     setTimeout(pullAll,1500);

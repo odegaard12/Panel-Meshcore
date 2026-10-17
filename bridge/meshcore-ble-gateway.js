@@ -92,6 +92,16 @@
       if (r[0] === 1) throw new Error('el nodo rechazó el envío');
       return true;
     }
+    // Mensaje privado: SEND_TXT_MSG (2), texto normal (0), intento 0, ts, 6 bytes del destino.
+    async sendTxtMsg(prefixHex, text) {
+      const ts = Math.floor(Date.now()/1000);
+      const f = [0x02,0x00,0x00,ts&255,(ts>>8)&255,(ts>>16)&255,(ts>>24)&255];
+      for (let i=0;i<12;i+=2) f.push(parseInt(prefixHex.slice(i,i+2),16));
+      for (const b of new TextEncoder().encode(text)) f.push(b);
+      const r = await this._send(f);
+      if (r[0] === 1) throw new Error('el nodo rechazó el envío');
+      return true;
+    }
     async drainMessages(max=25) {
       const out=[];
       for(let i=0;i<max;i++){

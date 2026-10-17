@@ -17,6 +17,11 @@ assert gw.problemas({'bat_mv': 4100, 'at': ahora}, ahora, 3800, 3600) == {}
 assert set(gw.problemas({'bat_mv': 3700, 'at': ahora}, ahora, 3800, 3600)) == {'bateria'}
 assert set(gw.problemas({'bat_mv': 4100, 'at': ahora - 7200}, ahora, 3800, 3600)) == {'sin_datos'}
 assert gw.problemas({'bat_mv': 0, 'at': ahora}, ahora, 3800, 3600) == {}  # 0 = sin lectura
+assert gw.problemas({'bat_mv': 4100, 'at': ahora - 99999}, ahora, 3800, 0) == {}  # 0 h = aviso apagado
+os.environ['MESHCORE_ALLOWED_IPS'] = '203.0.113.5, 203.0.113.6'
+assert gw.ips_permitidas() == {'203.0.113.5', '203.0.113.6'}
+del os.environ['MESHCORE_ALLOWED_IPS']
+assert gw.ips_permitidas() == set()
 
 enviados = []
 a = gw.Avisos()

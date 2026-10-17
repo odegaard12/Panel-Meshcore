@@ -3,6 +3,67 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.9.2] - 2026-10-17
+
+### Cambiado
+- Sin recuadros de 1 px ni líneas separadoras: tarjetas, métricas, barra de
+  estado y barra del chat se separan por un escalón de tono. El contador del
+  chat deja la monoespaciada. Lo elegido en la barra del chat se marca en
+  tono neutro, no morado.
+
+## [1.9.1] - 2026-10-17
+
+### Corregido
+- Si la medida del repetidor falla (p. ej. justo tras arrancar todavía no
+  hay WIO conectado), se reintenta cada minuto en vez de esperar 15.
+
+## [1.9.0] - 2026-10-17
+
+### Cambiado
+- Barra lateral del chat más clara: arriba los canales (Todo, Public,
+  Canal 1, Canal 2), debajo solo las conversaciones privadas, y el resto de
+  contactos solo al buscar. Lo que eliges queda marcado, filtra el chat
+  (pulsar un privado muestra solo esa conversación) y es el destino del
+  mensaje.
+
+### Corregido
+- El gateway pregunta al repetidor al minuto de arrancar. Antes esperaba
+  15 min y cada reinicio volvía a empezar la cuenta: un día con varios
+  despliegues se quedó 23 h sin medir.
+
+## [1.8.0] - 2026-10-17
+
+### Añadido
+- Contactos del chat como lista de conversaciones: arriba quien te ha
+  escrito o a quien escribiste, con el último mensaje («Tú: …») y la hora;
+  se actualiza al recibir o enviar un privado.
+
+## [1.7.0] - 2026-10-17
+
+### Seguridad
+- MESHCORE_ALLOWED_IPS: el puerto del gateway solo atiende a esas IP (el PC
+  del relay) y a la propia Pi. El resto de la red recibe 403 aunque tenga el
+  token. El README explica qué cambiar si se cambia de PC.
+
+### Cambiado
+- MESHCORE_ALERT_STALE_HOURS=0 apaga el aviso de «sin datos del repetidor».
+
+## [1.6.0] - 2026-10-17
+
+### Añadido
+- Chat: columna de contactos con buscador (en pantallas anchas). Pulsar un
+  contacto lo pone como destino privado y queda marcado. Los repetidores no
+  salen como destino: a ellos se les habla por la gestión remota.
+
+## [1.5.0] - 2026-10-17
+
+### Añadido
+- Chat: mensajes privados. El selector de destino lista los contactos que
+  conocen los WIO («Privado a…»), y pulsar un privado recibido prepara la
+  respuesta a esa persona.
+- Los privados recibidos muestran el nombre del contacto en vez de los
+  primeros caracteres de su clave.
+
 ## [1.4.1] - 2026-10-17
 
 ### Seguridad
