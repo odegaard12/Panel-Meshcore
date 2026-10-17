@@ -192,8 +192,10 @@ class Wio:
         return {
             'idx': self.idx,
             'state': self.state,
-            # connected se mantiene por compatibilidad con el panel actual
-            'connected': self.state in (CONNECTED, READY),
+            # connected = enlace BLE real, no el resultado del ultimo comando: con
+            # el estado, un timeout dejaba ERROR, el gateway dejaba de mandar
+            # comandos y el estado ya no volvia nunca a READY (16/10/2026).
+            'connected': self.connected and self.state != OFFLINE,
             'ready': self.state == READY,
             'name': getattr(self.device, 'name', None) or self.names[0],
             'device_id': getattr(self.device, 'address', None),
@@ -369,6 +371,10 @@ async def keep(wio: Wio, stop: asyncio.Event) -> None:
             # sin texto. Se traduce a algo que el panel pueda ensenar.
             if isinstance(exc, (asyncio.TimeoutError, TimeoutError)) or 'Timeout' in motivo:
                 motivo = 'no responde: ¿apagado o sin batería?'
+            elif 'not powered on' in motivo or 'POWERED_OFF' in motivo:
+                motivo = 'el Bluetooth del PC está apagado'
+            elif 'No Bluetooth adapters' in motivo or 'NO_BLUETOOTH' in motivo:
+                motivo = 'el PC no tiene adaptador Bluetooth'
             wio.set_state(ERROR, motivo)
         await wio.disconnect()
         # disconnect() deja OFFLINE sin motivo; se conserva el del fallo para

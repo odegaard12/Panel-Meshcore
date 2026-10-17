@@ -73,7 +73,7 @@ se cambian en `config.js`.
 **1. Raspberry Pi: gateway y token**
 
 ```bash
-git clone https://github.com/odegaard12/panel-meshcore.git
+git clone https://github.com/odegaard12/Panel-Meshcore.git
 cd panel-meshcore
 ./bridge/install-pi.sh
 ```

@@ -3,6 +3,46 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.1.4] - 2026-10-17
+
+### Cambiado
+- Vuelven los iconos de antes en los marcadores y la leyenda del mapa.
+
+## [1.1.3] - 2026-10-17
+
+### Cambiado
+- Mapa: los marcadores son puntos lisos del color de cada tipo, sin emoji;
+  la leyenda igual. Tu repetidor se ve algo más grande.
+
+## [1.1.2] - 2026-10-17
+
+### Cambiado
+- Fuera los emoji de botones, títulos y capas del mapa, y los cuadros de
+  icono de Equipos. El filtro por WIO del chat se oculta (casi nunca hacía
+  falta). Capturas del README al día.
+
+## [1.1.1] - 2026-10-16
+
+### Cambiado
+- Aspecto más sobrio: sin cuadros de icono, sin franjas laterales ni sombras
+  flotantes. Los botones del chat llevan texto (Descargar, Borrar, Ampliar)
+  y desaparece el atajo a Analítica desde el chat.
+- El repositorio pasa a llamarse Panel-Meshcore.
+
+## [1.1.0] - 2026-10-16
+
+### Cambiado
+- Piel nueva del panel: tipografía y colores coherentes, pestañas más limpias,
+  métricas legibles, chat tipo mensajería (mensajes seguidos agrupados,
+  compositor fijo), mapa con interruptores de capas y popups con el tema,
+  analítica con gráficas más finas.
+
+### Corregido
+- El relay se quedaba en «error» tras un timeout y el gateway dejaba de
+  preguntar al repetidor para siempre: «conectado» refleja ahora el enlace
+  Bluetooth real.
+- Motivo legible si el Bluetooth del PC está apagado o no hay adaptador.
+
 ## [1.0.1] - 2026-10-16
 
 ### Corregido
