@@ -3,6 +3,13 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.6.0] - 2026-10-17
+
+### Añadido
+- Chat: columna de contactos con buscador (en pantallas anchas). Pulsar un
+  contacto lo pone como destino privado y queda marcado. Los repetidores no
+  salen como destino: a ellos se les habla por la gestión remota.
+
 ## [1.5.0] - 2026-10-17
 
 ### Añadido

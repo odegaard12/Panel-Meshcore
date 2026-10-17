@@ -577,6 +577,17 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 .msg.in::before{display:none}
 .msg{border-radius:var(--r2)!important}
 .msg.in.priv{cursor:pointer}
+.chatBody{flex:1;min-height:0;display:flex;gap:16px;margin-top:8px}
+.chatBody #chatBox{flex:1;min-width:0;margin-top:0}
+#chatContacts{width:230px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;border-right:1px solid var(--brd);padding-right:12px;min-height:0}
+#ccLista{overflow:auto;display:flex;flex-direction:column;gap:2px;min-height:0}
+.ccItem{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;background:transparent;border:none;border-radius:var(--r1);padding:7px 10px}
+.ccItem:hover:not(:disabled){background:var(--hover);border:none}
+.ccItem.on{background:#1b1730}
+.ccItem b{font-size:13px;font-weight:600}
+.ccItem span{font-size:11px;color:var(--dim2)}
+.ccVacio{font-size:12px;color:var(--dim2);padding:8px}
+@media (max-width:860px){#chatContacts{display:none}}
 .msg.in.priv:hover{outline:1px solid #3b3161}
 footer{color:var(--dim2)}
 
@@ -887,8 +898,14 @@ footer{color:var(--dim2)}
         </div>
         <div class="statusdot" id="dot-chat"></div>
       </div>
+      <div class="chatBody">
+      <aside id="chatContacts" aria-label="Contactos">
+        <input type="text" id="ccBuscar" placeholder="Buscar contacto" autocomplete="off">
+        <div id="ccLista"></div>
+      </aside>
       <div id="chatBox">
         <div class="msg sys">Conecta un WIO (pestaña Equipos) para leer y enviar mensajes.</div>
+      </div>
       </div>
       <div class="chatComposer">
         <select id="chatNode" hidden title="El chat siempre muestra los mensajes de ambos WIO; esto solo elige por cuál se envía">
@@ -1263,7 +1280,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.5.0';
+const PANEL_VERSION='1.6.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3014,7 +3031,7 @@ function contactosChat(){
   const vistos=new Map();
   for(const i of [1,2]){
     const d=loadNeighbors(i);
-    for(const c of ((d&&d.contacts)||[])) if(c.pubkey&&c.name&&!vistos.has(c.pubkey)) vistos.set(c.pubkey,c);
+    for(const c of ((d&&d.contacts)||[])) if(c.pubkey&&c.name&&c.advType!==2&&!vistos.has(c.pubkey)) vistos.set(c.pubkey,c);
   }
   return [...vistos.values()].sort((a,b)=>a.name.localeCompare(b.name));
 }
@@ -3040,14 +3057,35 @@ $('#chatBox').addEventListener('click',e=>{
   const nombre=b.querySelector('.who b')?.textContent||'';
   const c=contactosChat().find(x=>x.name===nombre||x.pubkey.startsWith(nombre));
   if(!c){ chatAdd('sys',null,'No tengo a '+nombre+' en los contactos: escanea vecinos en el Mapa.','',false); return; }
-  rellenarDestinos(); $('#chatChan').value='p:'+c.pubkey.slice(0,12);
-  $('#chatInput').placeholder='Responder en privado a '+c.name+'…'; $('#chatInput').focus();
+  elegirDestino(c);
 });
 $('#chatChan').addEventListener('change',()=>{
   const o=$('#chatChan').selectedOptions[0];
   $('#chatInput').placeholder=$('#chatChan').value.startsWith('p:')?'Privado a '+o.textContent+'…':'Escribe un mensaje...';
 });
-rellenarDestinos();
+function elegirDestino(c){
+  rellenarDestinos(); $('#chatChan').value='p:'+c.pubkey.slice(0,12);
+  $('#chatInput').placeholder='Privado a '+c.name+'…'; $('#chatInput').focus();
+  pintarContactos();
+}
+function pintarContactos(){
+  const q=$('#ccBuscar').value.trim().toLowerCase();
+  const dest=$('#chatChan').value;
+  const cs=contactosChat().filter(c=>!q||c.name.toLowerCase().includes(q));
+  const saltos=c=>c.hops==null?'sin ruta fija':c.hops===0?'directo':c.hops+(c.hops===1?' salto':' saltos');
+  $('#ccLista').innerHTML=cs.length?cs.map(c=>
+    '<button class="ccItem'+(dest==='p:'+c.pubkey.slice(0,12)?' on':'')+'" data-pk="'+esc(c.pubkey)+'">'+
+    '<b>'+esc(c.name)+'</b><span>'+(c.advType===3?'sala · ':'')+saltos(c)+'</span></button>').join('')
+    :'<div class="ccVacio">'+(q?'Nadie con ese nombre':'Sin contactos todavía: escanea vecinos en el Mapa')+'</div>';
+}
+$('#ccLista').addEventListener('click',e=>{
+  const b=e.target.closest('.ccItem'); if(!b) return;
+  const c=contactosChat().find(x=>x.pubkey===b.dataset.pk); if(c) elegirDestino(c);
+});
+$('#ccBuscar').addEventListener('input',pintarContactos);
+$('#chatChan').addEventListener('change',pintarContactos);
+document.querySelector('[data-tab="chat"]').addEventListener('click',()=>{ rellenarDestinos(); pintarContactos(); });
+rellenarDestinos(); pintarContactos();
 
 $('#chatSend').onclick=async()=>{
   const n=activeChatNode();
