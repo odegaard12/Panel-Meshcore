@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.12.0] - 2026-10-17
+
+### Añadido
+- Portada del proyecto en `docs/index.html` (lista para GitHub Pages): qué
+  es, cómo llega la señal del navegador al mástil, qué hace, las pestañas con
+  capturas reales, la instalación y las preguntas frecuentes. Incluye la
+  comprobación de duty cycle legal (ERC 70-03) con la misma cuenta que el
+  panel. Hecha con taste-skill; fotos de Wikimedia Commons con su crédito.
+
 ## [1.11.1] - 2026-10-17
 
 ### Corregido
