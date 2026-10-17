@@ -655,7 +655,20 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 .wrap{padding-top:28px}
 #tab-stats.on,#tab-red.on{padding-top:64px}
 #tab-equipos.on,#tab-chat.on{height:100dvh!important}
-#tab-equipos .devWrap,#tab-equipos .equiposWrap .grid,#tab-chat .chatcard{top:72px!important}
+#tab-equipos .devWrap,#tab-equipos .equiposWrap .grid{top:12px!important}
+#tab-chat .chatcard{top:72px!important}
+#tab-equipos>#map,#tab-chat>#map{position:absolute!important;inset:0!important;height:auto!important;z-index:0}
+#tab-equipos>#map .leaflet-top.leaflet-left{left:452px;top:12px}
+#tab-equipos>#map .leaflet-top.leaflet-right{top:auto;bottom:44px}
+#tab-equipos>#map .leaflet-bottom.leaflet-left{left:452px}
+#tab-chat>#map .leaflet-top.leaflet-left{top:12px;left:0}
+#tab-chat>#map .leaflet-bottom.leaflet-left{left:0}
+#tab-equipos #cfgAviso{top:68px!important;bottom:auto!important;left:50%!important;transform:translateX(-50%);max-width:520px}
+#tab-chat>#map .leaflet-top.leaflet-right{display:none}
+#tab-chat .msg.in{cursor:pointer}
+.popChat .leaflet-popup-content{font-size:13px}
+#devpanel-mapa{padding-top:4px}
+#devpanel-mapa .mapQuick{display:flex;gap:8px}
 @media (max-width:860px){
   header{top:8px!important;padding:3px!important}
   header h1,header nav.top{display:none!important}
@@ -663,6 +676,10 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
   #tab-equipos.on,#tab-chat.on{height:100dvh!important}
   #tab-equipos #cfgAviso{top:56px!important}
   #tab-equipos .devWrap,#tab-chat .chatcard{top:auto!important}
+  #tab-equipos>#map .leaflet-top.leaflet-left,#tab-chat>#map .leaflet-top.leaflet-left{display:none}
+  #tab-equipos #cfgAviso{top:56px!important;left:12px!important;right:12px;transform:none;max-width:none}
+  #tab-equipos>#map .leaflet-bottom.leaflet-left{display:none}
+  #tab-equipos>#map .leaflet-top.leaflet-right{top:52px;bottom:auto}
 }
 /* Barras laterales flotantes (Mapa y Red y notas), como los paneles de Equipos */
 @media (min-width:861px){
@@ -1403,7 +1420,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.15.0';
+const PANEL_VERSION='1.16.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1460,14 +1477,16 @@ const wNodes={1:null,2:null};
 // ============ Pestañas ============
 let unreadChat=0;
 function showTab(name){
+  if(name==='mapa'){ name='equipos'; setTimeout(()=>document.querySelector('.devTab[data-dev="mapa"]')?.click(),0); }
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
   document.querySelectorAll('.tabview').forEach(v=>v.classList.toggle('on',v.id==='tab-'+name));
   if(name==='chat'){ unreadChat=0; updateChatBadge(); fitChatCardToViewport(); }
   if(name==='mapa') fitMapWrapToViewport();
-  // Un solo mapa de fondo: se mueve a la pestaña que lo usa (Equipos o Chat).
+  // Un solo mapa (el completo, con sus capas y herramientas): vive en el
+  // Panel y se lleva al Chat cuando se abre.
   if(name==='equipos'||name==='chat'){
-    const destino=document.getElementById('tab-'+name), m=$('#eqMap'), ley=$('.eqLeyenda');
-    if(m && m.parentNode!==destino){ destino.prepend(ley); destino.prepend(m); }
+    const destino=document.getElementById('tab-'+name), m=$('#map');
+    if(m && m.parentNode!==destino) destino.prepend(m);
     setTimeout(pintarEqMap,30);
   }
   if(name==='stats'){ renderStats(); pintarHistoricoRak(); }
@@ -3256,58 +3275,70 @@ $('#ccLista').addEventListener('click',e=>{
 });
 $('#ccBuscar').addEventListener('input',pintarContactos);
 
-// Equipos sobre el mapa: un segundo mapa, solo de lectura, con lo esencial
-// (repetidor, WIO, vecinos coloreados por saltos). El mapa completo, con sus
-// herramientas, sigue en la pestaña Mapa.
-let eqMap=null;
+// Panel y mapa en uno (1.16): el mapa completo vive en el Panel, sus capas y
+// herramientas pasan a la pestaña «Mapa» del panel izquierdo y se quita la
+// pestaña Mapa de arriba. Se mueven los mismos nodos: sus manejadores siguen.
+(function unirMapaAlPanel(){
+  const panel=document.createElement('div'); panel.className='devPanel'; panel.id='devpanel-mapa';
+  $('#devpanel-w2').after(panel);
+  const sb=$('.mapSidebar');
+  if(sb){ while(sb.firstChild) panel.appendChild(sb.firstChild); sb.remove(); }
+  $('#mapHint')?.remove();
+  $('#btn-map-fullscreen')?.remove();
+  const btn=document.createElement('button'); btn.className='devTab'; btn.dataset.dev='mapa';
+  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Mapa</span><span class="devTabSub">capas y herramientas</span></span>';
+  $('.devSidebar').appendChild(btn);
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.devTab').forEach(x=>x.classList.toggle('on',x===btn));
+    document.querySelectorAll('.devPanel').forEach(x=>x.classList.toggle('on',x===panel));
+    try{ localStorage.setItem('meshcore-devtab','mapa'); }catch(e){}
+  });
+  try{ if(localStorage.getItem('meshcore-devtab')==='mapa') btn.click(); }catch(e){}
+  $('#tab-equipos').prepend($('#map'));
+  $('#eqMap')?.remove(); $('.eqLeyenda')?.remove();
+  document.querySelector('nav.tabs button[data-tab="mapa"]')?.remove();
+})();
+
+let avisoRak=null;
 function pintarEqMap(){
-  if(!$('#eqMap') || !$('#eqMap').offsetParent) return;  // pestaña sin mapa a la vista
-  if(!eqMap){
-    eqMap=L.map('eqMap',{zoomControl:false});
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-      {attribution:'&copy; Esri, HERE, Garmin, &copy; OpenStreetMap',maxZoom:16}).addTo(eqMap);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-      {maxZoom:16,pane:'overlayPane'}).addTo(eqMap);
-    eqMap._capa=L.layerGroup().addTo(eqMap);
-  }
-  const g=eqMap._capa; g.clearLayers();
+  if(typeof map==='undefined' || !$('#map').offsetParent) return;
+  map.invalidateSize();
   const est=window.rakEstado, sinRak=!est||est.vieja;
-  const pts=[REPEATER_POS];  // lo que entra en el encuadre inicial: tu zona, no toda la red
-  L.circle(REPEATER_POS,{radius:4000,color:'#3fd67a',weight:1,opacity:.45,fillOpacity:.04,dashArray:'4,6',interactive:false}).addTo(g);
-  const vistos=new Set();
-  for(const i of [1,2]){
-    const d=loadNeighbors(i);
-    for(const c of ((d&&d.contacts)||[])){
-      if((!c.lat&&!c.lon) || vistos.has(c.pubkey)) continue;
-      vistos.add(c.pubkey);
-      if(distKm(REPEATER_POS,[c.lat,c.lon])>150) continue;  // la red ibérica entera no cabe
-      const col=c.hops==null?'#5c6b7d':c.hops===0?'#3fd67a':c.hops<=2?'#a78bfa':'#f0b429';
-      L.polyline([REPEATER_POS,[c.lat,c.lon]],sinRak?{color:'#5c6b7d',weight:1,opacity:.35,dashArray:'3,6',interactive:false}:{color:col,weight:1,opacity:.35,interactive:false}).addTo(g);
-      L.marker([c.lat,c.lon],{icon:neighborIcon(c)}).addTo(g).bindTooltip(esc(c.name||'(sin nombre)'),{direction:'right',className:'eqTag',offset:[12,0]});
-      if(distKm(REPEATER_POS,[c.lat,c.lon])<=30) pts.push([c.lat,c.lon]);
-    }
+  if(avisoRak){ map.removeLayer(avisoRak); avisoRak=null; }
+  if(sinRak){
+    avisoRak=L.marker(REPEATER_POS,{icon:mapPin('📡',38,'#2a2210','#f2b23a'),zIndexOffset:2000,interactive:false}).addTo(map)
+      .bindTooltip(esc(REP_NOMBRE)+' · sin señal del repetidor'+(est&&est.at?' · '+esc(humanAgo(est.at*1000)):''),
+        {permanent:true,direction:'right',className:'eqTag eqAviso',offset:[18,0]});
   }
-  for(const i of [1,2]){
-    const sp=loadSavedPos(i)||(NODE_SITES&&NODE_SITES[i]);
-    if(!sp||!sp.lat) continue;
-    const n=wNodes[i], vivo=!!(n&&n.device&&n.device.gatt.connected);
-    L.marker([sp.lat,sp.lon],{icon:mapPin('📶',30,vivo?'#0d3a24':'#141b26',vivo?'#3fd67a':'#4a5666')}).addTo(g)
-      .bindTooltip('WIO'+i,{permanent:true,direction:'right',className:'eqTag',offset:[14,0]});
-    pts.push([sp.lat,sp.lon]);
-  }
-  L.marker(REPEATER_POS,{icon:sinRak?mapPin('📡',38,'#2a2210','#f2b23a'):mapPin('📡',38,'#0d3a24','#3fd67a'),zIndexOffset:1000}).addTo(g)
-    .bindTooltip(sinRak?esc(REP_NOMBRE)+' · sin señal del repetidor'+(est&&est.at?' · '+esc(humanAgo(est.at*1000)):''):esc(REP_NOMBRE),
-      {permanent:true,direction:'right',className:sinRak?'eqTag eqAviso':'eqTag',offset:[18,0]});
-  eqMap.invalidateSize();
-  if(!eqMap._centrado){
+  if(!map._centradoPanel){
+    // Encuadre inicial: tu zona (repetidor, WIO, vecinos a menos de 30 km).
+    const pts=[REPEATER_POS];
+    if(w1Marker) pts.push(w1Marker.getLatLng());
+    if(w2Marker) pts.push(w2Marker.getLatLng());
+    layerNeighbors.eachLayer(m=>{ if(m.getLatLng && distKm(REPEATER_POS,[m.getLatLng().lat,m.getLatLng().lng])<=30) pts.push(m.getLatLng()); });
     const ancho=window.innerWidth>860;
-    eqMap.fitBounds(L.latLngBounds(pts).pad(.2),ancho?{paddingTopLeft:[450,40],paddingBottomRight:[320,60],maxZoom:13}:{paddingBottomRight:[0,Math.round(window.innerHeight*.45)],maxZoom:13});
-    eqMap._centrado=true;
+    map.fitBounds(L.latLngBounds(pts).pad(.2),ancho?{paddingTopLeft:[450,40],paddingBottomRight:[360,60],maxZoom:13}:{paddingBottomRight:[0,Math.round(window.innerHeight*.45)],maxZoom:13});
+    map._centradoPanel=true;
   }
 }
-window.addEventListener('resize',()=>{ if(eqMap) eqMap.invalidateSize(); });
-window.addEventListener('load',()=>setTimeout(pintarEqMap,200));
-setInterval(pintarEqMap,60000);  // vecinos y estado de los WIO cambian poco
+window.addEventListener('resize',()=>{ if(typeof map!=='undefined') map.invalidateSize(); });
+window.addEventListener('load',()=>setTimeout(pintarEqMap,300));
+setInterval(pintarEqMap,60000);
+
+// Chat: pulsar un mensaje sitúa en el mapa al nodo que lo envió.
+$('#chatBox').addEventListener('click',e=>{
+  const b=e.target.closest('.msg.in'); if(!b) return;
+  const nombre=(b.querySelector('.who b')?.textContent||'').trim(); if(!nombre) return;
+  let c=null;
+  for(const i of [1,2]){ const d=loadNeighbors(i); c=c||((d&&d.contacts)||[]).find(x=>x.name===nombre&&(x.lat||x.lon)); }
+  if(!c){ chatAdd('sys',null,nombre+' no anuncia su posición: no se puede situar en el mapa.','',false); return; }
+  const z=Math.max(map.getZoom(),12), ancho=window.innerWidth>860;
+  const off=ancho?[Math.min(720,window.innerWidth-32)/2,0]:[0,Math.round(window.innerHeight*.33)];
+  map.flyTo(map.unproject(map.project([c.lat,c.lon],z).add(off),z),z,{duration:.8});
+  const saltos=c.hops==null?'sin ruta fija':c.hops===0?'directo':c.hops+(c.hops===1?' salto':' saltos');
+  L.popup({className:'popChat',autoPan:false}).setLatLng([c.lat,c.lon])
+    .setContent('<b>'+esc(nombre)+'</b><br>'+saltos+' · '+distKm(REPEATER_POS,[c.lat,c.lon]).toFixed(1)+' km de tu repetidor').openOn(map);
+});
 $('#chatChan').addEventListener('change',()=>{
   const v=$('#chatChan').value;
   if(v.startsWith('p:')){ const c=contactosChat().find(x=>x.pubkey.startsWith(v.slice(2))); if(c) elegirDestino(c); }

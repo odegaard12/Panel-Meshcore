@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.16.0] - 2026-10-18
+
+### Cambiado
+- Panel y mapa en uno: el mapa completo (capas, líneas de enlace, traceroute)
+  es el fondo del Panel, y sus capas y herramientas (vecinos por radio,
+  análisis de enlace, alcance, herramientas) están en la pestaña «Mapa» del
+  panel izquierdo. Se quita la pestaña Mapa de arriba.
+- Los paneles laterales suben a la altura de la pastilla superior; en el
+  teléfono el panel es una hoja inferior y se quitan controles que estorban.
+- Chat: pulsar un mensaje lleva el mapa al nodo que lo envió (saltos y
+  distancia a tu repetidor); si no anuncia posición, el chat lo dice.
+
 ## [1.15.0] - 2026-10-18
 
 ### Cambiado
