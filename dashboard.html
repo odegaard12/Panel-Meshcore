@@ -613,6 +613,9 @@ pre.loglet{margin:10px 0 0;font-size:12.5px}
 .cardsub,.devTabSub,.devPanelSub,.metric .k,.kpi .kpiS,.kpi .kpiK,.statHint,.msg .meta,.ccItem span,.ccSec,.chatnote,#statusBar .k,.rakSparkHead,.fieldlabel,.sidebarLabel,.statsNote,.layer-toggle,.mapGroup>summary{font-size:13px!important}
 .msg .chip{font-size:11px}
 p,.statsNote{max-width:75ch}
+.device-status{font-weight:500;font-size:13px;color:var(--dim);display:inline-block;max-width:60ch;vertical-align:middle;line-height:1.35}
+.device-status.mal{color:var(--warn)}
+@media (max-width:860px){#statusBar{gap:2px!important;background:var(--bg)!important} #statusBar>div:not(#keyReminder){background:var(--card);border:none!important}}
 .sub,#cfgAviso,.pctBat,dt,dd,pre.loglet,button,.quick-rak-cmd,footer,#panelVersion,.linklike{font-size:13px!important}
 @media (max-width:860px){nav.tabs{border-top:none!important;background:var(--bg)} .devSidebar{border-bottom:none!important} #statusBar>div:not(#keyReminder){border-bottom:2px solid var(--bg)!important;border-right:none!important}}
 @media (max-width:860px){#chatContacts{display:none}}
@@ -1308,7 +1311,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.10.0';
+const PANEL_VERSION='1.11.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2255,9 +2258,9 @@ function setWConnectedUI(idx,connected){
   btn.textContent = connected ? 'Desconectar' : 'Conectar';
   btn.classList.toggle('p',!connected);
 }
-function setWDeviceStatus(idx,text){
+function setWDeviceStatus(idx,text,ok){
   const el=$('#w'+idx+'-device-status');
-  if(el) el.textContent=text;
+  if(el){ el.textContent=text; el.classList.toggle('mal', ok===false); }
 }
 
 

@@ -196,13 +196,16 @@
       const s=await api('/status');
       gatewayOnline=true;
       for(const idx of [1,2]){
-        const st=s.wios[idx-1];
+        const st=(s.wios||[]).find(w=>w&&w.idx===idx);  // con un solo companion ya no van en orden
         const n=putNode(idx,st);
         // El badge #w{idx}-device-status es del selector Bluetooth del navegador
         // (heredado de antes del puente). Con el puente, la unica fuente de
         // verdad de si el WIO esta enlazado es este /status: lo pisamos aqui
         // para que no se quede colgado en "No detectado".
-        if(typeof setWDeviceStatus==='function') setWDeviceStatus(idx, st && st.connected ? 'Puente activo' : 'Sin enlace (puente)');
+        if(typeof setWDeviceStatus==='function') {
+          const motivo=st&&(st.last_failure||st.error);
+          setWDeviceStatus(idx, st&&st.connected ? 'Conectado por el PC' : (!st ? 'No configurado en el relay' : 'Sin conectar'+(motivo?': '+motivo:'')), !!(st&&st.connected));
+        }
         if(st && st.connected && !n._manualOff && (!n.info || !n.info.name || !nodes[idx]._hydrated)){
           try{
             const info=await n.appStart();

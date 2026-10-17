@@ -3,6 +3,21 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.11.0] - 2026-10-17
+
+### Cambiado
+- Equipos: junto a «Conectar» se ve el motivo real que da el relay
+  («Sin conectar: no empareja con el PIN…», «no responde…»), en ámbar si hay
+  problema, en vez de «Sin enlace (puente)». Barra de estado sin
+  separadores desiguales en el móvil.
+
+### Corregido
+- Relay: si el emparejamiento con PIN falla, el motivo lo dice (quitar el
+  WIO del Bluetooth de Windows y volver a emparejarlo) en vez de «no
+  responde: ¿apagado o sin batería?».
+- El panel busca cada WIO por su número en el estado del relay: con un solo
+  companion configurado ya no se cruzaban.
+
 ## [1.10.0] - 2026-10-17
 
 ### Cambiado
