@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.9.1] - 2026-10-17
+
+### Corregido
+- Si la medida del repetidor falla (p. ej. justo tras arrancar todavía no
+  hay WIO conectado), se reintenta cada minuto en vez de esperar 15.
+
 ## [1.9.0] - 2026-10-17
 
 ### Cambiado

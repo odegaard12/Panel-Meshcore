@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.9.0'
+PANEL_VERSION = '1.9.1'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -484,7 +484,8 @@ class Monitor:
                 await self.sample_once()
             with contextlib.suppress(Exception):
                 await avisos.revisar(self.read(1))
-            await asyncio.sleep(self.SAMPLE_EVERY)
+            # Si falló (p. ej. tras arrancar aún no hay WIO), reintenta al minuto.
+            await asyncio.sleep(min(60.0, self.SAMPLE_EVERY) if self.last_error else self.SAMPLE_EVERY)
 
 
 def problemas(ultima: dict | None, ahora: float, bat_min_mv: int, sin_datos_s: float) -> dict:
