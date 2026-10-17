@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.1.3] - 2026-10-17
+
+### Cambiado
+- Mapa: los marcadores son puntos lisos del color de cada tipo, sin emoji;
+  la leyenda igual. Tu repetidor se ve algo más grande.
+
 ## [1.1.2] - 2026-10-17
 
 ### Cambiado
