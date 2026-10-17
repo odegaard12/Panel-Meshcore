@@ -1261,7 +1261,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.1.3';
+const PANEL_VERSION='1.1.4';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1423,9 +1423,9 @@ const leyenda=L.control({position:'bottomleft'});
 leyenda.onAdd=()=>{
   const d=L.DomUtil.create('div','mapLegend');
   d.innerHTML='<details'+(window.innerWidth<700?'':' open')+'><summary>Leyenda</summary>'+
-    '<div><span class="lg" style="border-color:#0a0d12;background:#3fd67a"></span>Tu repetidor</div>'+
-    '<div><span class="lg" style="border-color:#0a0d12;background:#4a5666"></span>Tus WIO</div>'+
-    '<div><span class="lg" style="border-color:#0a0d12;background:#5eb3f5"></span>Infraestructura ajena</div>'+
+    '<div><span class="lg" style="border-color:#3fd67a;background:#0d3a24">📡</span>Tu repetidor</div>'+
+    '<div><span class="lg" style="border-color:#4a5666">📶</span>Tus WIO</div>'+
+    '<div><span class="lg" style="border-color:#5eb3f5;background:#0d1a26">🗼</span>Infraestructura ajena</div>'+
     '<div class="lgSep">Vecinos (color = saltos)</div>'+
     '<div><span class="lgDot" style="background:#3fd67a"></span>directo</div>'+
     '<div><span class="lgDot" style="background:#a78bfa"></span>1–2 saltos</div>'+
@@ -1446,15 +1446,15 @@ const layerFresnel=L.layerGroup().addTo(map);
 // Un emoji suelto sobre el tile claro de OSM se ve fatal y sin ancla queda
 // descolocado del punto real. Fondo circular + borde + sombra + centrado.
 function mapPin(emoji,size,bg,border){
-  // Punto liso del color del tipo; el emoji ya no se pinta.
-  const s=Math.round((size||30)*0.5);
+  const s=size||30;
   return L.divIcon({
-    html:'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+(border||'#5f6b7a')+
-      ';border:2px solid #0a0d12"></div>',
+    html:'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+(bg||'#141b26')+
+      ';border:2px solid '+(border||'#232e3d')+';box-shadow:0 1px 4px rgba(0,0,0,.5);'+
+      'display:flex;align-items:center;justify-content:center;font-size:'+Math.round(s*0.55)+'px">'+emoji+'</div>',
     className:'',iconSize:[s,s],iconAnchor:[s/2,s/2],popupAnchor:[0,-s/2]
   });
 }
-const rakIcon=mapPin('📡',44,'#0d3a24','#3fd67a');
+const rakIcon=mapPin('📡',32,'#0d3a24','#3fd67a');
 L.marker(REPEATER_POS,{icon:rakIcon}).addTo(layerRak).bindPopup('<b>'+esc(REP_NOMBRE)+'</b><br>Tu repetidor');
 // Cobertura orientativa, no una promesa: SF7/BW62.5 en llano da unos 3-5 km,
 // con línea de vista despejada (como a un monte cercano) puede llegar mucho más lejos.
