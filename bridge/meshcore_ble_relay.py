@@ -254,8 +254,10 @@ class Wio:
                     await asyncio.wait_for(
                         pair_with_pin(device.address, self.label, forzar=self.rehacer_vinculo),
                         PAIR_TIMEOUT)
+                    self.pair_fallido = False
                 except Exception as exc:
-                    log.warning('%s: emparejamiento con PIN fallido: %s', self.label, exc)
+                    self.pair_fallido = True
+                    log.warning('%s: emparejamiento con PIN fallido: %s', self.label, exc or 'sin respuesta')
                 self.rehacer_vinculo = False
             client = BleakClient(device, timeout=30, pair=False)
             await client.connect()
@@ -369,7 +371,10 @@ async def keep(wio: Wio, stop: asyncio.Event) -> None:
             motivo = str(exc) or type(exc).__name__
             # Por direccion un nodo apagado no da "no encontrado": da un timeout
             # sin texto. Se traduce a algo que el panel pueda ensenar.
-            if isinstance(exc, (asyncio.TimeoutError, TimeoutError)) or 'Timeout' in motivo:
+            if getattr(wio, 'pair_fallido', False):
+                # Visto el 17/10: el PIN no se acepta y luego todo es timeout.
+                motivo = 'no empareja con el PIN: quítalo del Bluetooth de Windows y vuelve a emparejarlo'
+            elif isinstance(exc, (asyncio.TimeoutError, TimeoutError)) or 'Timeout' in motivo:
                 motivo = 'no responde: ¿apagado o sin batería?'
             elif 'not powered on' in motivo or 'POWERED_OFF' in motivo:
                 motivo = 'el Bluetooth del PC está apagado'

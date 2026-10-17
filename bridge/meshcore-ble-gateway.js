@@ -196,13 +196,16 @@
       const s=await api('/status');
       gatewayOnline=true;
       for(const idx of [1,2]){
-        const st=s.wios[idx-1];
+        const st=(s.wios||[]).find(w=>w&&w.idx===idx);  // con un solo companion ya no van en orden
         const n=putNode(idx,st);
         // El badge #w{idx}-device-status es del selector Bluetooth del navegador
         // (heredado de antes del puente). Con el puente, la unica fuente de
         // verdad de si el WIO esta enlazado es este /status: lo pisamos aqui
         // para que no se quede colgado en "No detectado".
-        if(typeof setWDeviceStatus==='function') setWDeviceStatus(idx, st && st.connected ? 'Puente activo' : 'Sin enlace (puente)');
+        if(typeof setWDeviceStatus==='function') {
+          const motivo=st&&(st.last_failure||st.error);
+          setWDeviceStatus(idx, st&&st.connected ? 'Conectado por el PC' : (!st ? 'No configurado en el relay' : 'Sin conectar'+(motivo?': '+motivo:'')), !!(st&&st.connected));
+        }
         if(st && st.connected && !n._manualOff && (!n.info || !n.info.name || !nodes[idx]._hydrated)){
           try{
             const info=await n.appStart();
@@ -223,12 +226,22 @@
               $('#w'+idx+'-batt').textContent=pct(mv)+'% ('+(mv/1000).toFixed(2)+'V)';
               if(typeof setBattBar==='function') setBattBar(idx,pct(mv));
             }
+            // Antes solo se guardaba al pulsar «Conectar»: al recargar volvía el
+            // «último estado conocido (hace 29 días)» aunque el WIO estuviera vivo.
+            if(typeof saveNodeState==='function') saveNodeState(idx,{name:info.name,freq:info.freq,bw:info.bw,sf:info.sf,cr:info.cr,tx:info.tx_power,batt:pct(mv),mv});
+            document.querySelector('#devpanel-w'+idx)?.classList.remove('stale');
             // El conectar "a mano" (connectWisblock) siempre enganchaba esto;
             // el auto-hidratado de aqui nunca lo hacia, asi que el chat se
             // quedaba mudo en cuanto el enlace pasaba a depender del puente.
             n.onMessagesWaiting=()=>pullMessages(n);
             if(typeof pullMessages==='function') await pullMessages(n);
-          }catch(e){ if(typeof wlog==='function') wlog(idx,'Puente conectado, pero lectura MeshCore falló: '+e.message); }
+          }catch(e){
+            // Enlazado por Bluetooth no es lo mismo que contestar: sin esto se
+            // veía «Conectado por el PC» en verde con los datos de hace semanas.
+            if(typeof setWDeviceStatus==='function') setWDeviceStatus(idx,'Enlazado, pero no contesta (reintentando)',false);
+            const logEl=$('#w'+idx+'-log');
+            if(logEl) logEl.textContent='El PC ve el WIO por Bluetooth pero no contesta a los comandos ('+e.message+'). Se reintenta solo cada pocos segundos; si sigue así, apágalo y enciéndelo.';
+          }
         }
         // Un mensaje nuevo llega al relay de Windows y sube push_seq en el
         // gateway, pero eso no empuja nada al navegador: solo lo sabemos al

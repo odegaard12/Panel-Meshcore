@@ -3,6 +3,57 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.12.1] - 2026-10-17
+
+### Quitado
+- La portada de `docs/` (1.12.0): el proyecto se presenta en el propio
+  repositorio. Queda en el historial de git.
+
+## [1.12.0] - 2026-10-17
+
+### Añadido
+- Portada del proyecto en `docs/index.html` (lista para GitHub Pages): qué
+  es, cómo llega la señal del navegador al mástil, qué hace, las pestañas con
+  capturas reales, la instalación y las preguntas frecuentes. Incluye la
+  comprobación de duty cycle legal (ERC 70-03) con la misma cuenta que el
+  panel. Hecha con taste-skill; fotos de Wikimedia Commons con su crédito.
+
+## [1.11.1] - 2026-10-17
+
+### Corregido
+- Un WIO enlazado por Bluetooth que no contesta a los comandos ya no sale
+  en verde con «Conectado por el PC»: el punto se pone ámbar, el estado dice
+  «Enlazado, pero no contesta (reintentando)» y el registro explica qué hacer.
+- La lectura automática de cada WIO se guarda: al recargar ya no vuelve el
+  «último estado conocido (hace 29 días)» si el WIO está vivo.
+- La barra de estado busca cada WIO por su número (un solo companion).
+
+## [1.11.0] - 2026-10-17
+
+### Cambiado
+- Equipos: junto a «Conectar» se ve el motivo real que da el relay
+  («Sin conectar: no empareja con el PIN…», «no responde…»), en ámbar si hay
+  problema, en vez de «Sin enlace (puente)». Barra de estado sin
+  separadores desiguales en el móvil.
+
+### Corregido
+- Relay: si el emparejamiento con PIN falla, el motivo lo dice (quitar el
+  WIO del Bluetooth de Windows y volver a emparejarlo) en vez de «no
+  responde: ¿apagado o sin batería?».
+- El panel busca cada WIO por su número en el estado del relay: con un solo
+  companion configurado ya no se cruzaban.
+
+## [1.10.0] - 2026-10-17
+
+### Cambiado
+- Revisión con el linter y el inspector de taste-skill, aplicando lo que
+  vale para un panel: sin sombras en reposo ni línea bajo la cabecera,
+  monoespaciada solo en las salidas reales (ahora `<pre>`), ningún texto por
+  debajo de 13 px, más contraste en los textos secundarios, sin emoji en los
+  avisos («Bien:» / «Ojo:» en la comprobación legal) y 100dvh en móvil.
+- Fuera el recordatorio de exportar la clave del WIO: está desactivado por
+  defecto desde 1.4.1.
+
 ## [1.9.2] - 2026-10-17
 
 ### Cambiado
