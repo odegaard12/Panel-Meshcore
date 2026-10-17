@@ -642,6 +642,30 @@ p,.statsNote{max-width:75ch}
 .eqTag::before{display:none}
 #eqMap .leaflet-control-attribution{background:rgba(13,17,22,.8);color:#6d7a88}
 #eqMap .leaflet-control-attribution a{color:#8592a0}
+.red-nav::after{display:none!important}
+.eqAviso{background:#2a2210!important;color:#f2b23a!important;font-weight:600}
+/* Cabecera del diseño nuevo: pestañas en pastillas, la activa resaltada */
+header{background:var(--bg2)!important;border-bottom:none!important}
+nav.tabs{background:var(--raise)!important;border-radius:999px!important;padding:4px!important;margin:0 auto!important;align-self:center!important;gap:2px!important}
+nav.tabs button{height:36px!important;line-height:36px!important;padding:0 16px!important;border-radius:999px!important;color:var(--dim)!important}
+nav.tabs button.on{background:var(--fg)!important;color:var(--bg)!important}
+nav.tabs button.on::after{display:none!important}
+nav.tabs button:hover:not(.on){background:var(--hover)!important;color:var(--fg)!important}
+nav.tabs button .badge2{margin-left:6px}
+/* Chat sobre el mapa: el mapa de fondo y la conversación flotando a la derecha */
+#tab-chat.on{position:relative;margin:-28px calc(50% - 50vw) 0;width:100vw;overflow:hidden;padding:0;height:calc(100dvh - 57px)}
+#tab-chat .grid{display:block;margin:0}
+#tab-chat .chatcard{position:absolute!important;top:16px;right:16px;bottom:16px;left:auto;width:min(720px,calc(100% - 32px))!important;height:auto!important;max-width:none!important;margin:0!important;z-index:500;background:rgba(13,17,22,.97)!important;border-radius:16px!important;padding:16px!important}
+#tab-chat .chatcard.chat-full{left:16px;width:auto!important}
+#tab-chat #chatBox{padding:8px 4px!important}
+#tab-chat .chatComposer{margin:8px 0 0!important}
+#tab-chat .eqLeyenda{right:auto;left:16px}
+@media (max-width:860px){
+  #tab-chat.on{height:calc(100dvh - 96px)}
+  #tab-chat .chatcard{top:auto;left:0;right:0;bottom:0;width:auto!important;height:78%!important;background:var(--panel,#0d1116)!important;border-radius:20px 20px 0 0!important}
+  nav.tabs{border-radius:999px!important;margin:4px 0 8px!important;width:auto!important}
+  nav.tabs button{height:34px!important;padding:0 12px!important;flex:0 0 auto!important}
+}
 @media (max-width:860px){
   #tab-equipos.on{height:calc(100dvh - 96px)}
   #tab-equipos .equiposWrap .grid{display:none}
@@ -1346,7 +1370,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.13.0';
+const PANEL_VERSION='1.14.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1407,7 +1431,12 @@ function showTab(name){
   document.querySelectorAll('.tabview').forEach(v=>v.classList.toggle('on',v.id==='tab-'+name));
   if(name==='chat'){ unreadChat=0; updateChatBadge(); fitChatCardToViewport(); }
   if(name==='mapa') fitMapWrapToViewport();
-  if(name==='equipos') setTimeout(pintarEqMap,30);
+  // Un solo mapa de fondo: se mueve a la pestaña que lo usa (Equipos o Chat).
+  if(name==='equipos'||name==='chat'){
+    const destino=document.getElementById('tab-'+name), m=$('#eqMap'), ley=$('.eqLeyenda');
+    if(m && m.parentNode!==destino){ destino.prepend(ley); destino.prepend(m); }
+    setTimeout(pintarEqMap,30);
+  }
   if(name==='stats'){ renderStats(); pintarHistoricoRak(); }
   try{ history.replaceState(null,'',name==='equipos'?location.pathname+location.search:'#'+name); }catch(e){}
 }
@@ -3199,7 +3228,7 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
 // herramientas, sigue en la pestaña Mapa.
 let eqMap=null;
 function pintarEqMap(){
-  if(!$('#eqMap') || !$('#tab-equipos').classList.contains('on')) return;
+  if(!$('#eqMap') || !$('#eqMap').offsetParent) return;  // pestaña sin mapa a la vista
   if(!eqMap){
     eqMap=L.map('eqMap',{zoomControl:false});
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
@@ -3209,6 +3238,7 @@ function pintarEqMap(){
     eqMap._capa=L.layerGroup().addTo(eqMap);
   }
   const g=eqMap._capa; g.clearLayers();
+  const est=window.rakEstado, sinRak=!est||est.vieja;
   const pts=[REPEATER_POS];  // lo que entra en el encuadre inicial: tu zona, no toda la red
   L.circle(REPEATER_POS,{radius:4000,color:'#3fd67a',weight:1,opacity:.45,fillOpacity:.04,dashArray:'4,6',interactive:false}).addTo(g);
   const vistos=new Set();
@@ -3219,7 +3249,7 @@ function pintarEqMap(){
       vistos.add(c.pubkey);
       if(distKm(REPEATER_POS,[c.lat,c.lon])>150) continue;  // la red ibérica entera no cabe
       const col=c.hops==null?'#5c6b7d':c.hops===0?'#3fd67a':c.hops<=2?'#a78bfa':'#f0b429';
-      L.polyline([REPEATER_POS,[c.lat,c.lon]],{color:col,weight:1,opacity:.35,interactive:false}).addTo(g);
+      L.polyline([REPEATER_POS,[c.lat,c.lon]],sinRak?{color:'#5c6b7d',weight:1,opacity:.35,dashArray:'3,6',interactive:false}:{color:col,weight:1,opacity:.35,interactive:false}).addTo(g);
       L.marker([c.lat,c.lon],{icon:neighborIcon(c)}).addTo(g).bindTooltip(esc(c.name||'(sin nombre)'),{direction:'right',className:'eqTag',offset:[12,0]});
       if(distKm(REPEATER_POS,[c.lat,c.lon])<=30) pts.push([c.lat,c.lon]);
     }
@@ -3232,8 +3262,9 @@ function pintarEqMap(){
       .bindTooltip('WIO'+i,{permanent:true,direction:'right',className:'eqTag',offset:[14,0]});
     pts.push([sp.lat,sp.lon]);
   }
-  L.marker(REPEATER_POS,{icon:mapPin('📡',38,'#0d3a24','#3fd67a'),zIndexOffset:1000}).addTo(g)
-    .bindTooltip(esc(REP_NOMBRE),{permanent:true,direction:'right',className:'eqTag',offset:[18,0]});
+  L.marker(REPEATER_POS,{icon:sinRak?mapPin('📡',38,'#2a2210','#f2b23a'):mapPin('📡',38,'#0d3a24','#3fd67a'),zIndexOffset:1000}).addTo(g)
+    .bindTooltip(sinRak?esc(REP_NOMBRE)+' · sin señal del repetidor'+(est&&est.at?' · '+esc(humanAgo(est.at*1000)):''):esc(REP_NOMBRE),
+      {permanent:true,direction:'right',className:sinRak?'eqTag eqAviso':'eqTag',offset:[18,0]});
   eqMap.invalidateSize();
   if(!eqMap._centrado){
     const ancho=window.innerWidth>860;
@@ -3399,6 +3430,9 @@ async function pintarRakVivo(){
     $('#rl-pkts').textContent=s.nb_recv.toLocaleString()+' / '+s.nb_sent.toLocaleString();
     $('#rl-when').textContent=humanAgo(s.at*1000);
     const vieja = Date.now()/1000 - s.at > 3600;
+    const antes = window.rakEstado && window.rakEstado.vieja;
+    window.rakEstado = {vieja, at:s.at};
+    if(antes!==vieja && typeof pintarEqMap==='function') pintarEqMap();
     $('#rl-when').className='v '+(vieja?'mid':'');
     // Con la medida vieja los valores se atenuan: un 90 % en verde de hace
     // tres dias parecia el estado de ahora.

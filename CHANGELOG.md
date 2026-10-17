@@ -3,6 +3,20 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.14.0] - 2026-10-18
+
+### Cambiado
+- Chat sobre el mapa: el mismo mapa de Equipos de fondo y la conversación
+  (canales, privados y contactos) flotando a la derecha; en el móvil, hoja
+  inferior.
+- Cabecera del diseño nuevo: pestañas en pastillas, la activa resaltada.
+- Si el repetidor lleva más de una hora sin medirse, en el mapa su icono y su
+  etiqueta pasan a ámbar («sin señal del repetidor · hace X») y las líneas a
+  los vecinos se vuelven grises y discontinuas.
+
+### Corregido
+- En Red y notas los enlaces de la barra lateral ya no muestran interruptores.
+
 ## [1.13.0] - 2026-10-18
 
 ### Cambiado
