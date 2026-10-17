@@ -3,6 +3,51 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.16.0] - 2026-10-18
+
+### Cambiado
+- Panel y mapa en uno: el mapa completo (capas, líneas de enlace, traceroute)
+  es el fondo del Panel, y sus capas y herramientas (vecinos por radio,
+  análisis de enlace, alcance, herramientas) están en la pestaña «Mapa» del
+  panel izquierdo. Se quita la pestaña Mapa de arriba.
+- Los paneles laterales suben a la altura de la pastilla superior; en el
+  teléfono el panel es una hoja inferior y se quitan controles que estorban.
+- Chat: pulsar un mensaje lleva el mapa al nodo que lo envió (saltos y
+  distancia a tu repetidor); si no anuncia posición, el chat lo dice.
+
+## [1.15.0] - 2026-10-18
+
+### Cambiado
+- Sin barra superior: la marca y las pestañas van en una pastilla centrada
+  que flota sobre el contenido; fuera el subtítulo.
+- La pestaña Equipos pasa a llamarse Panel.
+- Barras laterales flotantes en Mapa y Red y notas, como los paneles del
+  Panel; el chat integra su lista de canales y contactos sin caja dentro de
+  caja.
+
+## [1.14.0] - 2026-10-18
+
+### Cambiado
+- Chat sobre el mapa: el mismo mapa de Equipos de fondo y la conversación
+  (canales, privados y contactos) flotando a la derecha; en el móvil, hoja
+  inferior.
+- Cabecera del diseño nuevo: pestañas en pastillas, la activa resaltada.
+- Si el repetidor lleva más de una hora sin medirse, en el mapa su icono y su
+  etiqueta pasan a ámbar («sin señal del repetidor · hace X») y las líneas a
+  los vecinos se vuelven grises y discontinuas.
+
+### Corregido
+- En Red y notas los enlaces de la barra lateral ya no muestran interruptores.
+
+## [1.13.0] - 2026-10-18
+
+### Cambiado
+- Equipos sobre el mapa: el mapa (mismos fondos de Esri e iconos) llena la
+  pestaña con el repetidor, los WIO y los vecinos coloreados por saltos, y
+  encima flotan el panel del repetidor/WIO (con su diagnóstico y gestión
+  remota de siempre), el estado y la leyenda. En el móvil el panel es una
+  hoja inferior. El mapa completo con sus herramientas sigue en Mapa.
+
 ## [1.12.1] - 2026-10-17
 
 ### Quitado
