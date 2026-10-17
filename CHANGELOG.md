@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.9.2] - 2026-10-17
+
+### Cambiado
+- Sin recuadros de 1 px ni líneas separadoras: tarjetas, métricas, barra de
+  estado y barra del chat se separan por un escalón de tono. El contador del
+  chat deja la monoespaciada. Lo elegido en la barra del chat se marca en
+  tono neutro, no morado.
+
 ## [1.9.1] - 2026-10-17
 
 ### Corregido

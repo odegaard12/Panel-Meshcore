@@ -583,7 +583,7 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 #ccLista{overflow:auto;display:flex;flex-direction:column;gap:2px;min-height:0}
 .ccItem{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;background:transparent;border:none;border-radius:var(--r1);padding:7px 10px}
 .ccItem:hover:not(:disabled){background:var(--hover);border:none}
-.ccItem.on{background:#1b1730}
+.ccItem.on{background:var(--hover)}
 .ccItem b{font-size:13px;font-weight:600}
 .ccItem span{font-size:11px;color:var(--dim2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ccItem .ccTop{display:flex;width:100%;gap:6px;align-items:baseline;color:var(--fg);font-size:13px}
@@ -593,6 +593,16 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 .ccVacio{font-size:12px;color:var(--dim2);padding:8px}
 .ccSec{font-size:11px;font-weight:600;color:var(--dim2);padding:10px 10px 4px}
 @media (min-width:861px){#chatFilter{display:none}}
+/* Sin recuadros de 1 px: las superficies se separan por tono, no por línea */
+.card,.kpi,.statcard,.rakBox,.rakSpark,.metrics,.devWrap,#statusBar,.alcanceReg,.coord{border:none!important}
+.metrics{gap:2px;background:var(--bg)}
+.metric{background:var(--raise)}
+#statusBar>div:not(#keyReminder){border-right:2px solid var(--bg)!important}
+.rakBox,.rakSpark{background:var(--raise)}
+.chatHead{border-bottom:none;padding-bottom:0}
+#chatContacts{border-right:none;background:var(--bg2);border-radius:var(--r2);padding:8px}
+.chatCount{font-family:var(--sans)}
+.devSidebar{background:var(--bg2);border-right:none!important}
 @media (max-width:860px){#chatContacts{display:none}}
 .msg.in.priv:hover{outline:1px solid #3b3161}
 footer{color:var(--dim2)}
@@ -1286,7 +1296,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.9.1';
+const PANEL_VERSION='1.9.2';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
