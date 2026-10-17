@@ -134,6 +134,15 @@ Avisos al móvil (opcional): pon en el servicio del gateway
 y te llegará un aviso si la batería del repetidor baja de 3,8 V o si deja de
 haber datos durante 3 h.
 
+**Limitar el gateway a tu PC (recomendado).** En el servicio del gateway pon
+`MESHCORE_ALLOWED_IPS=<IP-de-tu-PC>`: el puerto 8780 solo atenderá a ese PC
+(el relay) y a la propia Pi (nginx). **Si cambias de PC**, pon ahí la IP del
+nuevo (varias separadas por comas) y reinicia el gateway; si no, el relay del
+PC nuevo recibirá 403. Fija esa IP en el router (reserva DHCP) para que no cambie.
+
+Para no recibir el aviso de «sin datos» (si no tienes el PC siempre encendido):
+`MESHCORE_ALERT_STALE_HOURS=0`. El de batería baja sigue activo.
+
 Detalle del montaje, seguridad y diagnóstico: [`deploy/DESPLIEGUE.md`](deploy/DESPLIEGUE.md).
 
 ## Problemas comunes

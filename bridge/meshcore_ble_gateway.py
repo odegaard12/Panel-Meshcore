@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.6.0'
+PANEL_VERSION = '1.7.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -489,7 +489,7 @@ def problemas(ultima: dict | None, ahora: float, bat_min_mv: int, sin_datos_s: f
         return {}
     out = {}
     edad = ahora - float(ultima.get('at') or 0)
-    if edad > sin_datos_s:
+    if sin_datos_s > 0 and edad > sin_datos_s:  # 0 = aviso apagado
         out['sin_datos'] = 'Sin datos del repetidor hace %d h (¿PC o WIO apagados?)' % (edad // 3600)
     mv = ultima.get('bat_mv')
     if isinstance(mv, (int, float)) and 0 < mv < bat_min_mv:
@@ -919,7 +919,22 @@ async def rxlog(req):
                               'max': RX_LOG_MAX, 'samples': samples})
 
 
-app = web.Application(client_max_size=64 * 1024)  # ninguna peticion legitima pasa de unos KB
+def ips_permitidas() -> set:
+    return {ip.strip() for ip in os.getenv('MESHCORE_ALLOWED_IPS', '').split(',') if ip.strip()}
+
+
+@web.middleware
+async def solo_ips_permitidas(req, handler):
+    """Con MESHCORE_ALLOWED_IPS, el puerto del gateway solo atiende a esas IP
+    (el PC del relay) y a la propia Pi (nginx). Sin ella, a todos (con token)."""
+    permitidas = ips_permitidas()
+    if permitidas and req.remote not in ('127.0.0.1', '::1') and req.remote not in permitidas:
+        raise web.HTTPForbidden(text='IP no permitida (MESHCORE_ALLOWED_IPS)')
+    return await handler(req)
+
+
+app = web.Application(client_max_size=64 * 1024,  # ninguna peticion legitima pasa de unos KB
+                      middlewares=[solo_ips_permitidas])
 app.router.add_get('/api/ble/status', status)
 app.router.add_post('/api/ble/wio/{idx:[12]}/connect', connect)
 app.router.add_post('/api/ble/wio/{idx:[12]}/command', command)

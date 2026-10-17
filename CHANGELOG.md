@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.7.0] - 2026-10-17
+
+### Seguridad
+- MESHCORE_ALLOWED_IPS: el puerto del gateway solo atiende a esas IP (el PC
+  del relay) y a la propia Pi. El resto de la red recibe 403 aunque tenga el
+  token. El README explica qué cambiar si se cambia de PC.
+
+### Cambiado
+- MESHCORE_ALERT_STALE_HOURS=0 apaga el aviso de «sin datos del repetidor».
+
 ## [1.6.0] - 2026-10-17
 
 ### Añadido
