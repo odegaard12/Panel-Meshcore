@@ -576,6 +576,8 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 .chatComposer{border-radius:var(--r2)}
 .msg.in::before{display:none}
 .msg{border-radius:var(--r2)!important}
+.msg.in.priv{cursor:pointer}
+.msg.in.priv:hover{outline:1px solid #3b3161}
 footer{color:var(--dim2)}
 
 @media (max-width:860px){
@@ -1261,7 +1263,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.4.1';
+const PANEL_VERSION='1.5.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2983,7 +2985,7 @@ async function pullMessages(node){
     const when=new Date(m.ts*1000).toLocaleString();
     const via=node.info?node.info.name:'nodo';
     const snr=(m.snr!=null)?(' · SNR '+m.snr+' dB'):'';
-    const who = m.kind==='CHAN' ? 'Canal '+m.channel : m.from.slice(0,8);
+    const who = m.kind==='CHAN' ? 'Canal '+m.channel : nombreContacto(m.from);
     if(m.kind==='CHAN')
       chatAdd('in',who,m.text,when+snr+' · vía '+via,true,key,'chan'+m.channel,m.ts*1000);
     else
@@ -3007,15 +3009,62 @@ function notifyNewMessage(who,text){
   try{ new Notification('MeshCore · '+who,{body:text,tag:'meshcore-chat'}); }catch(e){}
 }
 
+// Contactos que conocen los WIO (los guarda el escaneo de vecinos del Mapa).
+function contactosChat(){
+  const vistos=new Map();
+  for(const i of [1,2]){
+    const d=loadNeighbors(i);
+    for(const c of ((d&&d.contacts)||[])) if(c.pubkey&&c.name&&!vistos.has(c.pubkey)) vistos.set(c.pubkey,c);
+  }
+  return [...vistos.values()].sort((a,b)=>a.name.localeCompare(b.name));
+}
+function nombreContacto(prefijo){
+  const c=contactosChat().find(x=>x.pubkey.startsWith(prefijo));
+  return c?c.name:prefijo.slice(0,8);
+}
+function rellenarDestinos(){
+  const sel=$('#chatChan'), actual=sel.value;
+  sel.querySelector('optgroup')?.remove();
+  const cs=contactosChat();
+  if(!cs.length) return;
+  const g=document.createElement('optgroup'); g.label='Privado a…';
+  for(const c of cs){ const o=document.createElement('option'); o.value='p:'+c.pubkey.slice(0,12); o.textContent=c.name; g.appendChild(o); }
+  sel.appendChild(g);
+  if([...sel.options].some(o=>o.value===actual)) sel.value=actual;
+}
+$('#chatChan').addEventListener('focus',rellenarDestinos);
+$('#chatChan').addEventListener('pointerdown',rellenarDestinos);
+// Pulsar un mensaje privado recibido = contestarle en privado.
+$('#chatBox').addEventListener('click',e=>{
+  const b=e.target.closest('.msg.in.priv'); if(!b) return;
+  const nombre=b.querySelector('.who b')?.textContent||'';
+  const c=contactosChat().find(x=>x.name===nombre||x.pubkey.startsWith(nombre));
+  if(!c){ chatAdd('sys',null,'No tengo a '+nombre+' en los contactos: escanea vecinos en el Mapa.','',false); return; }
+  rellenarDestinos(); $('#chatChan').value='p:'+c.pubkey.slice(0,12);
+  $('#chatInput').placeholder='Responder en privado a '+c.name+'…'; $('#chatInput').focus();
+});
+$('#chatChan').addEventListener('change',()=>{
+  const o=$('#chatChan').selectedOptions[0];
+  $('#chatInput').placeholder=$('#chatChan').value.startsWith('p:')?'Privado a '+o.textContent+'…':'Escribe un mensaje...';
+});
+rellenarDestinos();
+
 $('#chatSend').onclick=async()=>{
   const n=activeChatNode();
   const txt=$('#chatInput').value.trim();
   if(!n||!txt) return;
   $('#chatSend').disabled=true;
   try{
-    const chan=+$('#chatChan').value;
-    await n.sendChannelMsg(chan,txt);
-    chatAdd('out',null,txt,new Date().toLocaleTimeString()+' · enviado por '+(n.info?n.info.name:'nodo'),true,null,'chan'+chan);
+    const dest=$('#chatChan').value;
+    const meta=new Date().toLocaleTimeString()+' · enviado por '+(n.info?n.info.name:'nodo');
+    if(dest.startsWith('p:')){
+      const c=contactosChat().find(x=>x.pubkey.startsWith(dest.slice(2)));
+      await n.sendTxtMsg(dest.slice(2),txt);
+      chatAdd('out',null,txt,meta+' · a '+(c?c.name:dest.slice(2,10)),true,null,'priv');
+    }else{
+      await n.sendChannelMsg(+dest,txt);
+      chatAdd('out',null,txt,meta,true,null,'chan'+dest);
+    }
     $('#chatInput').value='';
     // El otro nodo tarda un poco en recibir por radio: sondear pronto y otra vez
     setTimeout(pullAll,1500);

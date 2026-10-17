@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.5.0] - 2026-10-17
+
+### Añadido
+- Chat: mensajes privados. El selector de destino lista los contactos que
+  conocen los WIO («Privado a…»), y pulsar un privado recibido prepara la
+  respuesta a esa persona.
+- Los privados recibidos muestran el nombre del contacto en vez de los
+  primeros caracteres de su clave.
+
 ## [1.4.1] - 2026-10-17
 
 ### Seguridad
