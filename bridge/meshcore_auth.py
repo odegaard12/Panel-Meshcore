@@ -30,7 +30,7 @@ HTPASSWD = Path(os.getenv('MESHCORE_HTPASSWD', '/etc/nginx/meshcore-tls/htpasswd
 SECRET_FILE = Path(os.getenv('MESHCORE_SESSION_SECRET_FILE',
                              str(Path.home() / '.meshcore-session-secret')))
 COOKIE_NAME = 'meshcore_session'
-SESSION_HOURS = float(os.getenv('MESHCORE_SESSION_HOURS', '720'))  # 30 dias
+SESSION_HOURS = float(os.getenv('MESHCORE_SESSION_HOURS', '168'))  # 7 dias
 
 # Freno simple a la fuerza bruta: no es un sistema anti-DDoS, solo evita que se
 # puedan probar miles de contrasenas por segundo contra un hash apr1.

@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.4.1] - 2026-10-17
+
+### Seguridad
+- Exportar la clave privada de un WIO desde el panel queda desactivado por
+  defecto (con la cookie o el token bastaba para sacarla). Se reactiva con
+  MESHCORE_ALLOW_KEY_EXPORT=1 en el gateway.
+- La sesión del panel dura 7 días en vez de 30 (MESHCORE_SESSION_HOURS).
+- El comando CLI remoto se envía tal cual se ha comprobado, sin espacios
+  delante que la política no veía.
+
 ## [1.4.0] - 2026-10-17
 
 ### Cambiado

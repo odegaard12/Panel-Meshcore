@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.4.0'
+PANEL_VERSION = '1.4.1'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -577,6 +577,9 @@ async def command(req):
     frame = trama(body.get('frame', ''))
     if not frame or frame[0] not in COMMAND_OPCODES:
         raise web.HTTPForbidden(text=f'opcode no permitido por /command: {frame[0] if frame else None}')
+    if frame[0] == 0x17 and os.getenv('MESHCORE_ALLOW_KEY_EXPORT') != '1':
+        # Con solo la cookie (o el token) se podía sacar la clave privada del WIO.
+        raise web.HTTPForbidden(text='exportar la clave privada está desactivado (MESHCORE_ALLOW_KEY_EXPORT=1 en el gateway)')
     if frame[0] == 2 and (len(frame) < 2 or frame[1] not in (0, 1)):
         # txt_type 0 = texto normal, 1 = CLI_DATA; el resto no lo usa el panel.
         raise web.HTTPForbidden(text='tipo de mensaje no permitido')
@@ -798,7 +801,8 @@ async def wio_remote_cmd(req):
         dst = hexpad(str(body.get('pubkey', '')), 6)
     except ValueError as exc:
         raise web.HTTPBadRequest(text=str(exc))
-    cmd = str(body.get('cmd', ''))[:120]
+    # Se envía exactamente lo que se ha comprobado (antes iba sin strip).
+    cmd = str(body.get('cmd', ''))[:120].strip()
     veto = politica_cli(cmd, bool(body.get('confirmed')))
     if veto:
         code, motivo = veto
