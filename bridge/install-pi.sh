@@ -42,7 +42,7 @@ Type=simple
 User=$USER_NAME
 WorkingDirectory=$ROOT
 Environment=MESHCORE_BLE_TOKEN_FILE=$TOKEN_FILE
-ExecStart=$VENV/bin/python $ROOT/bridge/meshcore_ble_gateway_v3.py
+ExecStart=$VENV/bin/python $ROOT/bridge/meshcore_ble_gateway.py
 Restart=always
 RestartSec=3
 

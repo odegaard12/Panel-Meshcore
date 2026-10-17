@@ -5,7 +5,7 @@ d = tempfile.mkdtemp()
 os.environ['MESHCORE_RXLOG_FILE'] = os.path.join(d, 'rx.jsonl')
 os.environ['MESHCORE_HISTORY_FILE'] = os.path.join(d, 'h.jsonl')
 os.environ['MESHCORE_BLE_TOKEN'] = 't'
-import meshcore_ble_gateway_v3 as gw
+import meshcore_ble_gateway as gw
 
 gw.RX_LOG_MAX = 5
 push = lambda snr4: {'op': 'push', 'idx': 2, 'frame': base64.b64encode(bytes([0x88, snr4 & 255, 0xBA, 1, 2])).decode()}

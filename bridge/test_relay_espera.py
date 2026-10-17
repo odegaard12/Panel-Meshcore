@@ -4,7 +4,7 @@ import asyncio, sys
 import os
 import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import meshcore_ble_relay_v2 as r
+import meshcore_ble_relay as r
 
 r.RETRY = 0.02
 r.BACKOFF_MAX = 0.3

@@ -17,7 +17,7 @@ os.environ['MESHCORE_SESSION_SECRET_FILE'] = os.path.join(TMP, 'secret')
 os.environ['MESHCORE_HTPASSWD'] = os.path.join(TMP, 'htpasswd')
 
 from aiohttp.test_utils import TestClient, TestServer  # noqa: E402
-import meshcore_ble_gateway_v3 as gw  # noqa: E402
+import meshcore_ble_gateway as gw  # noqa: E402
 import meshcore_auth as auth_mod  # noqa: E402
 
 H = {'X-MeshCore-Token': 't'}
@@ -84,6 +84,7 @@ async def main():
         assert await st('/api/ble/wio/1/command', json={'frame': b64(bytes([0x0A]))}) == 200
         assert await st('/api/ble/wio/1/command', json={'frame': b64(bytes([0x20, 1]))}) == 403
         assert await st('/api/ble/wio/1/command', json={'frame': b64(bytes([0x33]))}) == 403
+        assert await st('/api/ble/wio/1/command', json={'frame': b64(bytes([0x17]))}) == 403  # clave privada: apagado
         assert await st('/api/ble/wio/1/command', json={'frame': ''}) == 403
         # SEND_TXT_MSG solo con txt_type 0 o 1.
         assert await st('/api/ble/wio/1/command', json={'frame': b64(bytes([2, 2, 0]) + bytes(10))}) == 403

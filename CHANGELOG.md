@@ -3,6 +3,54 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.4.1] - 2026-10-17
+
+### Seguridad
+- Exportar la clave privada de un WIO desde el panel queda desactivado por
+  defecto (con la cookie o el token bastaba para sacarla). Se reactiva con
+  MESHCORE_ALLOW_KEY_EXPORT=1 en el gateway.
+- La sesión del panel dura 7 días en vez de 30 (MESHCORE_SESSION_HOURS).
+- El comando CLI remoto se envía tal cual se ha comprobado, sin espacios
+  delante que la política no veía.
+
+## [1.4.0] - 2026-10-17
+
+### Cambiado
+- Los archivos pierden el número de versión en el nombre:
+  `bridge/meshcore_ble_gateway.py` y `bridge/meshcore_ble_relay.py`.
+  Los nombres viejos (`_v3`, `_v2`) se quedan como puente que lanza los
+  nuevos, así que los servicios y tareas ya instalados siguen funcionando.
+
+## [1.3.1] - 2026-10-17
+
+### Seguridad
+- El instalador verifica por defecto el sha256 oficial de ttyd 1.7.7: si la
+  descarga no coincide, se para.
+
+## [1.3.0] - 2026-10-17
+
+### Añadido
+- Avisos por ntfy desde el gateway: batería del repetidor baja
+  (MESHCORE_ALERT_BAT_MV, 3800 por defecto) o sin datos del repetidor
+  (MESHCORE_ALERT_STALE_HOURS, 3 h). Un aviso al empezar y otro al resolverse,
+  sin repetirse aunque se reinicie el gateway. Apagado si no hay
+  MESHCORE_NTFY_URL (URL completa del tema; token opcional en
+  MESHCORE_NTFY_TOKEN).
+
+## [1.2.1] - 2026-10-17
+
+### Cambiado
+- El segundo companion es opcional: con MESHCORE_WIO2_NAME vacío el relay
+  ni lo busca, y un comando a un WIO no configurado da un error claro.
+
+## [1.2.0] - 2026-10-17
+
+### Cambiado
+- Chat: se envía por el WIO que esté conectado, sin tener que elegirlo;
+  en el compositor solo queda el canal.
+- Analítica: menos colores. SNR en rojo/ámbar/verde, actividad en gris con
+  las 3 horas de más tráfico en ámbar, saltos en dos tonos.
+
 ## [1.1.4] - 2026-10-17
 
 ### Cambiado

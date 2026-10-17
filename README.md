@@ -104,7 +104,7 @@ En Windows, desde `bridge/`:
 .\install-windows.ps1                 # entorno del relay
 $env:MESHCORE_GATEWAY_WS = 'ws://<IP-de-tu-Pi>:8780/api/ble/relay'
 $env:MESHCORE_WIO1_NAME  = 'nombre-BLE-del-companion-1'
-$env:MESHCORE_WIO2_NAME  = 'nombre-BLE-del-companion-2'   # opcional
+$env:MESHCORE_WIO2_NAME  = 'nombre-BLE-del-companion-2'   # '' si solo tienes uno
 .\instalar-vigilante.ps1              # tarea que lo mantiene vivo
 ```
 
@@ -116,7 +116,7 @@ MESHCORE_BLE_TOKEN="$(cat ~/.meshcore-ble-token)" \
 MESHCORE_GATEWAY_WS='ws://<IP-de-tu-Pi>:8780/api/ble/relay' \
 MESHCORE_WIO1_NAME='nombre-BLE-del-companion-1' \
 MESHCORE_WIO2_NAME='nombre-BLE-del-companion-2' \
-.venv/bin/python meshcore_ble_relay_v2.py
+.venv/bin/python meshcore_ble_relay.py
 ```
 
 Empareja antes cada companion con el sistema usando su PIN.
@@ -128,6 +128,11 @@ curl -s http://127.0.0.1:8780/healthz    # en la Pi: "relay": true y "version"
 ```
 
 Abre `https://<IP-de-tu-Pi>/` e inicia sesión.
+
+Avisos al móvil (opcional): pon en el servicio del gateway
+`MESHCORE_NTFY_URL=https://tu-ntfy/tu-tema` (y `MESHCORE_NTFY_TOKEN` si hace falta)
+y te llegará un aviso si la batería del repetidor baja de 3,8 V o si deja de
+haber datos durante 3 h.
 
 Detalle del montaje, seguridad y diagnóstico: [`deploy/DESPLIEGUE.md`](deploy/DESPLIEGUE.md).
 

@@ -2,7 +2,7 @@
 cogido: antes colgaba el relay entero (socket del gateway en CLOSE_WAIT)."""
 import asyncio, os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import meshcore_ble_relay_v2 as r
+import meshcore_ble_relay as r
 
 r.PAIR_TIMEOUT = 0.3
 r.PAIR = True
