@@ -129,6 +129,11 @@ curl -s http://127.0.0.1:8780/healthz    # en la Pi: "relay": true y "version"
 
 Abre `https://<IP-de-tu-Pi>/` e inicia sesión.
 
+Avisos al móvil (opcional): pon en el servicio del gateway
+`MESHCORE_NTFY_URL=https://tu-ntfy/tu-tema` (y `MESHCORE_NTFY_TOKEN` si hace falta)
+y te llegará un aviso si la batería del repetidor baja de 3,8 V o si deja de
+haber datos durante 3 h.
+
 Detalle del montaje, seguridad y diagnóstico: [`deploy/DESPLIEGUE.md`](deploy/DESPLIEGUE.md).
 
 ## Problemas comunes

@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.3.0] - 2026-10-17
+
+### Añadido
+- Avisos por ntfy desde el gateway: batería del repetidor baja
+  (MESHCORE_ALERT_BAT_MV, 3800 por defecto) o sin datos del repetidor
+  (MESHCORE_ALERT_STALE_HOURS, 3 h). Un aviso al empezar y otro al resolverse,
+  sin repetirse aunque se reinicie el gateway. Apagado si no hay
+  MESHCORE_NTFY_URL (URL completa del tema; token opcional en
+  MESHCORE_NTFY_TOKEN).
+
 ## [1.2.1] - 2026-10-17
 
 ### Cambiado

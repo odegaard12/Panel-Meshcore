@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.2.1'
+PANEL_VERSION = '1.1.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -479,6 +479,64 @@ class Monitor:
             await asyncio.sleep(self.SAMPLE_EVERY)
             with contextlib.suppress(Exception):
                 await self.sample_once()
+            with contextlib.suppress(Exception):
+                await avisos.revisar(self.read(1))
+
+
+def problemas(ultima: dict | None, ahora: float, bat_min_mv: int, sin_datos_s: float) -> dict:
+    """Qué va mal según la última muestra del repetidor: {clave: texto}."""
+    if not ultima:
+        return {}
+    out = {}
+    edad = ahora - float(ultima.get('at') or 0)
+    if edad > sin_datos_s:
+        out['sin_datos'] = 'Sin datos del repetidor hace %d h (¿PC o WIO apagados?)' % (edad // 3600)
+    mv = ultima.get('bat_mv')
+    if isinstance(mv, (int, float)) and 0 < mv < bat_min_mv:
+        out['bateria'] = 'Batería del repetidor baja: %.2f V (¿USB de la regleta apagado?)' % (mv / 1000)
+    return out
+
+
+class Avisos:
+    """Avisa por ntfy al empezar y al acabar cada problema, no en cada muestra.
+
+    Apagado si no hay MESHCORE_NTFY_URL (URL completa del tema).
+    """
+
+    def __init__(self):
+        self.url = os.getenv('MESHCORE_NTFY_URL', '')
+        self.token = os.getenv('MESHCORE_NTFY_TOKEN', '')
+        self.bat_min = int(os.getenv('MESHCORE_ALERT_BAT_MV', '3800'))
+        self.sin_datos = float(os.getenv('MESHCORE_ALERT_STALE_HOURS', '3')) * 3600
+        # Persistido: sin esto cada reinicio (cada despliegue) repetía el aviso.
+        self.estado = Path(os.getenv('MESHCORE_HISTORY_FILE', str(Path.home() / '.meshcore-history.jsonl')) + '.avisos')
+        self.activos: dict = {}
+        with contextlib.suppress(Exception):
+            self.activos = json.loads(self.estado.read_text())
+
+    async def revisar(self, muestras: list):
+        if not self.url:
+            return
+        ahora_mal = problemas(muestras[-1] if muestras else None, time.time(), self.bat_min, self.sin_datos)
+        for clave, texto in ahora_mal.items():
+            if clave not in self.activos:
+                await self._enviar(texto, 'warning')
+        for clave in set(self.activos) - set(ahora_mal):
+            await self._enviar('Resuelto: ' + self.activos[clave], 'white_check_mark')
+        if ahora_mal != self.activos:
+            with contextlib.suppress(Exception):
+                self.estado.write_text(json.dumps(ahora_mal))
+        self.activos = ahora_mal
+
+    async def _enviar(self, texto: str, etiqueta: str):
+        headers = {'Title': 'Panel MeshCore', 'Tags': etiqueta}
+        if self.token:
+            headers['Authorization'] = 'Bearer ' + self.token
+        async with aiohttp.ClientSession() as s:
+            await s.post(self.url, data=texto.encode(), headers=headers, timeout=aiohttp.ClientTimeout(total=15))
+
+
+avisos = Avisos()
 
 
 monitor = Monitor()
