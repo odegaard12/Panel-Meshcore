@@ -3,6 +3,13 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.8.0] - 2026-10-17
+
+### Añadido
+- Contactos del chat como lista de conversaciones: arriba quien te ha
+  escrito o a quien escribiste, con el último mensaje («Tú: …») y la hora;
+  se actualiza al recibir o enviar un privado.
+
 ## [1.7.0] - 2026-10-17
 
 ### Seguridad

@@ -585,7 +585,11 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 .ccItem:hover:not(:disabled){background:var(--hover);border:none}
 .ccItem.on{background:#1b1730}
 .ccItem b{font-size:13px;font-weight:600}
-.ccItem span{font-size:11px;color:var(--dim2)}
+.ccItem span{font-size:11px;color:var(--dim2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ccItem .ccTop{display:flex;width:100%;gap:6px;align-items:baseline;color:var(--fg);font-size:13px}
+.ccItem .ccTop b{flex:1;overflow:hidden;text-overflow:ellipsis}
+.ccItem .ccTop i{font-style:normal;font-size:10.5px;color:var(--dim2)}
+.ccItem.conv span:last-child{color:var(--dim)}
 .ccVacio{font-size:12px;color:var(--dim2);padding:8px}
 @media (max-width:860px){#chatContacts{display:none}}
 .msg.in.priv:hover{outline:1px solid #3b3161}
@@ -1280,7 +1284,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.7.0';
+const PANEL_VERSION='1.8.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3006,7 +3010,7 @@ async function pullMessages(node){
     if(m.kind==='CHAN')
       chatAdd('in',who,m.text,when+snr+' · vía '+via,true,key,'chan'+m.channel,m.ts*1000);
     else
-      chatAdd('in',who,m.text,when+snr+' · vía '+via,true,key,'priv',m.ts*1000);
+      { chatAdd('in',who,m.text,when+snr+' · vía '+via,true,key,'priv',m.ts*1000); pintarContactos(); }
     if(m.kind!=='CHAN') respuestaRepetidor(m);
     if(!$('#tab-chat').classList.contains('on')){ unreadChat++; updateChatBadge(); }
     notifyNewMessage(who,m.text);
@@ -3071,11 +3075,23 @@ function elegirDestino(c){
 function pintarContactos(){
   const q=$('#ccBuscar').value.trim().toLowerCase();
   const dest=$('#chatChan').value;
-  const cs=contactosChat().filter(c=>!q||c.name.toLowerCase().includes(q));
+  // Último privado con cada contacto (recibido: quien lo manda; enviado: «· a NOMBRE»).
+  const ultimo=new Map();
+  for(const e of loadChatLog()){
+    if(e.kind!=='priv') continue;
+    const n=e.cls==='in'?e.who:((String(e.meta||'').match(/· a (.+)$/)||[])[1]);
+    if(n&&(!ultimo.has(n)||(e.at||0)>=(ultimo.get(n).at||0))) ultimo.set(n,e);
+  }
+  const cs=contactosChat().filter(c=>!q||c.name.toLowerCase().includes(q))
+    .sort((a,b)=>((ultimo.get(b.name)||{}).at||0)-((ultimo.get(a.name)||{}).at||0));
   const saltos=c=>c.hops==null?'sin ruta fija':c.hops===0?'directo':c.hops+(c.hops===1?' salto':' saltos');
-  $('#ccLista').innerHTML=cs.length?cs.map(c=>
-    '<button class="ccItem'+(dest==='p:'+c.pubkey.slice(0,12)?' on':'')+'" data-pk="'+esc(c.pubkey)+'">'+
-    '<b>'+esc(c.name)+'</b><span>'+(c.advType===3?'sala · ':'')+saltos(c)+'</span></button>').join('')
+  const hora=at=>{ const d=new Date(at); return d.toDateString()===new Date().toDateString()?d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString([], {day:'numeric',month:'short'}); };
+  $('#ccLista').innerHTML=cs.length?cs.map(c=>{
+    const u=ultimo.get(c.name);
+    return '<button class="ccItem'+(dest==='p:'+c.pubkey.slice(0,12)?' on':'')+(u?' conv':'')+'" data-pk="'+esc(c.pubkey)+'">'+
+      '<span class="ccTop"><b>'+esc(c.name)+'</b>'+(u&&u.at?'<i>'+esc(hora(u.at))+'</i>':'')+'</span>'+
+      '<span>'+(u?esc((u.cls==='out'?'Tú: ':'')+String(u.text).slice(0,42)):(c.advType===3?'sala · ':'')+saltos(c))+'</span></button>';
+  }).join('')
     :'<div class="ccVacio">'+(q?'Nadie con ese nombre':'Sin contactos todavía: escanea vecinos en el Mapa')+'</div>';
 }
 $('#ccLista').addEventListener('click',e=>{
@@ -3098,7 +3114,7 @@ $('#chatSend').onclick=async()=>{
     if(dest.startsWith('p:')){
       const c=contactosChat().find(x=>x.pubkey.startsWith(dest.slice(2)));
       await n.sendTxtMsg(dest.slice(2),txt);
-      chatAdd('out',null,txt,meta+' · a '+(c?c.name:dest.slice(2,10)),true,null,'priv');
+      chatAdd('out',null,txt,meta+' · a '+(c?c.name:dest.slice(2,10)),true,null,'priv'); pintarContactos();
     }else{
       await n.sendChannelMsg(+dest,txt);
       chatAdd('out',null,txt,meta,true,null,'chan'+dest);
