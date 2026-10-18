@@ -515,6 +515,7 @@
 
   // Historico que recoge la Pi cada 15 min (el movil no puede hacer esto).
   window.rakHistory = (limit=500)=>api(`/history?limit=${limit}`);
+  window.cajaTemp = ()=>api('/caja');
   window.rakRxLog = (limit=2000)=>api(`/rxlog?limit=${limit}`);
   window.rakHistorySampleNow = ()=>api('/history/sample',{method:'POST',body:'{}'});
 

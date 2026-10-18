@@ -668,6 +668,7 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+#rak-live .metric:last-child:nth-child(3n+1){grid-column:1/-1}
 #devpanel-mapa .mapQuick{display:flex;gap:8px}
 @media (max-width:860px){
   header{top:8px!important;padding:3px!important}
@@ -820,6 +821,7 @@ footer{color:var(--dim2)}
                   <!-- Lo ultimo que la Pi midio del repetidor por LoRa (historico cada 15 min). -->
                   <div class="metrics" id="rak-live">
                     <div class="metric"><div class="k">Batería</div><div class="v" id="rl-bat">—</div></div>
+                    <div class="metric" id="rl-caja-m" hidden><div class="k">Caja</div><div class="v" id="rl-caja">—</div></div>
                     <div class="metric"><div class="k">Encendido</div><div class="v" id="rl-uptime">—</div></div>
                     <div class="metric"><div class="k">Duty cycle TX</div><div class="v" id="rl-duty">—</div></div>
                     <div class="metric"><div class="k">Ruido de fondo</div><div class="v" id="rl-noise">—</div></div>
@@ -1420,7 +1422,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.16.0';
+const PANEL_VERSION='1.17.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3299,15 +3301,39 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
   document.querySelector('nav.tabs button[data-tab="mapa"]')?.remove();
 })();
 
+// Temperatura de la caja del repetidor (Home Assistant, opcional en el gateway).
+window.cajaInfo=null;
+async function pintarCaja(){
+  let j=null;
+  try{ j=window.cajaTemp ? await window.cajaTemp() : null; }catch(e){}
+  const m=$('#rl-caja-m'); if(!m) return;
+  const antes=JSON.stringify(window.cajaInfo);
+  if(!j||!j.ok||j.temp==null||isNaN(+j.temp)){ m.hidden=true; window.cajaInfo=null; }
+  else{
+    window.cajaInfo=j; m.hidden=false;
+    const t=+j.temp, usbOff=j.usb==='off';
+    $('#rl-caja').textContent=t.toFixed(1).replace('.',',')+' °C'+(usbOff?' · USB cortado':'');
+    $('#rl-caja').className='v '+(t>=45?'bad':(usbOff||t>=40)?'mid':'ok');
+  }
+  if(antes!==JSON.stringify(window.cajaInfo)) pintarEqMap();
+}
+setTimeout(pintarCaja,1500); setInterval(pintarCaja,60000);
+
 let avisoRak=null;
 function pintarEqMap(){
   if(typeof map==='undefined' || !$('#map').offsetParent) return;
   map.invalidateSize();
   const est=window.rakEstado, sinRak=!est||est.vieja;
+  const usbOff=!!(window.cajaInfo&&window.cajaInfo.usb==='off');
   if(avisoRak){ map.removeLayer(avisoRak); avisoRak=null; }
+  if(usbOff && !sinRak){
+    avisoRak=L.marker(REPEATER_POS,{icon:mapPin('📡',38,'#2a2210','#f2b23a'),zIndexOffset:2000,interactive:false}).addTo(map)
+      .bindTooltip(esc(REP_NOMBRE)+' · USB de la regleta cortado'+(window.cajaInfo.temp?' · caja '+(+window.cajaInfo.temp).toFixed(1).replace('.',',')+' °C':''),
+        {permanent:true,direction:'right',className:'eqTag eqAviso',offset:[18,0]});
+  }
   if(sinRak){
     avisoRak=L.marker(REPEATER_POS,{icon:mapPin('📡',38,'#2a2210','#f2b23a'),zIndexOffset:2000,interactive:false}).addTo(map)
-      .bindTooltip(esc(REP_NOMBRE)+' · sin señal del repetidor'+(est&&est.at?' · '+esc(humanAgo(est.at*1000)):''),
+      .bindTooltip(esc(REP_NOMBRE)+' · sin señal del repetidor'+(est&&est.at?' · '+esc(humanAgo(est.at*1000)):'')+(usbOff?' · USB cortado':''),
         {permanent:true,direction:'right',className:'eqTag eqAviso',offset:[18,0]});
   }
   if(!map._centradoPanel){

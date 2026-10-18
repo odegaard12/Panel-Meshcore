@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.17.0] - 2026-10-19
+
+### Añadido
+- Temperatura de la caja del repetidor en el Panel, leída de Home Assistant
+  por el gateway (ruta /api/ble/caja, protegida, consulta cada 60 s):
+  verde por debajo de 40 °C, ámbar desde 40 °C o con el USB cortado, rojo
+  desde 45 °C. Si el USB de la regleta está apagado, el mapa lo marca junto al
+  repetidor. Opcional: MESHCORE_HA_URL, MESHCORE_HA_TOKEN, MESHCORE_HA_CAJA
+  (sensor de temperatura) y MESHCORE_HA_USB (enchufe que alimenta la caja);
+  sin ellas la métrica no aparece.
+
 ## [1.16.0] - 2026-10-18
 
 ### Cambiado

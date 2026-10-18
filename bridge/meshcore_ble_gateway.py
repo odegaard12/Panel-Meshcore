@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.16.0'
+PANEL_VERSION = '1.17.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -718,6 +718,41 @@ async def elevation(req):
     return web.json_response(data)
 
 
+# Temperatura de la caja del repetidor y su USB, leidas de Home Assistant.
+# Opcional: sin estas variables la ruta responde ok:false y el panel la oculta.
+HA_URL = os.getenv('MESHCORE_HA_URL', '').rstrip('/')
+HA_TOKEN = os.getenv('MESHCORE_HA_TOKEN', '')
+HA_CAJA = os.getenv('MESHCORE_HA_CAJA', '')
+HA_USB = os.getenv('MESHCORE_HA_USB', '')
+_caja = {'at': 0.0, 'data': None}
+
+
+async def caja(req):
+    """{ok, temp, at, usb} de Home Assistant, guardado 60 s para no preguntar en cada recarga."""
+    await guard(req)
+    if not (HA_URL and HA_TOKEN and HA_CAJA):
+        return web.json_response({'ok': False, 'motivo': 'sin Home Assistant configurado'})
+    if time.time() - _caja['at'] > 60 or _caja['data'] is None:
+        out = {'ok': True}
+        try:
+            async with aiohttp.ClientSession(headers={'Authorization': 'Bearer ' + HA_TOKEN},
+                                             timeout=aiohttp.ClientTimeout(total=8)) as s:
+                for clave, ent in (('temp', HA_CAJA), ('usb', HA_USB)):
+                    if not ent:
+                        continue
+                    async with s.get(f'{HA_URL}/api/states/{ent}') as r:
+                        if r.status != 200:
+                            continue
+                        j = await r.json()
+                        out[clave] = j.get('state')
+                        if clave == 'temp':
+                            out['at'] = j.get('last_updated')
+        except Exception:
+            out = {'ok': False, 'motivo': 'Home Assistant no responde'}
+        _caja.update(at=time.time(), data=out)
+    return web.json_response(_caja['data'])
+
+
 async def history(req):
     """Serie temporal del repetidor recogida por la Pi (bateria, duty cycle...)."""
     await guard(req)
@@ -951,6 +986,7 @@ app.router.add_post('/api/ble/wio/{idx:[12]}/trace', wio_trace)
 app.router.add_get('/api/ble/wio/{idx:[12]}/pushes', wio_pushes)
 app.router.add_get('/api/ble/rxlog', rxlog)
 app.router.add_get('/api/ble/history', history)
+app.router.add_get('/api/ble/caja', caja)
 app.router.add_get('/api/ble/elevation', elevation)
 app.router.add_post('/api/ble/history/sample', history_sample_now)
 
