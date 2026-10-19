@@ -54,7 +54,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway :8780 (Raspberr
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: 1.23.0**1.0.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: 1.24.0**1.0.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
@@ -143,6 +143,8 @@ PC nuevo recibirá 403. Fija esa IP en el router (reserva DHCP) para que no camb
 Temperatura de la caja (opcional, con Home Assistant): `MESHCORE_HA_URL`,
 `MESHCORE_HA_TOKEN`, `MESHCORE_HA_CAJA=sensor.tu_sensor` y, si el repetidor se
 alimenta por un enchufe inteligente, `MESHCORE_HA_USB=switch.tu_enchufe`.
+
+**Como app en el móvil.** Abre el panel en el navegador y elige «Añadir a la pantalla de inicio»: queda con su icono y sin barra del navegador. En iPhone funciona con el certificado autofirmado del instalador; en Android, Chrome solo ofrece el acceso directo completo con un certificado de confianza (por ejemplo, desde una VPN como Tailscale o con Let's Encrypt). La app no guarda datos del panel: si no hay conexión muestra un aviso con «Reintentar».
 
 Para no recibir el aviso de «sin datos» (si no tienes el PC siempre encendido):
 `MESHCORE_ALERT_STALE_HOURS=0`. El de batería baja sigue activo.

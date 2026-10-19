@@ -18,6 +18,7 @@ mkdir -p "$PANEL/www"
 cp "$ROOT/bridge/meshcore-ble-gateway.js" "$PANEL/www/meshcore-ble-gateway.js"
 cp "$ROOT/bridge/meshcore-ble-guard.js" "$PANEL/www/meshcore-ble-guard.js"
 cp "$ROOT/bridge/login.html" "$PANEL/www/login.html"
+cp "$ROOT"/pwa/* "$PANEL/www/"
 # dashboard.html ya trae sus <script> del guard y del gateway: no se parchea.
 
 TOKEN_FILE="$HOME/.meshcore-ble-token"

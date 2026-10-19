@@ -3,6 +3,19 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.24.0] - 2026-10-19
+
+### Añadido
+- Web app instalable: manifiesto, iconos (192, 512 y el de iPhone), colores del
+  sistema y márgenes para el notch del móvil. El service worker no guarda
+  nada del panel ni toca la API: solo enseña «No hay conexión con el panel»
+  con «Reintentar» si el panel no responde. `tools/check_pwa.py` lo comprueba.
+
+### Cambiado
+- Gráfica de batería: eje de 48 h completo, un punto por medida y, donde hay
+  más de una hora sin datos, una franja rayada con «sin datos · N h» en vez de
+  quedarse casi vacía.
+
 ## [1.23.0] - 2026-10-19
 
 ### Cambiado

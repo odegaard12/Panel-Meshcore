@@ -2,7 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0d12">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MeshCore">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Panel MeshCore</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Panel MeshCore"%3E %3Crect width="64" height="64" rx="14" fill="%230f151f"/%3E %3Cg stroke="%233fd67a" stroke-width="2.4" stroke-linecap="round" fill="none"%3E %3Cpath d="M18 44 L32 26 L46 44 Z" opacity=".55"/%3E %3Cpath d="M24.5 17.5 a10.5 10.5 0 0 1 15 0" opacity=".8"/%3E %3Cpath d="M20 13 a17 17 0 0 1 24 0" opacity=".45"/%3E %3C/g%3E %3Cg fill="%233fd67a"%3E %3Ccircle cx="32" cy="26" r="5"/%3E %3Ccircle cx="18" cy="44" r="4.2"/%3E %3Ccircle cx="46" cy="44" r="4.2"/%3E %3C/g%3E %3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
@@ -669,6 +676,12 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+/* Como app instalada en un móvil con notch o barra de gestos: nada queda bajo ellos */
+@media (max-width:860px){
+  header{top:calc(8px + env(safe-area-inset-top))!important}
+  #tab-equipos .devWrap,#tab-chat .chatcard{padding-bottom:env(safe-area-inset-bottom)}
+}
+#rak-spark{height:78px!important}
 :root{--esc:1}
 @media (min-width:861px){
   header,#tab-equipos .devWrap,#tab-equipos .equiposWrap .grid,#tab-equipos .mapLegend,#tab-equipos #cfgAviso{zoom:var(--esc)}
@@ -1472,7 +1485,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.23.0';
+const PANEL_VERSION='1.24.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3399,6 +3412,10 @@ async function pintarCaja(){
   if(antes!==JSON.stringify(window.cajaInfo)) pintarEqMap();
 }
 setTimeout(pintarCaja,1500); setInterval(pintarCaja,60000);
+// Web app: el service worker solo muestra «sin conexión» si el panel no responde (no guarda datos).
+if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1')){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
 
 // «Lo he apagado» / «lo he encendido»: el relay deja de buscar o vuelve a buscar ese WIO.
 [1,2].forEach(i=>{
@@ -3724,21 +3741,43 @@ function motivoSinMedidas(err){
 }
 function pintarSparkRak(ms,ultimaAt){
   const wrap=$('#rak-spark-wrap'), el=$('#rak-spark');
-  if(!wrap || ms.length<3){ if(wrap) wrap.hidden=true; return; }
+  if(!wrap || ms.length<1){ if(wrap) wrap.hidden=true; return; }
   wrap.hidden=false;
-  const W=600,H=46,P=3;
-  const t0=ms[0].at, t1=ms[ms.length-1].at;
-  const vs=ms.map(x=>x.bat_mv/1000), lo=Math.min(...vs), hi=Math.max(...vs);
-  const X=at=>P+(W-2*P)*((at-t0)/((t1-t0)||1)), Y=v=>H-P-(H-2*P)*((v-lo)/((hi-lo)||1));
-  let d='', prev=null;
-  ms.forEach((x,i)=>{ const corte=prev && x.at-prev.at>3600; d+=(i===0||corte?'M':'L')+X(x.at).toFixed(1)+','+Y(vs[i]).toFixed(1); prev=x; });
-  el.setAttribute('viewBox','0 0 '+W+' '+H);
-  el.innerHTML='<path d="'+d+'" fill="none" stroke="#3fd67a" stroke-width="1.6" vector-effect="non-scaling-stroke"/>';
-  $('#rak-spark-rango').textContent=lo.toFixed(2)+'–'+hi.toFixed(2)+' V';
+  // Eje de 48 h completo (acaba en ahora, o en la última medida si es vieja):
+  // los huecos sin datos se ven como franjas ámbar en vez de una línea cortada.
   const vieja=ultimaAt && Date.now()/1000-ultimaAt>3600;
-  $('#rak-spark-wrap .rakSparkHead span').textContent = vieja
-    ? 'Batería · las 48 h antes de la última medida ('+humanAgo(ultimaAt*1000)+')'
-    : 'Batería · últimas 48 h';
+  const t1=vieja?ultimaAt:Date.now()/1000, t0=t1-48*3600, HUECO=3600;
+  const W=Math.max(220,el.clientWidth||320), H=78, PX=8, TOP=8, BAJO=H-20;
+  const vs=ms.map(x=>x.bat_mv/1000);
+  let lo=Math.min(...vs), hi=Math.max(...vs);
+  const span=Math.max(hi-lo,.1), mid=(hi+lo)/2; lo=mid-span/2; hi=mid+span/2;   // sin exagerar variaciones de centésimas
+  const X=at=>PX+(W-2*PX)*((at-t0)/(t1-t0)), Y=v=>BAJO-(BAJO-TOP)*((v-lo)/(hi-lo));
+  const huecos=[]; let ant=t0;
+  ms.forEach(x=>{ if(x.at-ant>HUECO) huecos.push([ant,x.at]); ant=x.at; });
+  if(t1-ant>HUECO) huecos.push([ant,t1]);
+  // Hueco sin medidas: franja rayada tenue con una etiqueta que dice cuánto dura.
+  let g='<defs><pattern id="rkHatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="#f2b23a" stroke-opacity=".30" stroke-width="1.4"/></pattern></defs>';
+  huecos.forEach(([a,b])=>{
+    const x0=X(Math.max(a,t0)), x1=X(Math.min(b,t1)), w=Math.max(1,x1-x0), horas=Math.round((Math.min(b,t1)-Math.max(a,t0))/3600);
+    g+='<rect x="'+x0.toFixed(1)+'" y="'+TOP+'" width="'+w.toFixed(1)+'" height="'+(BAJO-TOP)+'" rx="3" fill="url(#rkHatch)" stroke="#f2b23a" stroke-opacity=".28" stroke-dasharray="3 3"/>';
+    const txt=w>96?'sin datos · '+horas+' h':(w>40?horas+' h':'');
+    if(txt){
+      const tw=txt.length*5.6+14, cx=(x0+x1)/2, cy=(TOP+BAJO)/2;
+      g+='<rect x="'+(cx-tw/2).toFixed(1)+'" y="'+(cy-9).toFixed(1)+'" width="'+tw.toFixed(1)+'" height="18" rx="9" fill="#11161e" stroke="#f2b23a" stroke-opacity=".55"/>'
+       + '<text x="'+cx.toFixed(1)+'" y="'+(cy+3.6).toFixed(1)+'" text-anchor="middle" font-size="10.5" font-weight="500" fill="#f2b23a">'+txt+'</text>';
+    }
+  });
+  let d='', prev=null;
+  ms.forEach((x,i)=>{ d+=((!prev||x.at-prev.at>HUECO)?'M':'L')+X(x.at).toFixed(1)+','+Y(vs[i]).toFixed(1); prev=x; });
+  g+='<path d="'+d+'" fill="none" stroke="#3fd67a" stroke-width="1.6" stroke-linejoin="round"/>';
+  ms.forEach((x,i)=>{ g+='<circle cx="'+X(x.at).toFixed(1)+'" cy="'+Y(vs[i]).toFixed(1)+'" r="'+(i===ms.length-1?3.2:1.5)+'" fill="#3fd67a"/>'; });
+  g+='<text x="'+PX+'" y="'+(H-4)+'" font-size="10.5" fill="#8d99a8">hace 48 h</text>'
+   + '<text x="'+(W-PX)+'" y="'+(H-4)+'" font-size="10.5" fill="#8d99a8" text-anchor="end">'+(vieja?'última medida':'ahora')+'</text>'
+   + '<text x="'+(W/2)+'" y="'+(H-4)+'" font-size="10.5" fill="#8d99a8" text-anchor="middle">hace 24 h</text>';
+  el.setAttribute('viewBox','0 0 '+W+' '+H); el.setAttribute('preserveAspectRatio','xMidYMid meet');
+  el.innerHTML=g;
+  $('#rak-spark-rango').textContent=Math.min(...vs).toFixed(2)+'–'+Math.max(...vs).toFixed(2)+' V';
+  $('#rak-spark-wrap .rakSparkHead span').textContent = vieja ? 'Batería · hasta la última medida' : 'Batería · últimas 48 h';
 }
 window.addEventListener('load',pintarRakVivo);
 setInterval(pintarRakVivo,5*60*1000);

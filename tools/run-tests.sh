@@ -10,6 +10,7 @@ for t in bridge/test_*.py; do corre "$PY" "$t"; done
 corre node bridge/test_gateway_js.js
 corre node tools/test_legal.js dashboard.html
 corre "$PY" tools/check-ids.py dashboard.html
+corre "$PY" tools/check_pwa.py
 corre "$PY" tools/check_privado.py
 
 if [ ${#fallos[@]} -gt 0 ]; then
