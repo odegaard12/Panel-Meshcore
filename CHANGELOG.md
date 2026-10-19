@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.22.0] - 2026-10-19
+
+### Seguridad
+- nginx: cabecera Permissions-Policy (sin cámara, micrófono, ubicación, USB,
+  Bluetooth, puerto serie ni pagos desde el navegador) y CSP más estricto
+  (object-src 'none', form-action 'self').
+
+### Añadido
+- Ajustes del mapa: bajo «Actualizar vecinos», cuándo se escanearon por
+  última vez y cuántos contactos hay (en ámbar si pasa de un día).
+
 ## [1.21.1] - 2026-10-19
 
 ### Corregido

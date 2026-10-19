@@ -1463,7 +1463,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.21.1';
+const PANEL_VERSION='1.22.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3354,6 +3354,8 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
       const uno=document.createElement('button'); uno.className='p'; uno.textContent='Actualizar vecinos'; uno.style.width='100%';
       uno.onclick=()=>{ const n=[1,2].find(i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected)||1; $('#btn-scan-w'+n+'-map')?.click(); };
       w1.before(uno); w1.hidden=true; if(w2) w2.hidden=true;
+      const est=document.createElement('div'); est.id='vecEstado'; est.className='k'; est.style.margin='6px 0 2px';
+      uno.after(est);
     }
     const csv=[...vec.querySelectorAll('button')].find(b=>b.textContent.includes('CSV'));
     if(csv) csv.textContent='Exportar a CSV';
@@ -3452,7 +3454,17 @@ setTimeout(pintarCaja,1500); setInterval(pintarCaja,60000);
 })();
 
 let avisoRak=null;
+// «Actualizado hace X · N contactos» bajo «Actualizar vecinos» (ámbar si pasa de un día).
+function pintarVecEstado(){
+  const el=$('#vecEstado'); if(!el) return;
+  let ts=0; const vistos=new Set();
+  for(const i of [1,2]){ const d=loadNeighbors(i); if(d&&d.ts>ts) ts=d.ts; for(const c of ((d&&d.contacts)||[])) vistos.add(c.pubkey); }
+  if(!ts){ el.textContent='Aún no se han escaneado los vecinos.'; el.style.color='var(--warn)'; return; }
+  el.textContent='Actualizado '+humanAgo(ts)+' · '+vistos.size+' contactos';
+  el.style.color=(Date.now()-ts>86400000)?'var(--warn)':'';
+}
 function pintarEqMap(){
+  pintarVecEstado();
   if(typeof map==='undefined' || !$('#map').offsetParent) return;
   map.invalidateSize();
   const est=window.rakEstado, sinRak=!est||est.vieja;
