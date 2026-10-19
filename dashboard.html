@@ -669,6 +669,24 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+.sheetAsa{display:none}
+@media (max-width:860px){
+  .sheetAsa{display:block;height:22px;flex-shrink:0;cursor:grab;touch-action:none;position:relative}
+  .sheetAsa::before{content:'';position:absolute;left:50%;top:8px;width:44px;height:5px;border-radius:3px;background:#3a4452;transform:translateX(-50%)}
+  #tab-equipos .devWrap{transition:height .25s ease,max-height .25s ease}
+}
+.ayudaCorta{display:block!important}
+.ayudaCorta dt{cursor:pointer;display:block;padding:8px 0}
+.ayudaCorta dt .ayudaRes{display:block;font-weight:400;color:var(--dim);font-size:13px;margin-top:2px}
+.ayudaCorta dt::before{content:'›';display:inline-block;width:14px;color:var(--dim2);transition:transform .2s}
+.ayudaCorta dt.abierto::before{transform:rotate(90deg)}
+.ayudaCorta .ayudaRes[hidden]{display:none}
+.ayudaCorta dt .ayudaRes{padding-left:14px}
+.ayudaCorta dd{padding-left:14px}
+.ayudaCorta dd{margin:0 0 8px;font-size:13px}
+.redPliega{cursor:pointer}
+.redPliega::after{content:'›';margin-left:auto;color:var(--dim2);font-size:22px;line-height:1;transition:transform .2s}
+.redPliega.abierto::after{transform:rotate(90deg)}
 @media (max-width:860px){
   /* Escribir en una sola fila: canal corto, texto y Enviar */
   #tab-chat .chatComposer{flex-wrap:nowrap!important;gap:6px!important;padding:6px!important}
@@ -1445,7 +1463,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.20.1';
+const PANEL_VERSION='1.21.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3381,6 +3399,57 @@ setTimeout(pintarCaja,1500); setInterval(pintarCaja,60000);
     finally{ setTimeout(()=>{ b.disabled=false; },2000); }
   };
 });
+
+// (1.21) Hoja arrastrable en el teléfono, ayuda corta y Red y notas plegada.
+(function(){
+  // 1. Hoja del Panel en el teléfono: barra para arrastrar, se queda en 3 alturas
+  const wrap=$('#tab-equipos .devWrap');
+  if(wrap){
+    const asa=document.createElement('div'); asa.className='sheetAsa'; asa.title='Arrastra o pulsa: más mapa o más panel';
+    wrap.prepend(asa);
+    const alturas=[.13,.28,.62,.86]; let i=2;  // mínima (solo fichas), baja, media, alta
+    const poner=k=>{ i=Math.max(0,Math.min(alturas.length-1,k)); wrap.style.height=wrap.style.maxHeight=(alturas[i]*100)+'%'; setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },300); };
+    let y0=null, hIni=0;
+    asa.addEventListener('pointerdown',e=>{ if(innerWidth>860) return; y0=e.clientY; hIni=wrap.getBoundingClientRect().height; asa.setPointerCapture(e.pointerId); wrap.style.transition='none'; });
+    asa.addEventListener('pointermove',e=>{ if(y0==null) return; const H=wrap.parentElement.getBoundingClientRect().height; const nh=Math.max(H*.12,Math.min(H*.86,hIni+(y0-e.clientY))); wrap.style.height=wrap.style.maxHeight=nh+'px'; });
+    asa.addEventListener('pointerup',e=>{
+      if(y0==null) return;
+      const H=wrap.parentElement.getBoundingClientRect().height, fr=wrap.getBoundingClientRect().height/H, movido=Math.abs(e.clientY-y0)>6;
+      wrap.style.transition=''; y0=null;
+      if(!movido) return poner((i+1)%alturas.length);
+      let mejor=0; alturas.forEach((a,k)=>{ if(Math.abs(a-fr)<Math.abs(alturas[mejor]-fr)) mejor=k; }); poner(mejor);
+    });
+  }
+  // 2. «¿Qué significa cada dato?»: una línea por dato con su resumen; el detalle al pulsar
+  document.querySelectorAll('#devpanel-rak dl').forEach(dl=>{
+    dl.classList.add('ayudaCorta');
+    dl.querySelectorAll('dt').forEach(dt=>{
+      const dd=dt.nextElementSibling; if(!dd||dd.tagName!=='DD') return;
+      const txt=dd.textContent.trim(), corte=txt.search(/[.;](\s|$)/);
+      const res=document.createElement('span'); res.className='ayudaRes';
+      res.textContent=corte>0&&corte<110?txt.slice(0,corte+1):txt.slice(0,100)+'…';
+      dt.appendChild(res); dd.hidden=true; dt.tabIndex=0; dt.setAttribute('role','button');
+      const t=()=>{ dd.hidden=!dd.hidden; dt.classList.toggle('abierto',!dd.hidden); res.hidden=!dd.hidden; };
+      dt.addEventListener('click',t);
+      dt.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t(); } });
+    });
+  });
+  // 3. Red y notas: cada apartado plegado (salvo el primero); el índice abre el suyo
+  document.querySelectorAll('#tab-red .redContent .card').forEach((c,k)=>{
+    const head=c.querySelector(':scope > .cardhead'); if(!head) return;
+    const cuerpo=document.createElement('div'); cuerpo.className='redCuerpo';
+    while(head.nextSibling) cuerpo.appendChild(head.nextSibling);
+    c.appendChild(cuerpo); head.classList.add('redPliega'); head.tabIndex=0; head.setAttribute('role','button');
+    const abrir=on=>{ cuerpo.hidden=!on; head.classList.toggle('abierto',on); };
+    abrir(k===0);
+    head.addEventListener('click',()=>abrir(cuerpo.hidden));
+    head.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); abrir(cuerpo.hidden); } });
+  });
+  document.querySelectorAll('.red-nav').forEach(b=>b.addEventListener('click',()=>{
+    const c=document.getElementById(b.dataset.target), h=c&&c.querySelector('.redPliega');
+    if(h && c.querySelector('.redCuerpo').hidden) h.click();
+  }));
+})();
 
 let avisoRak=null;
 function pintarEqMap(){

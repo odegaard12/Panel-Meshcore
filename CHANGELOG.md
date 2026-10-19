@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.21.0] - 2026-10-19
+
+### Cambiado
+- Teléfono: la hoja del Panel se arrastra con una barra y se queda en cuatro
+  alturas (mínima con solo las fichas, baja, media y alta, siempre por debajo
+  de la pastilla de arriba); tocar la barra va pasando de una a otra.
+- «¿Qué significa cada dato?»: una línea por dato con su resumen y la
+  explicación completa al pulsarlo.
+- Red y notas: cada apartado plegado con su título y subtítulo (el primero
+  abierto); el índice abre directamente el suyo.
+
 ## [1.20.1] - 2026-10-19
 
 ### Corregido
