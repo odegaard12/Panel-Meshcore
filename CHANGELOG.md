@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.21.1] - 2026-10-19
+
+### Corregido
+- «Datos de la estación», ahora en la ficha del repetidor, con el mismo
+  estilo de caja que los demás bloques.
+
 ## [1.21.0] - 2026-10-19
 
 ### Cambiado

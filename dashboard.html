@@ -1463,7 +1463,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.21.0';
+const PANEL_VERSION='1.21.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3365,7 +3365,7 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
     const md=her&&her.querySelector('button'), tr=[...enl.querySelectorAll('button')].find(b=>b.textContent.includes('Traceroute'));
     if(md&&tr){ md.className=tr.className; tr.after(md); her.remove(); }
   }
-  if(est){ est.open=false; $('#devpanel-rak .devPanelBody')?.appendChild(est); }
+  if(est){ est.open=false; est.classList.add('rakBox'); $('#devpanel-rak .devPanelBody')?.appendChild(est); }
   $('#tab-equipos').prepend($('#map'));
   $('#eqMap')?.remove(); $('.eqLeyenda')?.remove();
   document.querySelector('nav.tabs button[data-tab="mapa"]')?.remove();
