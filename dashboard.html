@@ -668,6 +668,9 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+#btn-w1-export,#btn-w2-export{display:none!important}  /* exportar la clave está desactivado por defecto (1.4.1) */
+body.sin-w2 .devTab[data-dev="w2"],body.sin-w2 #devpanel-w2,body.sin-w2 .fila-w2,body.sin-w2 #chatNode option[value="2"],body.sin-w2 #chatViaFilter option[value="2"]{display:none!important}
+#rak-live .metric:last-child:nth-child(3n+1){grid-column:1/-1}
 #devpanel-mapa .mapQuick{display:flex;gap:8px}
 @media (max-width:860px){
   header{top:8px!important;padding:3px!important}
@@ -780,7 +783,7 @@ footer{color:var(--dim2)}
     <div class="card rescard" id="statusBar" style="grid-column:1/-1;padding:12px 18px;display:flex;gap:28px;flex-wrap:wrap;align-items:center">
       <div><div class="k" style="font-size:11px;color:var(--dim2);text-transform:uppercase">Puente</div><b id="status-relay">—</b></div>
       <div><div class="k" style="font-size:11px;color:var(--dim2);text-transform:uppercase">WIO1</div><b id="status-w1">—</b></div>
-      <div><div class="k" style="font-size:11px;color:var(--dim2);text-transform:uppercase">WIO2</div><b id="status-w2">—</b></div>
+      <div class="fila-w2"><div class="k" style="font-size:11px;color:var(--dim2);text-transform:uppercase">WIO2</div><b id="status-w2">—</b></div>
       <div><div class="k" style="font-size:11px;color:var(--dim2);text-transform:uppercase">RAK</div><b id="status-rak">—</b></div>
       <div id="keyReminder" style="margin-left:auto;color:var(--warn);font-size:12px;display:none"></div>
     </div>
@@ -820,6 +823,7 @@ footer{color:var(--dim2)}
                   <!-- Lo ultimo que la Pi midio del repetidor por LoRa (historico cada 15 min). -->
                   <div class="metrics" id="rak-live">
                     <div class="metric"><div class="k">Batería</div><div class="v" id="rl-bat">—</div></div>
+                    <div class="metric" id="rl-caja-m" hidden><div class="k">Caja</div><div class="v" id="rl-caja">—</div></div>
                     <div class="metric"><div class="k">Encendido</div><div class="v" id="rl-uptime">—</div></div>
                     <div class="metric"><div class="k">Duty cycle TX</div><div class="v" id="rl-duty">—</div></div>
                     <div class="metric"><div class="k">Ruido de fondo</div><div class="v" id="rl-noise">—</div></div>
@@ -834,14 +838,13 @@ footer{color:var(--dim2)}
                   <details class="rakBox rakAyuda">
                     <summary>¿Qué significa cada dato?</summary>
                     <dl>
-                      <dt>Batería</dt><dd>Tensión de la batería del repetidor. Una Li-ion va de unos 3,3 V (vacía) a 4,2 V (llena); el % es orientativo. Si sube de día y baja de noche, la placa solar carga.</dd>
+                      <dt>Batería</dt><dd>Tensión de la batería del repetidor. Una Li-ion va de unos 3,3 V (vacía) a 4,2 V (llena); el % es orientativo. Con el cargador sano oscila entre unos 4,06 y 4,20 V; si baja día tras día, no le llega corriente.</dd>
                       <dt>Encendido</dt><dd>Tiempo desde el último arranque. Si vuelve a cero sin que lo hayas reiniciado, se ha quedado sin batería o se ha colgado.</dd>
                       <dt>Duty cycle</dt><dd>Porcentaje del tiempo que el repetidor está emitiendo. En la banda de 869,4–869,65 MHz la norma (ERC/REC 70-03) permite como máximo un 10 %: así nadie acapara el canal. Se calcula como tiempo emitiendo ÷ tiempo encendido, así que es la media desde el último arranque.</dd>
                       <dt>Ruido de fondo</dt><dd>Lo que oye la radio cuando nadie habla. Cuanto más negativo, más limpia la banda: −110 dBm o menos es bueno; si sube hacia −100, algo cercano mete interferencias.</dd>
                       <dt>Paquetes rx / tx</dt><dd>Paquetes recibidos y enviados desde el arranque. En un repetidor casi coinciden, porque reenvía lo que oye.</dd>
                     </dl>
                   </details>
-                  <pre class="loglet" id="rak-log">Aquí salen las respuestas del diagnóstico y de la gestión remota.</pre>
 
                   <!-- Estado remoto por peticion binaria (0x32/STATUS): son contadores
                        publicos del nodo, no hace falta login ni Bluetooth con el RAK. -->
@@ -850,7 +853,7 @@ footer{color:var(--dim2)}
                        reenvia el login y los comandos CLI por la malla. -->
     
                   <details class="rakBox">
-                    <summary>Diagnóstico remoto del repetidor</summary>
+                    <summary>Leer el repetidor (estado, telemetría, histórico)</summary>
                     <div class="maprow" style="align-items:center">
                       <select id="rak-status-via" style="margin-left:auto"><option value="2">vía WIO2</option><option value="1">vía WIO1</option></select>
                       <button class="p" id="btn-rak-status">Estado</button>
@@ -880,7 +883,7 @@ footer{color:var(--dim2)}
                     </div>
                   </details>
                   <details class="rakBox">
-                    <summary>Gestión remota vía WIO (sin Bluetooth al RAK)</summary>
+                    <summary>Cambiar el repetidor (con su contraseña de admin)</summary>
                     <div class="maprow" style="gap:8px;margin-top:10px">
                     </div>
                     <div class="maprow" style="gap:8px;margin-top:10px;align-items:end">
@@ -919,6 +922,8 @@ footer{color:var(--dim2)}
                       Firmware no actualizable en remoto: el bootloader UF2 exige USB físico y doble reset. Aquí solo se leen/ajustan parámetros por CLI.
                     </div>
                   </details>
+                  <div class="k" style="margin:14px 0 0">Respuestas del repetidor</div>
+                  <pre class="loglet" id="rak-log">Aquí salen las respuestas al leer o cambiar el repetidor.</pre>
       
           </div>
         </div>
@@ -945,7 +950,7 @@ footer{color:var(--dim2)}
                     <div class="metric"><div class="k">Potencia TX</div><div class="v" id="w1-tx" style="font-size:11px">—</div></div>
                   </div>
                   <div class="cardactions">
-                    <button class="p" id="btn-w1-connect">Conectar</button> <span id="w1-device-status" class="device-status" style="margin-left:8px">No detectado</span>
+                    <button class="p" id="btn-w1-connect">Conectar</button> <button id="btn-w1-pausa" hidden>Lo he apagado: deja de buscarlo</button> <span id="w1-device-status" class="device-status" style="margin-left:8px">No detectado</span>
                     <button id="btn-w1-place">Colocar en mapa</button>
                     <button id="btn-w1-export" onclick="wioExportKey(1)">Exportar clave</button>
                   </div>
@@ -976,7 +981,7 @@ footer{color:var(--dim2)}
                     <div class="metric"><div class="k">Potencia TX</div><div class="v" id="w2-tx" style="font-size:11px">—</div></div>
                   </div>
                   <div class="cardactions">
-                    <button class="p" id="btn-w2-connect">Conectar</button> <span id="w2-device-status" class="device-status" style="margin-left:8px">No detectado</span>
+                    <button class="p" id="btn-w2-connect">Conectar</button> <button id="btn-w2-pausa" hidden>Lo he apagado: deja de buscarlo</button> <span id="w2-device-status" class="device-status" style="margin-left:8px">No detectado</span>
                     <button id="btn-w2-place">Colocar en mapa</button>
                     <button id="btn-w2-export" onclick="wioExportKey(2)">Exportar clave</button>
                   </div>
@@ -1420,7 +1425,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.16.0';
+const PANEL_VERSION='1.19.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3299,15 +3304,50 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
   document.querySelector('nav.tabs button[data-tab="mapa"]')?.remove();
 })();
 
+// Temperatura de la caja del repetidor (Home Assistant, opcional en el gateway).
+window.cajaInfo=null;
+async function pintarCaja(){
+  let j=null;
+  try{ j=window.cajaTemp ? await window.cajaTemp() : null; }catch(e){}
+  const m=$('#rl-caja-m'); if(!m) return;
+  const antes=JSON.stringify(window.cajaInfo);
+  if(!j||!j.ok||j.temp==null||isNaN(+j.temp)){ m.hidden=true; window.cajaInfo=null; }
+  else{
+    window.cajaInfo=j; m.hidden=false;
+    const t=+j.temp, usbOff=j.usb==='off';
+    $('#rl-caja').textContent=t.toFixed(1).replace('.',',')+' °C'+(usbOff?' · USB cortado':'');
+    $('#rl-caja').className='v '+(t>=45?'bad':(usbOff||t>=40)?'mid':'ok');
+  }
+  if(antes!==JSON.stringify(window.cajaInfo)) pintarEqMap();
+}
+setTimeout(pintarCaja,1500); setInterval(pintarCaja,60000);
+
+// «Lo he apagado» / «lo he encendido»: el relay deja de buscar o vuelve a buscar ese WIO.
+[1,2].forEach(i=>{
+  const b=$('#btn-w'+i+'-pausa'); if(!b) return;
+  b.onclick=async()=>{
+    b.disabled=true;
+    try{ await window.wioPausa(i,b.dataset.on==='1'); }
+    catch(e){ const l=$('#w'+i+'-log'); if(l) l.textContent='No se pudo cambiar: '+e.message; }
+    finally{ setTimeout(()=>{ b.disabled=false; },2000); }
+  };
+});
+
 let avisoRak=null;
 function pintarEqMap(){
   if(typeof map==='undefined' || !$('#map').offsetParent) return;
   map.invalidateSize();
   const est=window.rakEstado, sinRak=!est||est.vieja;
+  const usbOff=!!(window.cajaInfo&&window.cajaInfo.usb==='off');
   if(avisoRak){ map.removeLayer(avisoRak); avisoRak=null; }
+  if(usbOff && !sinRak){
+    avisoRak=L.marker(REPEATER_POS,{icon:mapPin('📡',38,'#2a2210','#f2b23a'),zIndexOffset:2000,interactive:false}).addTo(map)
+      .bindTooltip(esc(REP_NOMBRE)+' · USB de la regleta cortado'+(window.cajaInfo.temp?' · caja '+(+window.cajaInfo.temp).toFixed(1).replace('.',',')+' °C':''),
+        {permanent:true,direction:'right',className:'eqTag eqAviso',offset:[18,0]});
+  }
   if(sinRak){
     avisoRak=L.marker(REPEATER_POS,{icon:mapPin('📡',38,'#2a2210','#f2b23a'),zIndexOffset:2000,interactive:false}).addTo(map)
-      .bindTooltip(esc(REP_NOMBRE)+' · sin señal del repetidor'+(est&&est.at?' · '+esc(humanAgo(est.at*1000)):''),
+      .bindTooltip(esc(REP_NOMBRE)+' · sin señal del repetidor'+(est&&est.at?' · '+esc(humanAgo(est.at*1000)):'')+(usbOff?' · USB cortado':''),
         {permanent:true,direction:'right',className:'eqTag eqAviso',offset:[18,0]});
   }
   if(!map._centradoPanel){
@@ -3413,6 +3453,9 @@ async function updateStatusBar(){
     statusBarLastRelay=s.relay;
     const wioDe=i=>(s.wios||[]).find(w=>w&&w.idx===i)||{};  // con un solo companion ya no van en orden
     const w1=wioDe(1), w2=wioDe(2);
+    // Un companion que el relay no tiene configurado no se enseña (ni pestaña,
+    // ni fila de estado, ni opciones): con uno solo, el panel no muestra errores falsos.
+    if(s.relay) document.body.classList.toggle('sin-w2', !(s.wios||[]).some(w=>w&&w.idx===2));
     // Resumen de un WIO: conectado / no responde (motivo del relay) / visto hace X,
     // mas la bateria del ultimo estado guardado si esta baja.
     const resumenWio=(w,idx)=>{

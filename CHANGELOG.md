@@ -3,6 +3,56 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.19.0] - 2026-10-19
+
+### Añadido
+- Botón en la ficha de cada WIO: «Lo he apagado: deja de buscarlo» y «Lo he
+  encendido: búscalo». El relay deja ese companion en pausa (sin escanear ni
+  competir por el Bluetooth) y lo recuerda tras reiniciar
+  (~/.meshcore-relay-pausa.json); un WIO en pausa se ve en gris, no como
+  error. Ruta nueva POST /api/ble/wio/{1|2}/pausa.
+
+## [1.18.0] - 2026-10-19
+
+### Cambiado
+- Un companion que el relay no tiene configurado ya no aparece en el panel
+  (ni pestaña, ni fila de estado, ni opciones): con uno solo no se ven
+  errores falsos.
+- Repetidor más claro: «Leer el repetidor (estado, telemetría, histórico)» y
+  «Cambiar el repetidor (con su contraseña de admin)», y la caja de
+  respuestas debajo de ambos, con su título.
+- Fuera el botón «Exportar clave» de los WIO (desactivado por defecto desde
+  1.4.1) y la ayuda de la batería ya no da por hecho una placa solar.
+
+## [1.17.2] - 2026-10-19
+
+### Corregido
+- El relay se arregla solo cuando un companion conecta pero «no tiene» el
+  servicio de MeshCore: siempre lee los servicios del propio aparato (no la
+  copia que guarda Windows) y, cada 3 fallos seguidos, rehace el
+  emparejamiento con el PIN sin que haya que tocar nada.
+
+## [1.17.1] - 2026-10-19
+
+### Corregido
+- Relay: si el companion conecta pero no aparece el servicio de MeshCore
+  (Characteristic 6e400003… was not found), el motivo lo explica y dice qué
+  hacer (apagar y encender; si sigue, volver a emparejar en Windows).
+- README al día: la pestaña Equipos es ahora el Panel con el mapa dentro, y
+  «Problemas comunes» cubre el servicio BLE no encontrado, el PIN que no
+  empareja y el repetidor «sin señal».
+
+## [1.17.0] - 2026-10-19
+
+### Añadido
+- Temperatura de la caja del repetidor en el Panel, leída de Home Assistant
+  por el gateway (ruta /api/ble/caja, protegida, consulta cada 60 s):
+  verde por debajo de 40 °C, ámbar desde 40 °C o con el USB cortado, rojo
+  desde 45 °C. Si el USB de la regleta está apagado, el mapa lo marca junto al
+  repetidor. Opcional: MESHCORE_HA_URL, MESHCORE_HA_TOKEN, MESHCORE_HA_CAJA
+  (sensor de temperatura) y MESHCORE_HA_USB (enchufe que alimenta la caja);
+  sin ellas la métrica no aparece.
+
 ## [1.16.0] - 2026-10-18
 
 ### Cambiado
