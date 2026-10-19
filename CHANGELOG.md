@@ -3,6 +3,70 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.22.1] - 2026-10-19
+
+### Corregido
+- En el ordenador, si la pastilla de arriba no cabe entre los paneles
+  laterales (pantalla estrecha o zoom del navegador al 125 % o más), los
+  paneles bajan solos debajo de ella en vez de solaparse; se recalcula al
+  cambiar el tamaño o el zoom. La ficha se llama «Ajustes» para que no se
+  corte.
+
+## [1.22.0] - 2026-10-19
+
+### Seguridad
+- nginx: cabecera Permissions-Policy (sin cámara, micrófono, ubicación, USB,
+  Bluetooth, puerto serie ni pagos desde el navegador) y CSP más estricto
+  (object-src 'none', form-action 'self').
+
+### Añadido
+- Ajustes del mapa: bajo «Actualizar vecinos», cuándo se escanearon por
+  última vez y cuántos contactos hay (en ámbar si pasa de un día).
+
+## [1.21.1] - 2026-10-19
+
+### Corregido
+- «Datos de la estación», ahora en la ficha del repetidor, con el mismo
+  estilo de caja que los demás bloques.
+
+## [1.21.0] - 2026-10-19
+
+### Cambiado
+- Teléfono: la hoja del Panel se arrastra con una barra y se queda en cuatro
+  alturas (mínima con solo las fichas, baja, media y alta, siempre por debajo
+  de la pastilla de arriba); tocar la barra va pasando de una a otra.
+- «¿Qué significa cada dato?»: una línea por dato con su resumen y la
+  explicación completa al pulsarlo.
+- Red y notas: cada apartado plegado con su título y subtítulo (el primero
+  abierto); el índice abre directamente el suyo.
+
+## [1.20.1] - 2026-10-19
+
+### Corregido
+- Chat: los mensajes recibidos van pegados a la izquierda (arrastraban el
+  hueco del círculo de la inicial, quitado antes).
+
+### Cambiado
+- Teléfono: la caja de escribir del chat cabe en una fila (canal, texto y
+  Enviar) y en Analítica la cifra impar ocupa la fila entera.
+
+## [1.20.0] - 2026-10-19
+
+### Cambiado
+- La ficha «Mapa» del panel pasa a llamarse «Ajustes del mapa» («Ajustes»
+  en el teléfono) y se ordena en tres bloques: «Qué se ve en el mapa»,
+  «Vecinos (lo que oyen tus WIO)», con un solo «Actualizar vecinos» por el
+  WIO conectado y la tabla, el grafo, el CSV y las regiones juntos, y
+  «Enlace con un nodo», con el traceroute y medir distancia. «Datos de la
+  estación» pasa a la ficha del repetidor.
+- Teléfono: el índice de Red y notas es una fila de botones en vez de ocupar
+  la primera pantalla, y la página ya no se sale por la derecha.
+
+### Corregido
+- El mapa dejaba rectángulos negros al cambiar de ficha o al abrir la hoja
+  en el teléfono: ahora se recoloca.
+- Red y notas ya no remite a las pestañas «Equipos y Mapa», que no existen.
+
 ## [1.19.0] - 2026-10-19
 
 ### Añadido

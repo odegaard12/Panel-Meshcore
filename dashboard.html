@@ -575,6 +575,7 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 .chatTools button{border-color:var(--brd2);font-size:12px}
 .chatComposer{border-radius:var(--r2)}
 .msg.in::before{display:none}
+.msg.in{margin-left:0}  /* sin el círculo de la inicial, el recibido va pegado a la izquierda */
 .msg{border-radius:var(--r2)!important}
 .msg.in.priv{cursor:pointer}
 .chatBody{flex:1;min-height:0;display:flex;gap:16px;margin-top:8px}
@@ -668,6 +669,45 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+body.pastilla-choca #tab-equipos .devWrap,body.pastilla-choca #tab-equipos .equiposWrap .grid{top:68px!important}
+body.pastilla-choca #tab-equipos>#map .leaflet-top.leaflet-left{top:68px}
+.sheetAsa{display:none}
+@media (max-width:860px){
+  .sheetAsa{display:block;height:22px;flex-shrink:0;cursor:grab;touch-action:none;position:relative}
+  .sheetAsa::before{content:'';position:absolute;left:50%;top:8px;width:44px;height:5px;border-radius:3px;background:#3a4452;transform:translateX(-50%)}
+  #tab-equipos .devWrap{transition:height .25s ease,max-height .25s ease}
+}
+.ayudaCorta{display:block!important}
+.ayudaCorta dt{cursor:pointer;display:block;padding:8px 0}
+.ayudaCorta dt .ayudaRes{display:block;font-weight:400;color:var(--dim);font-size:13px;margin-top:2px}
+.ayudaCorta dt::before{content:'›';display:inline-block;width:14px;color:var(--dim2);transition:transform .2s}
+.ayudaCorta dt.abierto::before{transform:rotate(90deg)}
+.ayudaCorta .ayudaRes[hidden]{display:none}
+.ayudaCorta dt .ayudaRes{padding-left:14px}
+.ayudaCorta dd{padding-left:14px}
+.ayudaCorta dd{margin:0 0 8px;font-size:13px}
+.redPliega{cursor:pointer}
+.redPliega::after{content:'›';margin-left:auto;color:var(--dim2);font-size:22px;line-height:1;transition:transform .2s}
+.redPliega.abierto::after{transform:rotate(90deg)}
+@media (max-width:860px){
+  /* Escribir en una sola fila: canal corto, texto y Enviar */
+  #tab-chat .chatComposer{flex-wrap:nowrap!important;gap:6px!important;padding:6px!important}
+  #tab-chat .chatComposer select{flex:0 0 92px!important;width:92px!important;min-width:0}
+  #tab-chat .chatInWrap{flex:1 1 auto!important;order:0!important;flex-basis:auto!important;min-width:0}
+  #tab-chat .chatInWrap input{padding-right:8px!important}
+  #tab-chat .chatCount,#tab-chat #chatPull{display:none!important}
+  #tab-chat #chatSend{flex:0 0 auto!important;width:auto!important;padding:0 14px!important}
+  /* Analítica: la cifra impar no se queda a media anchura */
+  .statsKpis .kpi:last-child:nth-child(odd){grid-column:1/-1}
+}
+@media (max-width:860px){
+  .devTab[data-dev="mapa"] .devTabName{font-size:0}
+  .devTab[data-dev="mapa"] .devTabName::after{content:'Ajustes';font-size:13px}
+  .redWrap{flex-direction:column;width:auto!important;margin:-28px -14px -28px!important}
+  .redSidebar{position:static!important;width:auto!important;max-width:100vw;min-width:0;box-sizing:border-box;flex-direction:row!important;flex-wrap:nowrap;overflow-x:auto;gap:6px!important;padding:8px 12px!important;max-height:none!important;scrollbar-width:none}
+  .redSidebar .sidebarLabel{display:none}
+  .redSidebar .red-nav{flex:0 0 auto;width:auto!important;border-radius:999px!important;padding:8px 14px!important;background:var(--raise)!important}
+}
 #btn-w1-export,#btn-w2-export{display:none!important}  /* exportar la clave está desactivado por defecto (1.4.1) */
 body.sin-w2 .devTab[data-dev="w2"],body.sin-w2 #devpanel-w2,body.sin-w2 .fila-w2,body.sin-w2 #chatNode option[value="2"],body.sin-w2 #chatViaFilter option[value="2"]{display:none!important}
 #rak-live .metric:last-child:nth-child(3n+1){grid-column:1/-1}
@@ -1097,7 +1137,7 @@ footer{color:var(--dim2)}
         </div>
       </div>
       <div class="lead">
-        No es estado de red en vivo (eso está en Equipos y Mapa): son notas técnicas y recursos.
+        No es estado de red en vivo (eso está en el Panel): son notas técnicas y recursos.
         Primero cómo funciona MeshCore, luego normas y herramientas de la comunidad.
       </div>
     </div>
@@ -1425,7 +1465,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.19.0';
+const PANEL_VERSION='1.22.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3291,14 +3331,45 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
   $('#mapHint')?.remove();
   $('#btn-map-fullscreen')?.remove();
   const btn=document.createElement('button'); btn.className='devTab'; btn.dataset.dev='mapa';
-  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Mapa</span><span class="devTabSub">capas y herramientas</span></span>';
+  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Ajustes</span><span class="devTabSub">capas, vecinos y enlaces</span></span>';
   $('.devSidebar').appendChild(btn);
+  // Al cambiar de ficha cambia el alto del panel: el mapa debe recolocarse o
+  // deja rectángulos negros (visto en el teléfono, 19/10).
+  document.querySelector('.devSidebar').addEventListener('click',()=>setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },60));
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.devTab').forEach(x=>x.classList.toggle('on',x===btn));
     document.querySelectorAll('.devPanel').forEach(x=>x.classList.toggle('on',x===panel));
     try{ localStorage.setItem('meshcore-devtab','mapa'); }catch(e){}
   });
   try{ if(localStorage.getItem('meshcore-devtab')==='mapa') btn.click(); }catch(e){}
+  // Orden (1.20): tres bloques en vez de seis secciones que se pisaban.
+  const secc=[...panel.querySelectorAll('details')], de=t=>secc.find(d=>d.querySelector('summary')?.textContent.includes(t));
+  const capas=de('Capas'), vec=de('Vecinos'), enl=de('Análisis'), alc=de('Alcance'), her=de('Herramientas'), est=de('Datos de la estación');
+  const quick=panel.querySelector('.mapQuick');
+  if(capas){ capas.querySelector('summary').textContent='Qué se ve en el mapa'; capas.open=false; }
+  if(quick){ const vt=quick.querySelector('#btn-map-fit'); if(vt) vt.textContent='Encuadrar todo'; }
+  if(vec){
+    vec.querySelector('summary').textContent='Vecinos (lo que oyen tus WIO)';
+    const w1=vec.querySelector('#btn-scan-w1-map'), w2=vec.querySelector('#btn-scan-w2-map');
+    if(w1){
+      // Un solo botón: escanea por el WIO que esté conectado (antes «vía WIO1» y «vía WIO2»).
+      const uno=document.createElement('button'); uno.className='p'; uno.textContent='Actualizar vecinos'; uno.style.width='100%';
+      uno.onclick=()=>{ const n=[1,2].find(i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected)||1; $('#btn-scan-w'+n+'-map')?.click(); };
+      w1.before(uno); w1.hidden=true; if(w2) w2.hidden=true;
+      const est=document.createElement('div'); est.id='vecEstado'; est.className='k'; est.style.margin='6px 0 2px';
+      uno.after(est);
+    }
+    const csv=[...vec.querySelectorAll('button')].find(b=>b.textContent.includes('CSV'));
+    if(csv) csv.textContent='Exportar a CSV';
+    const ar=alc&&alc.querySelector('button');
+    if(ar&&csv){ ar.textContent='Ver por regiones'; ar.className=csv.className; csv.after(ar); alc.remove(); }
+  }
+  if(enl){
+    enl.querySelector('summary').textContent='Enlace con un nodo';
+    const md=her&&her.querySelector('button'), tr=[...enl.querySelectorAll('button')].find(b=>b.textContent.includes('Traceroute'));
+    if(md&&tr){ md.className=tr.className; tr.after(md); her.remove(); }
+  }
+  if(est){ est.open=false; est.classList.add('rakBox'); $('#devpanel-rak .devPanelBody')?.appendChild(est); }
   $('#tab-equipos').prepend($('#map'));
   $('#eqMap')?.remove(); $('.eqLeyenda')?.remove();
   document.querySelector('nav.tabs button[data-tab="mapa"]')?.remove();
@@ -3333,8 +3404,69 @@ setTimeout(pintarCaja,1500); setInterval(pintarCaja,60000);
   };
 });
 
+// (1.21) Hoja arrastrable en el teléfono, ayuda corta y Red y notas plegada.
+(function(){
+  // 1. Hoja del Panel en el teléfono: barra para arrastrar, se queda en 3 alturas
+  const wrap=$('#tab-equipos .devWrap');
+  if(wrap){
+    const asa=document.createElement('div'); asa.className='sheetAsa'; asa.title='Arrastra o pulsa: más mapa o más panel';
+    wrap.prepend(asa);
+    const alturas=[.13,.28,.62,.86]; let i=2;  // mínima (solo fichas), baja, media, alta
+    const poner=k=>{ i=Math.max(0,Math.min(alturas.length-1,k)); wrap.style.height=wrap.style.maxHeight=(alturas[i]*100)+'%'; setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },300); };
+    let y0=null, hIni=0;
+    asa.addEventListener('pointerdown',e=>{ if(innerWidth>860) return; y0=e.clientY; hIni=wrap.getBoundingClientRect().height; asa.setPointerCapture(e.pointerId); wrap.style.transition='none'; });
+    asa.addEventListener('pointermove',e=>{ if(y0==null) return; const H=wrap.parentElement.getBoundingClientRect().height; const nh=Math.max(H*.12,Math.min(H*.86,hIni+(y0-e.clientY))); wrap.style.height=wrap.style.maxHeight=nh+'px'; });
+    asa.addEventListener('pointerup',e=>{
+      if(y0==null) return;
+      const H=wrap.parentElement.getBoundingClientRect().height, fr=wrap.getBoundingClientRect().height/H, movido=Math.abs(e.clientY-y0)>6;
+      wrap.style.transition=''; y0=null;
+      if(!movido) return poner((i+1)%alturas.length);
+      let mejor=0; alturas.forEach((a,k)=>{ if(Math.abs(a-fr)<Math.abs(alturas[mejor]-fr)) mejor=k; }); poner(mejor);
+    });
+  }
+  // 2. «¿Qué significa cada dato?»: una línea por dato con su resumen; el detalle al pulsar
+  document.querySelectorAll('#devpanel-rak dl').forEach(dl=>{
+    dl.classList.add('ayudaCorta');
+    dl.querySelectorAll('dt').forEach(dt=>{
+      const dd=dt.nextElementSibling; if(!dd||dd.tagName!=='DD') return;
+      const txt=dd.textContent.trim(), corte=txt.search(/[.;](\s|$)/);
+      const res=document.createElement('span'); res.className='ayudaRes';
+      res.textContent=corte>0&&corte<110?txt.slice(0,corte+1):txt.slice(0,100)+'…';
+      dt.appendChild(res); dd.hidden=true; dt.tabIndex=0; dt.setAttribute('role','button');
+      const t=()=>{ dd.hidden=!dd.hidden; dt.classList.toggle('abierto',!dd.hidden); res.hidden=!dd.hidden; };
+      dt.addEventListener('click',t);
+      dt.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t(); } });
+    });
+  });
+  // 3. Red y notas: cada apartado plegado (salvo el primero); el índice abre el suyo
+  document.querySelectorAll('#tab-red .redContent .card').forEach((c,k)=>{
+    const head=c.querySelector(':scope > .cardhead'); if(!head) return;
+    const cuerpo=document.createElement('div'); cuerpo.className='redCuerpo';
+    while(head.nextSibling) cuerpo.appendChild(head.nextSibling);
+    c.appendChild(cuerpo); head.classList.add('redPliega'); head.tabIndex=0; head.setAttribute('role','button');
+    const abrir=on=>{ cuerpo.hidden=!on; head.classList.toggle('abierto',on); };
+    abrir(k===0);
+    head.addEventListener('click',()=>abrir(cuerpo.hidden));
+    head.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); abrir(cuerpo.hidden); } });
+  });
+  document.querySelectorAll('.red-nav').forEach(b=>b.addEventListener('click',()=>{
+    const c=document.getElementById(b.dataset.target), h=c&&c.querySelector('.redPliega');
+    if(h && c.querySelector('.redCuerpo').hidden) h.click();
+  }));
+})();
+
 let avisoRak=null;
+// «Actualizado hace X · N contactos» bajo «Actualizar vecinos» (ámbar si pasa de un día).
+function pintarVecEstado(){
+  const el=$('#vecEstado'); if(!el) return;
+  let ts=0; const vistos=new Set();
+  for(const i of [1,2]){ const d=loadNeighbors(i); if(d&&d.ts>ts) ts=d.ts; for(const c of ((d&&d.contacts)||[])) vistos.add(c.pubkey); }
+  if(!ts){ el.textContent='Aún no se han escaneado los vecinos.'; el.style.color='var(--warn)'; return; }
+  el.textContent='Actualizado '+humanAgo(ts)+' · '+vistos.size+' contactos';
+  el.style.color=(Date.now()-ts>86400000)?'var(--warn)':'';
+}
 function pintarEqMap(){
+  pintarVecEstado();
   if(typeof map==='undefined' || !$('#map').offsetParent) return;
   map.invalidateSize();
   const est=window.rakEstado, sinRak=!est||est.vieja;
@@ -3362,7 +3494,19 @@ function pintarEqMap(){
   }
 }
 window.addEventListener('resize',()=>{ if(typeof map!=='undefined') map.invalidateSize(); });
-window.addEventListener('load',()=>setTimeout(pintarEqMap,300));
+// Si la pastilla de arriba no cabe entre los paneles laterales (pantalla
+// estrecha o zoom del navegador al 125 %), los paneles bajan debajo de ella.
+function colocarPaneles(){
+  const h=document.querySelector('header'); if(!h) return;
+  document.body.classList.remove('pastilla-choca');
+  if(innerWidth<=860) return;
+  const a=h.getBoundingClientRect(), choca=el=>{ if(!el||!el.offsetParent) return false; const b=el.getBoundingClientRect(); return !(a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top); };
+  if(choca($('#tab-equipos .devWrap'))||choca($('#tab-equipos .equiposWrap .grid'))) document.body.classList.add('pastilla-choca');
+}
+window.addEventListener('resize',colocarPaneles);
+window.addEventListener('load',()=>setTimeout(colocarPaneles,400));
+setTimeout(colocarPaneles,1500);
+window.addEventListener('load',()=>{ setTimeout(pintarEqMap,300); setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },1500); });
 setInterval(pintarEqMap,60000);
 
 // Chat: pulsar un mensaje sitúa en el mapa al nodo que lo envió.
