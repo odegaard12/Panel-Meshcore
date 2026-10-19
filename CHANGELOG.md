@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.22.1] - 2026-10-19
+
+### Corregido
+- En el ordenador, si la pastilla de arriba no cabe entre los paneles
+  laterales (pantalla estrecha o zoom del navegador al 125 % o más), los
+  paneles bajan solos debajo de ella en vez de solaparse; se recalcula al
+  cambiar el tamaño o el zoom. La ficha se llama «Ajustes» para que no se
+  corte.
+
 ## [1.22.0] - 2026-10-19
 
 ### Seguridad

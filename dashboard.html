@@ -669,6 +669,8 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+body.pastilla-choca #tab-equipos .devWrap,body.pastilla-choca #tab-equipos .equiposWrap .grid{top:68px!important}
+body.pastilla-choca #tab-equipos>#map .leaflet-top.leaflet-left{top:68px}
 .sheetAsa{display:none}
 @media (max-width:860px){
   .sheetAsa{display:block;height:22px;flex-shrink:0;cursor:grab;touch-action:none;position:relative}
@@ -1463,7 +1465,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.22.0';
+const PANEL_VERSION='1.22.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3329,7 +3331,7 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
   $('#mapHint')?.remove();
   $('#btn-map-fullscreen')?.remove();
   const btn=document.createElement('button'); btn.className='devTab'; btn.dataset.dev='mapa';
-  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Ajustes del mapa</span><span class="devTabSub">capas, vecinos y enlaces</span></span>';
+  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Ajustes</span><span class="devTabSub">capas, vecinos y enlaces</span></span>';
   $('.devSidebar').appendChild(btn);
   // Al cambiar de ficha cambia el alto del panel: el mapa debe recolocarse o
   // deja rectángulos negros (visto en el teléfono, 19/10).
@@ -3492,6 +3494,18 @@ function pintarEqMap(){
   }
 }
 window.addEventListener('resize',()=>{ if(typeof map!=='undefined') map.invalidateSize(); });
+// Si la pastilla de arriba no cabe entre los paneles laterales (pantalla
+// estrecha o zoom del navegador al 125 %), los paneles bajan debajo de ella.
+function colocarPaneles(){
+  const h=document.querySelector('header'); if(!h) return;
+  document.body.classList.remove('pastilla-choca');
+  if(innerWidth<=860) return;
+  const a=h.getBoundingClientRect(), choca=el=>{ if(!el||!el.offsetParent) return false; const b=el.getBoundingClientRect(); return !(a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top); };
+  if(choca($('#tab-equipos .devWrap'))||choca($('#tab-equipos .equiposWrap .grid'))) document.body.classList.add('pastilla-choca');
+}
+window.addEventListener('resize',colocarPaneles);
+window.addEventListener('load',()=>setTimeout(colocarPaneles,400));
+setTimeout(colocarPaneles,1500);
 window.addEventListener('load',()=>{ setTimeout(pintarEqMap,300); setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },1500); });
 setInterval(pintarEqMap,60000);
 
