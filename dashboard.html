@@ -668,6 +668,14 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+@media (max-width:860px){
+  .devTab[data-dev="mapa"] .devTabName{font-size:0}
+  .devTab[data-dev="mapa"] .devTabName::after{content:'Ajustes';font-size:13px}
+  .redWrap{flex-direction:column;width:auto!important;margin:-28px -14px -28px!important}
+  .redSidebar{position:static!important;width:auto!important;max-width:100vw;min-width:0;box-sizing:border-box;flex-direction:row!important;flex-wrap:nowrap;overflow-x:auto;gap:6px!important;padding:8px 12px!important;max-height:none!important;scrollbar-width:none}
+  .redSidebar .sidebarLabel{display:none}
+  .redSidebar .red-nav{flex:0 0 auto;width:auto!important;border-radius:999px!important;padding:8px 14px!important;background:var(--raise)!important}
+}
 #btn-w1-export,#btn-w2-export{display:none!important}  /* exportar la clave está desactivado por defecto (1.4.1) */
 body.sin-w2 .devTab[data-dev="w2"],body.sin-w2 #devpanel-w2,body.sin-w2 .fila-w2,body.sin-w2 #chatNode option[value="2"],body.sin-w2 #chatViaFilter option[value="2"]{display:none!important}
 #rak-live .metric:last-child:nth-child(3n+1){grid-column:1/-1}
@@ -1097,7 +1105,7 @@ footer{color:var(--dim2)}
         </div>
       </div>
       <div class="lead">
-        No es estado de red en vivo (eso está en Equipos y Mapa): son notas técnicas y recursos.
+        No es estado de red en vivo (eso está en el Panel): son notas técnicas y recursos.
         Primero cómo funciona MeshCore, luego normas y herramientas de la comunidad.
       </div>
     </div>
@@ -1425,7 +1433,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.19.0';
+const PANEL_VERSION='1.20.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3291,14 +3299,43 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
   $('#mapHint')?.remove();
   $('#btn-map-fullscreen')?.remove();
   const btn=document.createElement('button'); btn.className='devTab'; btn.dataset.dev='mapa';
-  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Mapa</span><span class="devTabSub">capas y herramientas</span></span>';
+  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Ajustes del mapa</span><span class="devTabSub">capas, vecinos y enlaces</span></span>';
   $('.devSidebar').appendChild(btn);
+  // Al cambiar de ficha cambia el alto del panel: el mapa debe recolocarse o
+  // deja rectángulos negros (visto en el teléfono, 19/10).
+  document.querySelector('.devSidebar').addEventListener('click',()=>setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },60));
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.devTab').forEach(x=>x.classList.toggle('on',x===btn));
     document.querySelectorAll('.devPanel').forEach(x=>x.classList.toggle('on',x===panel));
     try{ localStorage.setItem('meshcore-devtab','mapa'); }catch(e){}
   });
   try{ if(localStorage.getItem('meshcore-devtab')==='mapa') btn.click(); }catch(e){}
+  // Orden (1.20): tres bloques en vez de seis secciones que se pisaban.
+  const secc=[...panel.querySelectorAll('details')], de=t=>secc.find(d=>d.querySelector('summary')?.textContent.includes(t));
+  const capas=de('Capas'), vec=de('Vecinos'), enl=de('Análisis'), alc=de('Alcance'), her=de('Herramientas'), est=de('Datos de la estación');
+  const quick=panel.querySelector('.mapQuick');
+  if(capas){ capas.querySelector('summary').textContent='Qué se ve en el mapa'; capas.open=false; }
+  if(quick){ const vt=quick.querySelector('#btn-map-fit'); if(vt) vt.textContent='Encuadrar todo'; }
+  if(vec){
+    vec.querySelector('summary').textContent='Vecinos (lo que oyen tus WIO)';
+    const w1=vec.querySelector('#btn-scan-w1-map'), w2=vec.querySelector('#btn-scan-w2-map');
+    if(w1){
+      // Un solo botón: escanea por el WIO que esté conectado (antes «vía WIO1» y «vía WIO2»).
+      const uno=document.createElement('button'); uno.className='p'; uno.textContent='Actualizar vecinos'; uno.style.width='100%';
+      uno.onclick=()=>{ const n=[1,2].find(i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected)||1; $('#btn-scan-w'+n+'-map')?.click(); };
+      w1.before(uno); w1.hidden=true; if(w2) w2.hidden=true;
+    }
+    const csv=[...vec.querySelectorAll('button')].find(b=>b.textContent.includes('CSV'));
+    if(csv) csv.textContent='Exportar a CSV';
+    const ar=alc&&alc.querySelector('button');
+    if(ar&&csv){ ar.textContent='Ver por regiones'; ar.className=csv.className; csv.after(ar); alc.remove(); }
+  }
+  if(enl){
+    enl.querySelector('summary').textContent='Enlace con un nodo';
+    const md=her&&her.querySelector('button'), tr=[...enl.querySelectorAll('button')].find(b=>b.textContent.includes('Traceroute'));
+    if(md&&tr){ md.className=tr.className; tr.after(md); her.remove(); }
+  }
+  if(est){ est.open=false; $('#devpanel-rak .devPanelBody')?.appendChild(est); }
   $('#tab-equipos').prepend($('#map'));
   $('#eqMap')?.remove(); $('.eqLeyenda')?.remove();
   document.querySelector('nav.tabs button[data-tab="mapa"]')?.remove();
@@ -3362,7 +3399,7 @@ function pintarEqMap(){
   }
 }
 window.addEventListener('resize',()=>{ if(typeof map!=='undefined') map.invalidateSize(); });
-window.addEventListener('load',()=>setTimeout(pintarEqMap,300));
+window.addEventListener('load',()=>{ setTimeout(pintarEqMap,300); setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },1500); });
 setInterval(pintarEqMap,60000);
 
 // Chat: pulsar un mensaje sitúa en el mapa al nodo que lo envió.

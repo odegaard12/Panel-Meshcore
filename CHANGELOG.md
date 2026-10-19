@@ -3,6 +3,23 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.20.0] - 2026-10-19
+
+### Cambiado
+- La ficha «Mapa» del panel pasa a llamarse «Ajustes del mapa» («Ajustes»
+  en el teléfono) y se ordena en tres bloques: «Qué se ve en el mapa»,
+  «Vecinos (lo que oyen tus WIO)», con un solo «Actualizar vecinos» por el
+  WIO conectado y la tabla, el grafo, el CSV y las regiones juntos, y
+  «Enlace con un nodo», con el traceroute y medir distancia. «Datos de la
+  estación» pasa a la ficha del repetidor.
+- Teléfono: el índice de Red y notas es una fila de botones en vez de ocupar
+  la primera pantalla, y la página ya no se sale por la derecha.
+
+### Corregido
+- El mapa dejaba rectángulos negros al cambiar de ficha o al abrir la hoja
+  en el teléfono: ahora se recoloca.
+- Red y notas ya no remite a las pestañas «Equipos y Mapa», que no existen.
+
 ## [1.19.0] - 2026-10-19
 
 ### Añadido
