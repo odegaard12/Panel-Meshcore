@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.17.2] - 2026-10-19
+
+### Corregido
+- El relay se arregla solo cuando un companion conecta pero «no tiene» el
+  servicio de MeshCore: siempre lee los servicios del propio aparato (no la
+  copia que guarda Windows) y, cada 3 fallos seguidos, rehace el
+  emparejamiento con el PIN sin que haya que tocar nada.
+
 ## [1.17.1] - 2026-10-19
 
 ### Corregido

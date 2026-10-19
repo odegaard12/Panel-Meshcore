@@ -237,6 +237,19 @@ class Wio:
         return None
 
     async def connect(self) -> None:
+        # Se arregla solo: cada 3 fallos seguidos se rehace el emparejamiento
+        # con Windows (quitar y volver a emparejar con el PIN), sin tocar nada.
+        try:
+            await self._conectar()
+        except Exception:
+            self.fallos_seguidos = getattr(self, 'fallos_seguidos', 0) + 1
+            if self.fallos_seguidos % 3 == 0:
+                self.rehacer_vinculo = True
+                log.info('%s: %d fallos seguidos, se rehace el emparejamiento', self.label, self.fallos_seguidos)
+            raise
+        self.fallos_seguidos = 0
+
+    async def _conectar(self) -> None:
         async with self.lock:
             if self.connected:
                 return
@@ -259,7 +272,13 @@ class Wio:
                     self.pair_fallido = True
                     log.warning('%s: emparejamiento con PIN fallido: %s', self.label, exc or 'sin respuesta')
                 self.rehacer_vinculo = False
-            client = BleakClient(device, timeout=30, pair=False)
+            # Windows guarda los servicios GATT del WIO; si cambian (reinicio a
+            # medias, firmware) el UART "no existe" (19/10/2026). Leerlos siempre
+            # del propio aparato lo evita; en Linux/macOS la opción se ignora.
+            try:
+                client = BleakClient(device, timeout=30, pair=False, winrt={'use_cached_services': False})
+            except TypeError:
+                client = BleakClient(device, timeout=30, pair=False)
             await client.connect()
             try:
                 await client.start_notify(UART_NOTIFY, self._notify)
