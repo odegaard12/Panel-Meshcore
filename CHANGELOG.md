@@ -3,6 +3,19 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.26.1] - 2026-10-19
+
+### Corregido
+- La ficha del WIO se rellena con datos en vivo aunque la lectura de batería
+  falle o tarde: antes, un fallo único tras conectar dejaba la ficha con la
+  batería y la frecuencia guardadas de la última vez, sin reintentarlo.
+- La batería se vuelve a leer cada 2 minutos (cada 15 s si falla, con la nota
+  «sin leer ahora»), así que ya no se queda con la cifra de horas atrás.
+
+### Cambiado
+- README: capturas nuevas (con datos y mensajes de ejemplo inventados) y la
+  versión actual bien escrita.
+
 ## [1.26.0] - 2026-10-19
 
 ### Cambiado

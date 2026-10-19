@@ -231,8 +231,9 @@
             }
             // Antes solo se guardaba al pulsar «Conectar»: al recargar volvía el
             // «último estado conocido (hace 29 días)» aunque el WIO estuviera vivo.
-            if(typeof saveNodeState==='function') saveNodeState(idx,{name:info.name,freq:info.freq,bw:info.bw,sf:info.sf,cr:info.cr,tx:info.tx_power,batt:pct(mv),mv});
+            if(typeof saveNodeState==='function') saveNodeState(idx,{name:info.name,freq:info.freq,bw:info.bw,sf:info.sf,cr:info.cr,tx:info.tx_power});
             document.querySelector('#devpanel-w'+idx)?.classList.remove('stale');
+            n._batAt=0;   // fuerza leer la batería en esta misma vuelta
             // El conectar "a mano" (connectWisblock) siempre enganchaba esto;
             // el auto-hidratado de aqui nunca lo hacia, asi que el chat se
             // quedaba mudo en cuanto el enlace pasaba a depender del puente.
@@ -244,6 +245,19 @@
             if(typeof setWDeviceStatus==='function') setWDeviceStatus(idx,'Enlazado, pero no contesta (reintentando)',false);
             const logEl=$('#w'+idx+'-log');
             if(logEl) logEl.textContent='El PC ve el WIO por Bluetooth pero no contesta a los comandos ('+e.message+'). Se reintenta solo cada pocos segundos; si sigue así, apágalo y enciéndelo.';
+          }
+        }
+        if(st && st.connected && !n._manualOff && n._hydrated && Date.now()-(n._batAt||0)>(n._batOk?120000:15000)){
+          n._batAt=Date.now();
+          try{
+            const mv=await n.battery();
+            n._batOk=true;
+            $('#w'+idx+'-batt').textContent=pct(mv)+'% ('+(mv/1000).toFixed(2)+'V)';
+            if(typeof setBattBar==='function') setBattBar(idx,pct(mv));
+            if(typeof saveNodeState==='function') saveNodeState(idx,{batt:pct(mv),mv});
+          }catch(e){
+            n._batOk=false;
+            const b=$('#w'+idx+'-batt'); if(b) b.textContent=b.textContent.replace(/ ?\(sin leer ahora\)$/,'')+' (sin leer ahora)';
           }
         }
         // Un mensaje nuevo llega al relay de Windows y sube push_seq en el

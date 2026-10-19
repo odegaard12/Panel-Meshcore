@@ -22,9 +22,9 @@
 
 | | |
 |---|---|
-| **📡 Panel** | El mapa con tu repetidor, tus companion y los vecinos por saltos, y encima el estado: batería con tendencia, duty cycle, ruido, paquetes y (opcional) la temperatura de la caja. La Raspberry mide el repetidor por radio cada 15 min aunque nadie tenga el panel abierto |
+| **📡 Panel** | El mapa con tu repetidor, tus companion y los vecinos por saltos, y encima el estado: batería con tendencia, duty cycle, ruido, paquetes y (opcional) la temperatura de la caja. La Raspberry mide el repetidor por radio cada 15 min aunque nadie tenga el panel abierto. Un WIO apagado se marca «en pausa» y el relay deja de buscarlo |
 | **🛡️ Gestión remota** | Login y comandos CLI al repetidor por LoRa, con política de seguridad (bloquea lo destructivo, pide confirmación en lo arriesgado, no deja salirse de la banda legal) y comprobación de legalidad ERC/REC 70-03 |
-| **💬 Chat** | Canales y privados, con historial, separadores por día y pantalla completa |
+| **💬 Chat** | Canales y privados, con historial, separadores por día y pantalla completa. Se abre donde lo dejaste («N mensajes nuevos») y puedes borrar una conversación, un canal o todo |
 | **🗺️ Mapa** (dentro del Panel) | Capas, vecinos por radio, análisis de enlace con perfil de terreno y zona de Fresnel, traceroute, alcance por regiones y exportación a CSV |
 | **📊 Analítica** | SNR/RSSI de cada paquete oído, actividad por hora e histórico del repetidor |
 | **🖥️ Terminal** | Terminal web opcional de la Raspberry, tras el mismo login |
@@ -54,7 +54,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway :8780 (Raspberr
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: 1.26.0**1.0.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.26.1** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
