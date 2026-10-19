@@ -3,6 +3,22 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.26.0] - 2026-10-19
+
+### Cambiado
+- Pantalla de carga: el panel se oculta tras una pantalla con tres nodos
+  latiendo hasta que el diseño y el mapa están colocados, así los menús ya no
+  se ven saltar ni redimensionarse al abrir.
+- Chat: se abre donde lo dejaste, con una línea «N mensajes nuevos» antes de lo
+  no visto (o al final si no hay nada nuevo). Los mensajes que llegan no te
+  arrastran si estás leyendo arriba, y sale «Ir al final».
+- WIO en pausa: estado «en pausa» en gris, punto hueco, ficha atenuada y un
+  aviso que explica por qué.
+
+### Añadido
+- Borrar chats desde el botón del chat: una conversación, un canal o todo, con
+  un diálogo que nombra lo que se borra y cuántos mensajes son.
+
 ## [1.25.0] - 2026-10-19
 
 ### Cambiado

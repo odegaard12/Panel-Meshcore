@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0d12">
+<script>
+/* Antes de pintar nada: se oculta la interfaz y se calcula la escala, para que no se vea cómo se recolocan los menús */
+(function(){var d=document.documentElement;d.classList.add('cargando');
+d.style.setProperty('--esc',(innerWidth<=860?1:Math.max(.6,Math.min(1,innerWidth/1550))).toFixed(3));})();
+</script>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -676,6 +681,28 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+/* WIO en pausa: se ve apagado y dice por qué, no como un error */
+.devPanel.pausado .metrics,.devPanel.pausado .devPhoto{opacity:.4;filter:grayscale(1)}
+.devPanel.pausado .devPanelBody::before{content:'En pausa: lo marcaste como apagado y el relay no lo busca. Cuando lo enciendas, pulsa «Lo he encendido: búscalo».';display:block;background:rgba(95,107,122,.14);color:var(--dim,#9aa6b3);border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:13px;line-height:1.45}
+.devTab .statusdot.pausa{background:transparent!important;box-shadow:inset 0 0 0 2px #5f6b7a!important}
+#chatAlFinal{position:absolute;right:28px;bottom:112px;z-index:5;background:var(--fg,#e6ebf1);color:#0a0d12;border:0;border-radius:999px;padding:8px 14px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+#chatAlFinal[hidden]{display:none}
+.dlgBorrar{background:#11161e;color:var(--fg,#e6ebf1);border:0;border-radius:16px;padding:22px 24px;max-width:min(92vw,380px);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.dlgBorrar::backdrop{background:rgba(5,8,12,.65)}
+.dlgBorrar h3{font-size:17px;margin:0 0 8px}.dlgBorrar p{font-size:14px;color:var(--dim,#9aa6b3);margin:0 0 18px}
+.dlgBt{display:flex;gap:10px;justify-content:flex-end}
+.dlgBt .peligro{background:#f26b6b;color:#1d0505;border-color:transparent;font-weight:600}
+.msg.sys.daysep#chatNuevos span{background:rgba(63,214,122,.16);color:#3fd67a}
+/* Pantalla de carga */
+html.cargando body>*:not(#splash){visibility:hidden!important}
+#splash{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:#0a0d12;transition:opacity .4s ease}
+html:not(.cargando) #splash{opacity:0;pointer-events:none}
+#splash .spCaja{text-align:center;color:var(--dim,#9aa6b3);font:500 14px var(--sans,system-ui)}
+#splash .spT{margin-top:14px}
+#splash .spN{animation:spLate 1.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+#splash .spN:nth-child(2){animation-delay:.2s}#splash .spN:nth-child(3){animation-delay:.4s}
+@keyframes spLate{0%,100%{opacity:.35}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){#splash .spN{animation:none}#splash{transition:none}}
 .msg .mencion{color:#8fd3ff;background:rgba(94,179,245,.14);border-radius:5px;padding:0 5px;font-weight:500;white-space:nowrap}
 .msg.out .mencion{color:#e9fff1;background:rgba(255,255,255,.18)}
 .msg .body a{color:#8fd3ff;text-decoration:underline;text-underline-offset:2px;word-break:break-all}
@@ -820,6 +847,9 @@ footer{color:var(--dim2)}
 </style>
 </head>
 <body>
+<div id="splash" role="status" aria-live="polite"><div class="spCaja">
+  <svg viewBox="0 0 24 24" width="64" height="64" aria-hidden="true"><path d="M12 8.5 5.5 17h13z" fill="none" stroke="#3fd67a" stroke-width="1.3"/><g fill="#3fd67a"><circle class="spN" cx="12" cy="8.5" r="2.6"/><circle class="spN" cx="5.5" cy="17" r="2.3"/><circle class="spN" cx="18.5" cy="17" r="2.3"/></g></svg>
+  <div class="spT">Cargando el panel…</div></div></div>
 <header>
   <h1 id="cfg-titulo">Mesh<span>Core</span> Panel</h1>
   <span class="sub" id="cfg-subtitulo">Panel de equipos</span>
@@ -1113,6 +1143,7 @@ footer{color:var(--dim2)}
         <div class="msg sys">Conecta un WIO (pestaña Panel) para leer y enviar mensajes.</div>
       </div>
       </div>
+      <button id="chatAlFinal" type="button" hidden>↓ Ir al final</button>
       <div class="chatComposer">
         <select id="chatNode" hidden title="El chat siempre muestra los mensajes de ambos WIO; esto solo elige por cuál se envía">
           <option value="1">WIO1</option>
@@ -1486,7 +1517,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.25.0';
+const PANEL_VERSION='1.26.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1546,7 +1577,8 @@ function showTab(name){
   if(name==='mapa'){ name='equipos'; setTimeout(()=>document.querySelector('.devTab[data-dev="mapa"]')?.click(),0); }
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
   document.querySelectorAll('.tabview').forEach(v=>v.classList.toggle('on',v.id==='tab-'+name));
-  if(name==='chat'){ unreadChat=0; updateChatBadge(); fitChatCardToViewport(); }
+  if(name!=='chat') marcarChatVisto();
+  if(name==='chat'){ unreadChat=0; updateChatBadge(); fitChatCardToViewport(); requestAnimationFrame(()=>posicionarChat()); }
   if(name==='mapa') fitMapWrapToViewport();
   // Un solo mapa (el completo, con sus capas y herramientas): vive en el
   // Panel y se lleva al Chat cuando se abre.
@@ -2766,6 +2798,7 @@ function chatAdd(cls,who,text,meta,persist=true,dedupKey=null,kind='out',at=null
       box.appendChild(sep);
     }
   }
+  const pegado=box.scrollHeight-box.scrollTop-box.clientHeight<140;   // si estabas leyendo arriba, no te arrastra
   const d=document.createElement('div');
   d.className='msg '+cls+(kind==='priv'&&cls!=='sys'?' priv':'');
   d.dataset.kind=kind;
@@ -2799,13 +2832,35 @@ function chatAdd(cls,who,text,meta,persist=true,dedupKey=null,kind='out',at=null
   box.appendChild(d);
   // Con dias de chat abierto el DOM crecia sin limite y el scroll se arrastraba.
   while(box.children.length>600) box.firstElementChild.remove();
-  box.scrollTop=box.scrollHeight;
+  if(pegado||cls==='out') box.scrollTop=box.scrollHeight;
   if(persist){
     const log=loadChatLog();
     log.push({cls,who,text,meta,dedupKey,kind,at});
     saveChatLog(log);
   }
 }
+// «Última vez que vi el chat»: al abrirlo se coloca en lo primero que no habías visto
+// (con una línea «N mensajes nuevos») o, si no hay nada nuevo, al final.
+function marcarChatVisto(){ try{ localStorage.setItem('meshcore-chat-visto',String(Date.now())); }catch(e){} }
+function posicionarChat(){
+  const box=$('#chatBox'); if(!box) return;
+  box.querySelector('#chatNuevos')?.remove();
+  let visto=0; try{ visto=+localStorage.getItem('meshcore-chat-visto')||0; }catch(e){}
+  const nuevos=visto?[...box.querySelectorAll('.msg.in')].filter(m=>+m.dataset.at>visto&&m.style.display!=='none'):[];
+  if(nuevos.length){
+    const l=document.createElement('div'); l.id='chatNuevos'; l.className='msg sys daysep'; l.dataset.kind='sys';
+    l.innerHTML='<span>'+nuevos.length+(nuevos.length===1?' mensaje nuevo':' mensajes nuevos')+'</span>';
+    nuevos[0].before(l); box.scrollTop=Math.max(0,l.offsetTop-box.offsetTop-16);
+  }else box.scrollTop=box.scrollHeight;
+  actualizarAlFinal();
+}
+// Botón «Ir al final» cuando estás leyendo mensajes antiguos.
+function actualizarAlFinal(){
+  const box=$('#chatBox'), b=$('#chatAlFinal'); if(!box||!b) return;
+  b.hidden = box.scrollHeight-box.scrollTop-box.clientHeight<260;
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'&&$('#tab-chat').classList.contains('on')) marcarChatVisto(); });
+window.addEventListener('pagehide',()=>{ if($('#tab-chat').classList.contains('on')) marcarChatVisto(); });
 function applyChatFilterTo(el){
   const f=$('#chatFilter')?.value||'all';
   const via=$('#chatViaFilter')?.value||'all';
@@ -2834,12 +2889,47 @@ $('#chatDownload').onclick=()=>{
   a.download='meshcore-chat-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.txt';
   a.click();
 };
+function alcanceBorrado(){
+  const log=loadChatLog();
+  const deConv=n=>e=>e.kind==='priv'&&(e.who===n||String(e.meta||'').includes('· a '+n));
+  if(convSel){ const n=convSel, f=deConv(n); return {titulo:'«'+n+'»', cuantos:log.filter(f), resto:e=>!f(e), conv:true}; }
+  if(canalSel!=='all'){ const k='chan'+canalSel, nom=CANAL_NOMBRE[k]||('Canal '+canalSel); return {titulo:'el canal «'+nom+'»', cuantos:log.filter(e=>e.kind===k), resto:e=>e.kind!==k}; }
+  return {titulo:'todo el chat', cuantos:log, resto:()=>false};
+}
+function etiquetaBorrar(){
+  const b=$('#chatClear'); if(!b) return;
+  const a=convSel?'Borrar chat':(canalSel!=='all'?'Borrar canal':'Borrar todo'); b.textContent=a; b.title=a+' (de este navegador)';
+}
+function rehacerChat(){
+  const box=$('#chatBox'); box.innerHTML=''; delete box.dataset.lastDay; seenMsgs.clear();
+  const log=loadChatLog();
+  if(!log.length) box.innerHTML='<div class="msg sys">Conecta un WIO (pestaña Panel) para leer y enviar mensajes.</div>';
+  for(const e of log){ chatAdd(e.cls,e.who,e.text,e.meta,false,null,e.kind||'out',e.at||null); if(e.dedupKey) seenMsgs.add(e.dedupKey); }
+  if(typeof pintarContactos==='function') pintarContactos();
+  posicionarChat();
+}
 $('#chatClear').onclick=()=>{
-  if(!confirm('¿Borrar todo el historial de chat guardado en este navegador? No afecta a los mensajes en los nodos.')) return;
-  saveChatLog([]);
-  seenMsgs.clear();
-  $('#chatBox').innerHTML='<div class="msg sys">Conecta un WIO (pestaña Panel) para leer y enviar mensajes.</div>';
-  delete $('#chatBox').dataset.lastDay;
+  const a=alcanceBorrado(), n=a.cuantos.length;
+  let dlg=document.getElementById('dlgBorrar');
+  if(!dlg){
+    dlg=document.createElement('dialog'); dlg.id='dlgBorrar'; dlg.className='dlgBorrar';
+    dlg.innerHTML='<h3></h3><p></p><div class="dlgBt"><button type="button" id="dlgNo" autofocus>Cancelar</button><button type="button" id="dlgSi" class="peligro"></button></div>';
+    document.body.appendChild(dlg);
+    dlg.querySelector('#dlgNo').onclick=()=>dlg.close();
+    dlg.addEventListener('click',e=>{ if(e.target===dlg) dlg.close(); });
+  }
+  dlg.querySelector('h3').textContent=n?('¿Borrar '+a.titulo+'?'):'No hay nada que borrar';
+  dlg.querySelector('p').textContent=n?(n+(n===1?' mensaje guardado':' mensajes guardados')+' en este navegador. No se borra nada de los nodos: si llegan de nuevo, volverán a aparecer.'):'En esta vista no hay mensajes guardados.';
+  const si=dlg.querySelector('#dlgSi'); si.textContent=n?'Borrar mensajes':'Cerrar';
+  si.onclick=()=>{
+    dlg.close();
+    if(!n) return;
+    saveChatLog(loadChatLog().filter(a.resto));
+    if(a.conv) convSel=null;
+    rehacerChat();
+    if(a.conv&&typeof elegirCanal==='function') elegirCanal('all');
+  };
+  dlg.showModal();
 };
 // ==================== ANALITICA DE RADIO ====================
 // Las medidas RF (SNR/RSSI por paquete) las da el nodo en el aviso 0x88 y las
@@ -3338,6 +3428,7 @@ function ultimosPrivados(){
   return ultimo;
 }
 function pintarContactos(){
+  etiquetaBorrar();
   const q=$('#ccBuscar').value.trim().toLowerCase();
   const ultimo=ultimosPrivados();
   const cs=contactosChat();
@@ -3582,10 +3673,16 @@ function colocarPaneles(){
 window.addEventListener('resize',colocarPaneles);
 window.addEventListener('load',()=>setTimeout(colocarPaneles,400));
 setTimeout(colocarPaneles,1500);
+// Fin de la pantalla de carga: ya cargó todo, se colocó el diseño y el mapa tiene su tamaño.
+function listoCarga(){ document.documentElement.classList.remove('cargando'); setTimeout(()=>{ document.getElementById('splash')?.remove(); },600); }
+window.addEventListener('load',()=>setTimeout(()=>{ try{ colocarPaneles(); if(typeof map!=='undefined') map.invalidateSize(); pintarEqMap(); }catch(e){} listoCarga(); },700));
+setTimeout(listoCarga,6000);   // por si algo tarda: nunca se queda tapado
 window.addEventListener('load',()=>{ setTimeout(pintarEqMap,300); setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },1500); });
 setInterval(pintarEqMap,60000);
 
 // Chat: pulsar un mensaje sitúa en el mapa al nodo que lo envió.
+$('#chatBox').addEventListener('scroll',actualizarAlFinal,{passive:true});
+$('#chatAlFinal').addEventListener('click',()=>{ const b=$('#chatBox'); b.scrollTo({top:b.scrollHeight,behavior:'smooth'}); });
 $('#chatBox').addEventListener('click',e=>{
   const b=e.target.closest('.msg.in'); if(!b) return;
   const nombre=(b.querySelector('.who b')?.textContent||'').trim(); if(!nombre) return;
@@ -3689,8 +3786,13 @@ async function updateStatusBar(){
       return {txt, color, bateria, motivo:w.last_failure||''};
     };
     const r1=resumenWio(w1,1), r2=resumenWio(w2,2);
+    [[w1,r1],[w2,r2]].forEach(([w,rr])=>{ if(w.pausado){ rr.txt='en pausa'; rr.color='var(--dim)'; rr.motivo='Marcado como apagado: el relay no lo busca'; } });
     w1El.textContent=r1.txt; w1El.style.color=r1.color; w1El.title=r1.motivo;
     w2El.textContent=r2.txt; w2El.style.color=r2.color; w2El.title=r2.motivo;
+    [[1,w1],[2,w2]].forEach(([i,w])=>{
+      document.getElementById('devpanel-w'+i)?.classList.toggle('pausado',!!w.pausado);
+      document.getElementById('devtabdot-w'+i)?.classList.toggle('pausa',!!w.pausado);
+    });
     // El repetidor solo se mide por LoRa (no tiene Bluetooth): su estado sale del historico.
     rakEl.textContent = rakResumen || 'por LoRa · sin medidas aún';
     rakEl.style.color = rakResumenColor || 'var(--dim2)';
