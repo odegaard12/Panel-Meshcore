@@ -3,6 +3,75 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.26.1] - 2026-10-19
+
+### Corregido
+- La ficha del WIO se rellena con datos en vivo aunque la lectura de batería
+  falle o tarde: antes, un fallo único tras conectar dejaba la ficha con la
+  batería y la frecuencia guardadas de la última vez, sin reintentarlo.
+- La batería se vuelve a leer cada 2 minutos (cada 15 s si falla, con la nota
+  «sin leer ahora»), así que ya no se queda con la cifra de horas atrás.
+
+### Cambiado
+- README: capturas nuevas (con datos y mensajes de ejemplo inventados) y la
+  versión actual bien escrita.
+
+## [1.26.0] - 2026-10-19
+
+### Cambiado
+- Pantalla de carga: el panel se oculta tras una pantalla con tres nodos
+  latiendo hasta que el diseño y el mapa están colocados, así los menús ya no
+  se ven saltar ni redimensionarse al abrir.
+- Chat: se abre donde lo dejaste, con una línea «N mensajes nuevos» antes de lo
+  no visto (o al final si no hay nada nuevo). Los mensajes que llegan no te
+  arrastran si estás leyendo arriba, y sale «Ir al final».
+- WIO en pausa: estado «en pausa» en gris, punto hueco, ficha atenuada y un
+  aviso que explica por qué.
+
+### Añadido
+- Borrar chats desde el botón del chat: una conversación, un canal o todo, con
+  un diálogo que nombra lo que se borra y cuántos mensajes son.
+
+## [1.25.0] - 2026-10-19
+
+### Cambiado
+- Analítica: umbrales marcados en las gráficas. SNR con una línea en 0 dB y otra
+  en el límite de demodulación según el SF del companion (en SF7, −7,5 dB);
+  RSSI con una línea en el ruido de fondo del repetidor. «El repetidor en el
+  tiempo» rotula los huecos con «sin datos · N h», igual que la gráfica de
+  batería.
+- Chat: las menciones `@[nombre]` se ven como etiqueta, los enlaces http(s) se
+  pueden pulsar (pestaña nueva, sin pasar datos) y el mismo mensaje largo
+  recibido por dos caminos en menos de 90 s se cuenta una vez.
+
+### Corregido
+- Fuera las fotos de dispositivos del panel: estaban ocultas y no venían en
+  el repositorio, así que una instalación nueva pedía dos archivos que no
+  existían.
+
+## [1.24.0] - 2026-10-19
+
+### Añadido
+- Web app instalable: manifiesto, iconos (192, 512 y el de iPhone), colores del
+  sistema y márgenes para el notch del móvil. El service worker no guarda
+  nada del panel ni toca la API: solo enseña «No hay conexión con el panel»
+  con «Reintentar» si el panel no responde. `tools/check_pwa.py` lo comprueba.
+
+### Cambiado
+- Gráfica de batería: eje de 48 h completo, un punto por medida y, donde hay
+  más de una hora sin datos, una franja rayada con «sin datos · N h» en vez de
+  quedarse casi vacía.
+
+## [1.23.0] - 2026-10-19
+
+### Cambiado
+- En el ordenador, la interfaz se reduce sola según el ancho de la ventana
+  (a partir de 1550 px útiles va a tamaño normal y por debajo baja hasta un
+  60 %): la pastilla de arriba, el panel izquierdo, el estado y la leyenda
+  se escalan juntos, de modo que la pastilla queda entre los dos paneles y a
+  su misma altura en vez de solaparse. Se recalcula al cambiar el tamaño o el
+  zoom del navegador.
+
 ## [1.22.1] - 2026-10-19
 
 ### Corregido
