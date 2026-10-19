@@ -669,6 +669,13 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+:root{--esc:1}
+@media (min-width:861px){
+  header,#tab-equipos .devWrap,#tab-equipos .equiposWrap .grid,#tab-equipos .mapLegend,#tab-equipos #cfgAviso{zoom:var(--esc)}
+  #tab-equipos>#map .leaflet-top.leaflet-left{left:calc(436px*var(--esc) + 12px)!important;top:calc(64px*var(--esc))!important}
+  #tab-equipos>#map .leaflet-bottom.leaflet-left{left:calc(436px*var(--esc) + 12px)!important}
+  #tab-equipos #cfgAviso{top:calc(68px*var(--esc))!important}
+}
 body.pastilla-choca #tab-equipos .devWrap,body.pastilla-choca #tab-equipos .equiposWrap .grid{top:68px!important}
 body.pastilla-choca #tab-equipos>#map .leaflet-top.leaflet-left{top:68px}
 .sheetAsa{display:none}
@@ -1465,7 +1472,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.22.1';
+const PANEL_VERSION='1.23.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3489,7 +3496,7 @@ function pintarEqMap(){
     if(w2Marker) pts.push(w2Marker.getLatLng());
     layerNeighbors.eachLayer(m=>{ if(m.getLatLng && distKm(REPEATER_POS,[m.getLatLng().lat,m.getLatLng().lng])<=30) pts.push(m.getLatLng()); });
     const ancho=window.innerWidth>860;
-    map.fitBounds(L.latLngBounds(pts).pad(.2),ancho?{paddingTopLeft:[450,40],paddingBottomRight:[360,60],maxZoom:13}:{paddingBottomRight:[0,Math.round(window.innerHeight*.45)],maxZoom:13});
+    map.fitBounds(L.latLngBounds(pts).pad(.2),ancho?{paddingTopLeft:[Math.round(436*(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--esc'))||1))+30,40],paddingBottomRight:[Math.round(340*(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--esc'))||1))+30,60],maxZoom:13}:{paddingBottomRight:[0,Math.round(window.innerHeight*.45)],maxZoom:13});
     map._centradoPanel=true;
   }
 }
@@ -3498,6 +3505,11 @@ window.addEventListener('resize',()=>{ if(typeof map!=='undefined') map.invalida
 // estrecha o zoom del navegador al 125 %), los paneles bajan debajo de ella.
 function colocarPaneles(){
   const h=document.querySelector('header'); if(!h) return;
+  // Escala: a 1550 px útiles o más, tamaño normal; por debajo, todo (pastilla,
+  // panel izquierdo, estado, leyenda) se reduce hasta un 60 % para que la pastilla
+  // quepa ENTRE los dos paneles y a su misma altura.
+  const esc=innerWidth<=860?1:Math.max(.6,Math.min(1,innerWidth/1550));
+  document.documentElement.style.setProperty('--esc',esc.toFixed(3));
   document.body.classList.remove('pastilla-choca');
   if(innerWidth<=860) return;
   const a=h.getBoundingClientRect(), choca=el=>{ if(!el||!el.offsetParent) return false; const b=el.getBoundingClientRect(); return !(a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top); };

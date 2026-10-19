@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.23.0] - 2026-10-19
+
+### Cambiado
+- En el ordenador, la interfaz se reduce sola según el ancho de la ventana
+  (a partir de 1550 px útiles va a tamaño normal y por debajo baja hasta un
+  60 %): la pastilla de arriba, el panel izquierdo, el estado y la leyenda
+  se escalan juntos, de modo que la pastilla queda entre los dos paneles y a
+  su misma altura en vez de solaparse. Se recalcula al cambiar el tamaño o el
+  zoom del navegador.
+
 ## [1.22.1] - 2026-10-19
 
 ### Corregido
