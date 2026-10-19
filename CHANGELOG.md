@@ -3,6 +3,23 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.25.0] - 2026-10-19
+
+### Cambiado
+- Analítica: umbrales marcados en las gráficas. SNR con una línea en 0 dB y otra
+  en el límite de demodulación según el SF del companion (en SF7, −7,5 dB);
+  RSSI con una línea en el ruido de fondo del repetidor. «El repetidor en el
+  tiempo» rotula los huecos con «sin datos · N h», igual que la gráfica de
+  batería.
+- Chat: las menciones `@[nombre]` se ven como etiqueta, los enlaces http(s) se
+  pueden pulsar (pestaña nueva, sin pasar datos) y el mismo mensaje largo
+  recibido por dos caminos en menos de 90 s se cuenta una vez.
+
+### Corregido
+- Fuera las fotos de dispositivos del panel: estaban ocultas y no venían en
+  el repositorio, así que una instalación nueva pedía dos archivos que no
+  existían.
+
 ## [1.24.0] - 2026-10-19
 
 ### Añadido

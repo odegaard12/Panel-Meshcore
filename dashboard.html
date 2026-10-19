@@ -676,6 +676,10 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+.msg .mencion{color:#8fd3ff;background:rgba(94,179,245,.14);border-radius:5px;padding:0 5px;font-weight:500;white-space:nowrap}
+.msg.out .mencion{color:#e9fff1;background:rgba(255,255,255,.18)}
+.msg .body a{color:#8fd3ff;text-decoration:underline;text-underline-offset:2px;word-break:break-all}
+.msg.out .body a{color:#fff}
 /* Como app instalada en un móvil con notch o barra de gestos: nada queda bajo ellos */
 @media (max-width:860px){
   header{top:calc(8px + env(safe-area-inset-top))!important}
@@ -872,7 +876,6 @@ footer{color:var(--dim2)}
       <div class="devMain">
         <div class="devPanel on" id="devpanel-rak">
           <div class="devPanelHead">
-            <div class="devPhoto"><img src="/img/rak4630.png" alt="RAK4630" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'📡'}))"></div>
             <div class="devPanelInfo">
               <div class="devPanelTitle cfg-rep">Repetidor</div>
               <div class="devPanelSub">RAK4630 · repetidor fijo · medido por LoRa</div>
@@ -990,7 +993,6 @@ footer{color:var(--dim2)}
 
         <div class="devPanel" id="devpanel-w1">
           <div class="devPanelHead">
-            <div class="devPhoto"><img src="/img/wio-l1pro.png" alt="Seeed L1 Pro" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'📶'}))"></div>
             <div class="devPanelInfo">
               <div class="devPanelTitle cfg-wio1">WIO1</div>
               <div class="devPanelSub">Seeed L1 Pro · terminal casa 1 · BLE</div>
@@ -1021,7 +1023,6 @@ footer{color:var(--dim2)}
 
         <div class="devPanel" id="devpanel-w2">
           <div class="devPanelHead">
-            <div class="devPhoto"><img src="/img/wio-l1pro.png" alt="Seeed L1 Pro" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'📶'}))"></div>
             <div class="devPanelInfo">
               <div class="devPanelTitle cfg-wio2">WIO2</div>
               <div class="devPanelSub">Seeed L1 Pro · terminal casa 2 · BLE</div>
@@ -1485,7 +1486,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.24.0';
+const PANEL_VERSION='1.25.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2736,6 +2737,18 @@ function atDesdeMeta(meta){
   const m=String(meta||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4}),?\s+(\d{1,2}):(\d{2})/);
   return m?new Date(+m[3],m[2]-1,+m[1],+m[4],+m[5]).getTime():null;
 }
+// Texto de un mensaje: escapado y con las menciones @[nombre] como etiqueta y los
+// enlaces http(s) pulsables (siempre en pestaña nueva y sin pasar datos).
+function cuerpoHtml(t){
+  let h=esc(t);
+  h=h.replace(/@\[([^\]\n]{1,40})\]/g,'<span class="mencion">@$1</span>');
+  h=h.replace(/https?:\/\/[^\s<]+/g,u=>{
+    let corte=u.search(/&quot;|&#39;|&lt;|&gt;/); let url=corte>=0?u.slice(0,corte):u, resto=corte>=0?u.slice(corte):'';
+    const m=url.match(/[.,;:!?)\]]+$/); if(m){ resto=m[0]+resto; url=url.slice(0,-m[0].length); }
+    return '<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+url+'</a>'+resto;
+  });
+  return h;
+}
 function chatAdd(cls,who,text,meta,persist=true,dedupKey=null,kind='out',at=null){
   const box=$('#chatBox');
   const first=box.querySelector('.msg.sys');
@@ -2771,7 +2784,7 @@ function chatAdd(cls,who,text,meta,persist=true,dedupKey=null,kind='out',at=null
     d.style.setProperty('--avc',colorDe(quien||'?'));
     html+='<div class="who"><b>'+esc(quien||'?')+'</b><span class="chip">'+esc(CANAL_NOMBRE[kind]||kind)+'</span></div>';
   }else if(who) html+='<div class="who">'+esc(who)+'</div>';
-  html+='<div class="body">'+esc(cuerpo)+'</div>';
+  html+='<div class="body">'+cuerpoHtml(cuerpo)+'</div>';
   if(meta){
     const corta=String(meta).replace(/^\d{1,2}\/\d{1,2}\/\d{4},?\s*/,'').replace(/(\d{1,2}:\d{2}):\d{2}/,'$1');
     html+='<div class="meta">'+esc(corta)+(cls==='out'&&CANAL_NOMBRE[kind]?' · '+esc(CANAL_NOMBRE[kind]):'')+'</div>';
@@ -2887,8 +2900,23 @@ function statBars(sel,buckets,opts){
                       '"'+(b.actual?' font-weight="700"':'')+' text-anchor="middle">'+esc(b.label)+'</text>';
     s+='</g>';
   });
+  // Umbrales: línea discontinua vertical con su etiqueta (k = posición en barras, con decimales).
+  (opts.marcas||[]).forEach(m=>{
+    if(m.k==null) return;
+    const x=L+m.k*(bw+gap)-gap/2, col=m.color||'#f2b23a', t=esc(m.texto), tw=t.length*5.4+10;
+    const ax=m.anchor==='end'?x-tw-3:x+3;
+    s+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+(T-3)+'" y2="'+(H-B)+'" stroke="'+col+'" stroke-width="1.4" stroke-dasharray="4 3" opacity=".9"/>'
+     + '<rect x="'+ax.toFixed(1)+'" y="'+(T-17)+'" width="'+tw.toFixed(1)+'" height="15" rx="7.5" fill="#11161e" stroke="'+col+'" stroke-opacity=".5"/>'
+     + '<text x="'+(ax+tw/2).toFixed(1)+'" y="'+(T-6.5)+'" font-size="10" font-weight="600" fill="'+col+'" text-anchor="middle">'+t+'</text>';
+  });
   if(opts.eje) s+='<text x="'+(L+ancho/2).toFixed(1)+'" y="'+(H-6)+'" font-size="10.5" fill="'+G_DIM+'" text-anchor="middle">'+esc(opts.eje)+'</text>';
   el.innerHTML=s;
+}
+// Posición (en barras) de un valor dentro de un histograma con bordes e[0..]; null si cae fuera.
+function posBarra(v,e){
+  if(v==null||isNaN(v)||v<e[0]||v>=e[e.length-1]) return null;
+  for(let j=0;j<e.length-1;j++) if(v>=e[j]&&v<e[j+1]) return (j+1)+(v-e[j])/(e[j+1]-e[j]);
+  return null;
 }
 function mediana(a){
   if(!a.length) return null;
@@ -2961,7 +2989,15 @@ async function renderStats(){
     if(v<-10) snrB[0].n++; else if(v<-5) snrB[1].n++; else if(v<0) snrB[2].n++;
     else if(v<5) snrB[3].n++; else if(v<10) snrB[4].n++; else if(v<15) snrB[5].n++; else snrB[6].n++;
   }
-  statBars('#snrChart',snrB,{vacio,color:(b,i)=>i<2?'#f26b6b':i<3?'#f2b23a':'#3fd67a',unidad:'dB',eje:'SNR (dB) · rojo = al límite, verde = holgado'});
+  statBars('#snrChart',snrB,{vacio,color:(b,i)=>i<2?'#f26b6b':i<3?'#f2b23a':'#3fd67a',unidad:'dB',eje:'SNR (dB) · rojo = al límite, verde = holgado',
+    marcas:(()=>{
+      // Límite de demodulación según el factor de dispersión (SF) del companion; SF7 si no se sabe.
+      const sf=(()=>{ for(const i of [1,2]){ try{ const st=loadNodeState(i); if(st&&st.sf) return +st.sf; }catch(e){} } return 7; })();
+      const lim={7:-7.5,8:-10,9:-12.5,10:-15,11:-17.5,12:-20}[sf];
+      const e=[-10,-5,0,5,10,15];
+      return [{k:posBarra(lim,e),texto:'límite SF'+sf+' · '+String(lim).replace('.',',')+' dB',color:'#f26b6b',anchor:'end'},
+              {k:posBarra(0,e),texto:'0 dB · justo',color:'#f2b23a',anchor:'start'}];
+    })()});
 
   // RSSI: mas fuerte = azul mas intenso
   const rssiB=[{label:'<-125',n:0},{label:'-125…-115',n:0},{label:'-115…-105',n:0},{label:'-105…-95',n:0},
@@ -2971,7 +3007,8 @@ async function renderStats(){
     else if(v<-95) rssiB[3].n++; else if(v<-85) rssiB[4].n++; else if(v<-70) rssiB[5].n++; else rssiB[6].n++;
   }
   statBars('#rssiChart',rssiB,{vacio,color:(b,i)=>'rgba(94,179,245,'+(0.38+0.62*i/6).toFixed(2)+')',unidad:'dBm',
-    eje:'RSSI (dBm) · a la derecha, más fuerte',rotulo:62});
+    eje:'RSSI (dBm) · a la derecha, más fuerte',rotulo:62,
+    marcas:(window.rakEstado&&window.rakEstado.noise!=null)?[{k:posBarra(window.rakEstado.noise,[-125,-115,-105,-95,-85,-70]),texto:'ruido de fondo '+window.rakEstado.noise+' dBm',color:'#a78bfa',anchor:'start'}]:[]});
 
   // Actividad por hora (la hora en curso resaltada)
   const ahora=new Date(); ahora.setMinutes(0,0,0);
@@ -3109,7 +3146,11 @@ function dibujarHistoricoRak(){
     const x0=X(s[i-1].at)+2, x1=X(s[i].at)-2;
     if(x1-x0<8) continue;
     svg+='<rect x="'+f(x0)+'" y="'+T+'" width="'+f(x1-x0)+'" height="'+(H-T-B)+'" fill="url(#rayas)" opacity=".9"/>';
-    if(x1-x0>62) svg+=txt((x0+x1)/2,yB0+hB+SEP/2+4,'sin datos','middle',G_DIM);
+    if(x1-x0>62){
+      const h=Math.round((s[i].at-s[i-1].at)/3600), t=(x1-x0>110?'sin datos · '+h+' h':h+' h'), tw=t.length*5.6+14, cx=(x0+x1)/2, cy=yB0+hB+SEP/2;
+      svg+='<rect x="'+f(cx-tw/2)+'" y="'+f(cy-8)+'" width="'+f(tw)+'" height="17" rx="8.5" fill="#11161e" stroke="#f2b23a" stroke-opacity=".5"/>'
+         + '<text x="'+f(cx)+'" y="'+f(cy+4)+'" text-anchor="middle" font-size="10.5" font-weight="600" fill="#f2b23a">'+t+'</text>';
+    }
   }
   if(t1>ultima){
     const x0=X(ultima)+2, x1=W-R;
@@ -3215,6 +3256,12 @@ async function pullMessages(node){
   finally{ node._pulling=false; }
   for(const m of msgs){
     const key=m.kind+'|'+m.ts+'|'+m.text;
+    // El mismo mensaje largo llegado por dos caminos (segundos de diferencia) se cuenta una vez.
+    if(String(m.text||'').length>=12){
+      const ult=window._ultimoMsg||(window._ultimoMsg=new Map()), nk=m.kind+'|'+(m.from||'')+'|'+m.text;
+      if(ult.has(nk) && Math.abs(m.ts-ult.get(nk))<=90) continue;
+      ult.set(nk,m.ts);
+    }
     if(seenMsgs.has(key)) continue;
     seenMsgs.add(key);
     const when=new Date(m.ts*1000).toLocaleString();
@@ -3711,7 +3758,7 @@ async function pintarRakVivo(){
     $('#rl-when').textContent=humanAgo(s.at*1000);
     const vieja = Date.now()/1000 - s.at > 3600;
     const antes = window.rakEstado && window.rakEstado.vieja;
-    window.rakEstado = {vieja, at:s.at};
+    window.rakEstado = {vieja, at:s.at, noise:s.noise_floor};
     if(antes!==vieja && typeof pintarEqMap==='function') pintarEqMap();
     $('#rl-when').className='v '+(vieja?'mid':'');
     // Con la medida vieja los valores se atenuan: un 90 % en verde de hace
