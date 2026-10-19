@@ -378,6 +378,10 @@ async def keep(wio: Wio, stop: asyncio.Event) -> None:
                 motivo = 'no responde: ¿apagado o sin batería?'
             elif 'not powered on' in motivo or 'POWERED_OFF' in motivo:
                 motivo = 'el Bluetooth del PC está apagado'
+            elif 'was not found' in motivo and '6e4000' in motivo:
+                # Visto el 19/10: conecta pero no aparece el servicio UART de MeshCore
+                # (Windows guarda los servicios viejos, o el WIO está a medio arrancar).
+                motivo = 'conecta pero no da el servicio de MeshCore: apágalo y enciéndelo; si sigue, quítalo del Bluetooth de Windows y vuelve a emparejarlo'
             elif 'No Bluetooth adapters' in motivo or 'NO_BLUETOOTH' in motivo:
                 motivo = 'el PC no tiene adaptador Bluetooth'
             wio.set_state(ERROR, motivo)

@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.17.1] - 2026-10-19
+
+### Corregido
+- Relay: si el companion conecta pero no aparece el servicio de MeshCore
+  (Characteristic 6e400003… was not found), el motivo lo explica y dice qué
+  hacer (apagar y encender; si sigue, volver a emparejar en Windows).
+- README al día: la pestaña Equipos es ahora el Panel con el mapa dentro, y
+  «Problemas comunes» cubre el servicio BLE no encontrado, el PIN que no
+  empareja y el repetidor «sin señal».
+
 ## [1.17.0] - 2026-10-19
 
 ### Añadido

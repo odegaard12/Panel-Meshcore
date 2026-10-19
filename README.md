@@ -16,16 +16,16 @@
   <img alt="EU868" src="https://img.shields.io/badge/LoRa-EU868-0f151f">
 </p>
 
-<p align="center"><img src="docs/img/equipos.png" alt="Pestaña Equipos" width="860"></p>
+<p align="center"><img src="docs/img/equipos.png" alt="Pestaña Panel" width="860"></p>
 
 ## Qué hace
 
 | | |
 |---|---|
-| **📡 Equipos** | Estado de los companion y del repetidor: batería con tendencia, duty cycle, ruido de fondo y paquetes. La Raspberry lo mide por radio cada 15 min aunque nadie tenga el panel abierto |
+| **📡 Panel** | El mapa con tu repetidor, tus companion y los vecinos por saltos, y encima el estado: batería con tendencia, duty cycle, ruido, paquetes y (opcional) la temperatura de la caja. La Raspberry mide el repetidor por radio cada 15 min aunque nadie tenga el panel abierto |
 | **🛡️ Gestión remota** | Login y comandos CLI al repetidor por LoRa, con política de seguridad (bloquea lo destructivo, pide confirmación en lo arriesgado, no deja salirse de la banda legal) y comprobación de legalidad ERC/REC 70-03 |
 | **💬 Chat** | Canales y privados, con historial, separadores por día y pantalla completa |
-| **🗺️ Mapa** | Vecinos por saltos, análisis de enlace con perfil de terreno y zona de Fresnel, traceroute, grafo de la malla, alcance por regiones y exportación a CSV |
+| **🗺️ Mapa** (dentro del Panel) | Capas, vecinos por radio, análisis de enlace con perfil de terreno y zona de Fresnel, traceroute, alcance por regiones y exportación a CSV |
 | **📊 Analítica** | SNR/RSSI de cada paquete oído, actividad por hora e histórico del repetidor |
 | **🖥️ Terminal** | Terminal web opcional de la Raspberry, tras el mismo login |
 
@@ -54,7 +54,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway :8780 (Raspberr
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: 1.17.0**1.0.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: 1.17.1**1.0.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
@@ -159,6 +159,10 @@ Detalle del montaje, seguridad y diagnóstico: [`deploy/DESPLIEGUE.md`](deploy/D
   copia virtual que el Programador de tareas no ve. Define `MESHCORE_RELAY_DIR` con una ruta
   real antes de `instalar-vigilante.ps1`.
 - **El histórico no avanza**: ningún companion está conectado al gateway; mira `healthz`.
+
+- **«Conecta pero no da el servicio de MeshCore»** (en el log del relay, `Characteristic 6e400003… was not found`): Windows guarda los servicios viejos del companion o este está a medio arrancar. Apágalo y enciéndelo; si sigue, quítalo de Configuración → Bluetooth y vuelve a emparejarlo con su PIN.
+- **«No empareja con el PIN»**: igual, quítalo del Bluetooth de Windows y vuelve a emparejarlo.
+- **El Panel marca el repetidor «sin señal»**: lleva más de una hora sin medirse; casi siempre es que no hay ningún companion conectado por el que preguntarle.
 
 ## Privacidad
 
