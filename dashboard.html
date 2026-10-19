@@ -950,7 +950,7 @@ footer{color:var(--dim2)}
                     <div class="metric"><div class="k">Potencia TX</div><div class="v" id="w1-tx" style="font-size:11px">—</div></div>
                   </div>
                   <div class="cardactions">
-                    <button class="p" id="btn-w1-connect">Conectar</button> <span id="w1-device-status" class="device-status" style="margin-left:8px">No detectado</span>
+                    <button class="p" id="btn-w1-connect">Conectar</button> <button id="btn-w1-pausa" hidden>Lo he apagado: deja de buscarlo</button> <span id="w1-device-status" class="device-status" style="margin-left:8px">No detectado</span>
                     <button id="btn-w1-place">Colocar en mapa</button>
                     <button id="btn-w1-export" onclick="wioExportKey(1)">Exportar clave</button>
                   </div>
@@ -981,7 +981,7 @@ footer{color:var(--dim2)}
                     <div class="metric"><div class="k">Potencia TX</div><div class="v" id="w2-tx" style="font-size:11px">—</div></div>
                   </div>
                   <div class="cardactions">
-                    <button class="p" id="btn-w2-connect">Conectar</button> <span id="w2-device-status" class="device-status" style="margin-left:8px">No detectado</span>
+                    <button class="p" id="btn-w2-connect">Conectar</button> <button id="btn-w2-pausa" hidden>Lo he apagado: deja de buscarlo</button> <span id="w2-device-status" class="device-status" style="margin-left:8px">No detectado</span>
                     <button id="btn-w2-place">Colocar en mapa</button>
                     <button id="btn-w2-export" onclick="wioExportKey(2)">Exportar clave</button>
                   </div>
@@ -1425,7 +1425,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.18.0';
+const PANEL_VERSION='1.19.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -3321,6 +3321,17 @@ async function pintarCaja(){
   if(antes!==JSON.stringify(window.cajaInfo)) pintarEqMap();
 }
 setTimeout(pintarCaja,1500); setInterval(pintarCaja,60000);
+
+// «Lo he apagado» / «lo he encendido»: el relay deja de buscar o vuelve a buscar ese WIO.
+[1,2].forEach(i=>{
+  const b=$('#btn-w'+i+'-pausa'); if(!b) return;
+  b.onclick=async()=>{
+    b.disabled=true;
+    try{ await window.wioPausa(i,b.dataset.on==='1'); }
+    catch(e){ const l=$('#w'+i+'-log'); if(l) l.textContent='No se pudo cambiar: '+e.message; }
+    finally{ setTimeout(()=>{ b.disabled=false; },2000); }
+  };
+});
 
 let avisoRak=null;
 function pintarEqMap(){

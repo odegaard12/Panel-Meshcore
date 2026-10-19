@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.18.0'
+PANEL_VERSION = '1.19.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -753,6 +753,17 @@ async def caja(req):
     return web.json_response(_caja['data'])
 
 
+async def wio_pausa(req):
+    """«Lo he apagado» / «lo he encendido»: el relay deja de buscar o vuelve a buscar ese WIO."""
+    await guard(req)
+    idx = int(req.match_info['idx'])
+    body = await cuerpo(req)
+    if not g.ws:
+        raise web.HTTPServiceUnavailable(text='relay BLE no conectado')
+    await g.ws.send_json({'op': 'pausa', 'idx': idx, 'on': bool(body.get('on'))})
+    return web.json_response({'ok': True})
+
+
 async def history(req):
     """Serie temporal del repetidor recogida por la Pi (bateria, duty cycle...)."""
     await guard(req)
@@ -981,6 +992,7 @@ app.router.add_post('/api/ble/wio/{idx:[12]}/command', command)
 app.router.add_post('/api/ble/wio/{idx:[12]}/contacts', contacts)
 app.router.add_post('/api/ble/wio/{idx:[12]}/login', wio_login)
 app.router.add_post('/api/ble/wio/{idx:[12]}/remote_cmd', wio_remote_cmd)
+app.router.add_post('/api/ble/wio/{idx:[12]}/pausa', wio_pausa)
 app.router.add_post('/api/ble/wio/{idx:[12]}/binary_req', wio_binary_req)
 app.router.add_post('/api/ble/wio/{idx:[12]}/trace', wio_trace)
 app.router.add_get('/api/ble/wio/{idx:[12]}/pushes', wio_pushes)

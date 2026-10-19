@@ -58,6 +58,22 @@ PAIR_TIMEOUT = float(os.getenv('MESHCORE_BLE_PAIR_TIMEOUT_SECONDS', '30'))
 # en nivel 2 y el UART contesta Insufficient Authentication. Ver pair_with_pin.
 BLE_PIN = os.getenv('MESHCORE_BLE_PIN', '123456')
 ADDR_FILE = Path(os.getenv('MESHCORE_BLE_ADDR_FILE', str(Path.home() / '.meshcore-ble-addresses.json')))
+# WIO en pausa («lo he apagado» desde el panel): no se buscan hasta que se
+# reanudan. Se guarda para que un reinicio del PC no lo olvide.
+PAUSA_FILE = Path(os.getenv('MESHCORE_RELAY_PAUSA_FILE', str(Path.home() / '.meshcore-relay-pausa.json')))
+
+
+def _pausas() -> dict:
+    with contextlib.suppress(Exception):
+        return json.loads(PAUSA_FILE.read_text(encoding='utf-8'))
+    return {}
+
+
+def _guardar_pausa(idx, on: bool) -> None:
+    p = _pausas()
+    p[str(idx)] = bool(on)
+    with contextlib.suppress(Exception):
+        PAUSA_FILE.write_text(json.dumps(p), encoding='utf-8')
 
 # Con MESHCORE_LOG_FILE el log va a su propio fichero UTF-8 con rotacion. Antes
 # PowerShell lo redirigia en UTF-16 al mismo fichero que las lineas del
@@ -170,6 +186,7 @@ class Wio:
         # Fallos seguidos y aviso para cortar la espera: ver keep().
         self.fallos = 0
         self.despertar = asyncio.Event()
+        self.pausado = bool(_pausas().get(str(idx), False))
 
     @property
     def label(self) -> str:
@@ -192,6 +209,7 @@ class Wio:
         return {
             'idx': self.idx,
             'state': self.state,
+            'pausado': self.pausado,
             # connected = enlace BLE real, no el resultado del ultimo comando: con
             # el estado, un timeout dejaba ERROR, el gateway dejaba de mandar
             # comandos y el estado ya no volvia nunca a READY (16/10/2026).
@@ -373,6 +391,15 @@ async def keep(wio: Wio, stop: asyncio.Event) -> None:
     """Mantiene el enlace vivo sin pisar comandos en vuelo."""
     first = True
     while not stop.is_set():
+        if wio.pausado:
+            # «Lo he apagado»: ni se busca (no compite por el Bluetooth) hasta
+            # que el panel diga «lo he encendido».
+            wio.set_state(OFFLINE, 'en pausa: no se busca')
+            wio.despertar.clear()
+            with contextlib.suppress(asyncio.TimeoutError):
+                await asyncio.wait_for(wio.despertar.wait(), 3600)
+            first = True
+            continue
         motivo = ''
         try:
             if not first:
@@ -445,6 +472,8 @@ async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.Clien
             try:
                 if idx not in wios:
                     raise RuntimeError('WIO%s no configurado en este relay' % idx)
+                if wios[idx].pausado:
+                    raise RuntimeError('WIO%s en pausa (marcado como apagado)' % idx)
                 if not wios[idx].connected:
                     wios[idx].despertar.set()
                 if stream_until:
@@ -471,6 +500,17 @@ async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.Clien
                 if msg.type is not aiohttp.WSMsgType.TEXT:
                     continue
                 req = json.loads(msg.data)
+                if req.get('op') == 'pausa':
+                    w = wios.get(int(req.get('idx', 0)))
+                    if w:
+                        w.pausado = bool(req.get('on'))
+                        _guardar_pausa(w.idx, w.pausado)
+                        log.info('%s: %s', w.label, 'en pausa (no se busca)' if w.pausado else 'se vuelve a buscar')
+                        if w.pausado:
+                            asyncio.create_task(w.disconnect())
+                        w.despertar.set()
+                        announce(w.idx)
+                    continue
                 if req.get('op') != 'cmd':
                     continue
                 t = asyncio.create_task(atender(req))

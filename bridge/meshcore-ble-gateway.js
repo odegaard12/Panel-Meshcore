@@ -204,7 +204,10 @@
         // para que no se quede colgado en "No detectado".
         if(typeof setWDeviceStatus==='function') {
           const motivo=st&&(st.last_failure||st.error);
-          setWDeviceStatus(idx, st&&st.connected ? 'Conectado por el PC' : (!st ? 'No configurado en el relay' : 'Sin conectar'+(motivo?': '+motivo:'')), !!(st&&st.connected));
+          if(st&&st.pausado) setWDeviceStatus(idx,'En pausa: no se busca (lo marcaste como apagado)');
+          else setWDeviceStatus(idx, st&&st.connected ? 'Conectado por el PC' : (!st ? 'No configurado en el relay' : 'Sin conectar'+(motivo?': '+motivo:'')), !!(st&&st.connected));
+          const bp=document.querySelector('#btn-w'+idx+'-pausa');
+          if(bp&&st){ bp.hidden=false; bp.textContent=st.pausado?'Lo he encendido: búscalo':'Lo he apagado: deja de buscarlo'; bp.dataset.on=st.pausado?'0':'1'; }
         }
         if(st && st.connected && !n._manualOff && (!n.info || !n.info.name || !nodes[idx]._hydrated)){
           try{
@@ -516,6 +519,7 @@
   // Historico que recoge la Pi cada 15 min (el movil no puede hacer esto).
   window.rakHistory = (limit=500)=>api(`/history?limit=${limit}`);
   window.cajaTemp = ()=>api('/caja');
+  window.wioPausa = (idx,on)=>api(`/wio/${idx}/pausa`,{method:'POST',body:JSON.stringify({on})});
   window.rakRxLog = (limit=2000)=>api(`/rxlog?limit=${limit}`);
   window.rakHistorySampleNow = ()=>api('/history/sample',{method:'POST',body:'{}'});
 

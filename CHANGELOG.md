@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.19.0] - 2026-10-19
+
+### Añadido
+- Botón en la ficha de cada WIO: «Lo he apagado: deja de buscarlo» y «Lo he
+  encendido: búscalo». El relay deja ese companion en pausa (sin escanear ni
+  competir por el Bluetooth) y lo recuerda tras reiniciar
+  (~/.meshcore-relay-pausa.json); un WIO en pausa se ve en gris, no como
+  error. Ruta nueva POST /api/ble/wio/{1|2}/pausa.
+
 ## [1.18.0] - 2026-10-19
 
 ### Cambiado
