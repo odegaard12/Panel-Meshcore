@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.18.0] - 2026-10-19
+
+### Cambiado
+- Un companion que el relay no tiene configurado ya no aparece en el panel
+  (ni pestaña, ni fila de estado, ni opciones): con uno solo no se ven
+  errores falsos.
+- Repetidor más claro: «Leer el repetidor (estado, telemetría, histórico)» y
+  «Cambiar el repetidor (con su contraseña de admin)», y la caja de
+  respuestas debajo de ambos, con su título.
+- Fuera el botón «Exportar clave» de los WIO (desactivado por defecto desde
+  1.4.1) y la ayuda de la batería ya no da por hecho una placa solar.
+
 ## [1.17.2] - 2026-10-19
 
 ### Corregido
