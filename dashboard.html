@@ -575,6 +575,7 @@ select{appearance:none;-webkit-appearance:none;padding-right:30px!important;back
 .chatTools button{border-color:var(--brd2);font-size:12px}
 .chatComposer{border-radius:var(--r2)}
 .msg.in::before{display:none}
+.msg.in{margin-left:0}  /* sin el círculo de la inicial, el recibido va pegado a la izquierda */
 .msg{border-radius:var(--r2)!important}
 .msg.in.priv{cursor:pointer}
 .chatBody{flex:1;min-height:0;display:flex;gap:16px;margin-top:8px}
@@ -668,6 +669,17 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+@media (max-width:860px){
+  /* Escribir en una sola fila: canal corto, texto y Enviar */
+  #tab-chat .chatComposer{flex-wrap:nowrap!important;gap:6px!important;padding:6px!important}
+  #tab-chat .chatComposer select{flex:0 0 92px!important;width:92px!important;min-width:0}
+  #tab-chat .chatInWrap{flex:1 1 auto!important;order:0!important;flex-basis:auto!important;min-width:0}
+  #tab-chat .chatInWrap input{padding-right:8px!important}
+  #tab-chat .chatCount,#tab-chat #chatPull{display:none!important}
+  #tab-chat #chatSend{flex:0 0 auto!important;width:auto!important;padding:0 14px!important}
+  /* Analítica: la cifra impar no se queda a media anchura */
+  .statsKpis .kpi:last-child:nth-child(odd){grid-column:1/-1}
+}
 @media (max-width:860px){
   .devTab[data-dev="mapa"] .devTabName{font-size:0}
   .devTab[data-dev="mapa"] .devTabName::after{content:'Ajustes';font-size:13px}
@@ -1433,7 +1445,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.20.0';
+const PANEL_VERSION='1.20.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.

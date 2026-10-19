@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.20.1] - 2026-10-19
+
+### Corregido
+- Chat: los mensajes recibidos van pegados a la izquierda (arrastraban el
+  hueco del círculo de la inicial, quitado antes).
+
+### Cambiado
+- Teléfono: la caja de escribir del chat cabe en una fila (canal, texto y
+  Enviar) y en Analítica la cifra impar ocupa la fila entera.
+
 ## [1.20.0] - 2026-10-19
 
 ### Cambiado
