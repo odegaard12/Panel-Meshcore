@@ -104,7 +104,7 @@ En Windows, desde `bridge/`:
 .\install-windows.ps1                 # entorno del relay
 $env:MESHCORE_GATEWAY_WS = 'ws://<IP-de-tu-Pi>:8780/api/ble/relay'
 $env:MESHCORE_WIO1_NAME  = 'nombre-BLE-del-companion-1'
-$env:MESHCORE_WIO2_NAME  = 'nombre-BLE-del-companion-2'   # '' si solo tienes uno
+$env:MESHCORE_WIO2_NAME  = 'nombre-BLE-del-companion-2'   # '-' si solo tienes uno
 .\instalar-vigilante.ps1              # tarea que lo mantiene vivo
 ```
 

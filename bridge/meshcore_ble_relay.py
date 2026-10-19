@@ -495,7 +495,10 @@ async def main() -> None:
     if not TOKEN:
         raise SystemExit('Falta MESHCORE_BLE_TOKEN')
     # MESHCORE_WIO2_NAME='' (vacío) = solo un companion: ni se busca el segundo.
-    wios = {idx: Wio(idx, names) for idx, names in NAMES.items() if names[0]}
+    # Sin segundo companion: MESHCORE_WIO2_NAME='-' (o 'off'). En PowerShell
+    # poner '' borra la variable y volvía el nombre por defecto (19/10/2026).
+    wios = {idx: Wio(idx, names) for idx, names in NAMES.items()
+            if names[0] and names[0].strip().lower() not in ('-', 'off', 'no', 'ninguno')}
     stop = asyncio.Event()
     async with aiohttp.ClientSession() as http:
         while not stop.is_set():
