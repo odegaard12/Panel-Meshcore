@@ -681,6 +681,8 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+.msg .meta .resp{margin-left:10px;padding:2px 10px;border-radius:999px;border:0;background:rgba(255,255,255,.07);color:var(--fg,#e6ebf1);font:600 11.5px var(--sans,system-ui);cursor:pointer;opacity:.75}
+.msg .meta .resp:hover,.msg .meta .resp:focus-visible{opacity:1;background:rgba(63,214,122,.18);color:#3fd67a}
 /* WIO en pausa: se ve apagado y dice por qué, no como un error */
 .devPanel.pausado .metrics,.devPanel.pausado .devPhoto{opacity:.4;filter:grayscale(1)}
 .devPanel.pausado .devPanelBody::before{content:'En pausa: lo marcaste como apagado y el relay no lo busca. Cuando lo enciendas, pulsa «Lo he encendido: búscalo».';display:block;background:rgba(95,107,122,.14);color:var(--dim,#9aa6b3);border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:13px;line-height:1.45}
@@ -1517,7 +1519,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.26.1';
+const PANEL_VERSION='1.27.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2820,7 +2822,8 @@ function chatAdd(cls,who,text,meta,persist=true,dedupKey=null,kind='out',at=null
   html+='<div class="body">'+cuerpoHtml(cuerpo)+'</div>';
   if(meta){
     const corta=String(meta).replace(/^\d{1,2}\/\d{1,2}\/\d{4},?\s*/,'').replace(/(\d{1,2}:\d{2}):\d{2}/,'$1');
-    html+='<div class="meta">'+esc(corta)+(cls==='out'&&CANAL_NOMBRE[kind]?' · '+esc(CANAL_NOMBRE[kind]):'')+'</div>';
+    html+='<div class="meta">'+esc(corta)+(cls==='out'&&CANAL_NOMBRE[kind]&&!corta.includes(CANAL_NOMBRE[kind])?' · '+esc(CANAL_NOMBRE[kind]):'')+
+      (cls==='in'?'<button type="button" class="resp" title="Responder a '+esc(quien||'')+'">Responder</button>':'')+'</div>';
   }
   d.innerHTML=html;
   // Mensajes seguidos del mismo remitente (menos de 5 min): sin repetir avatar ni nombre.
@@ -2861,6 +2864,21 @@ function actualizarAlFinal(){
 }
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'&&$('#tab-chat').classList.contains('on')) marcarChatVisto(); });
 window.addEventListener('pagehide',()=>{ if($('#tab-chat').classList.contains('on')) marcarChatVisto(); });
+function chatAviso(t){
+  document.getElementById('chatAvisoUno')?.remove();
+  chatAdd('sys',null,t,'',false);
+  const l=$('#chatBox').lastElementChild; if(l) l.id='chatAvisoUno';
+}
+// Días sin ningún mensaje visible (al mirar una conversación): fuera el separador.
+function ocultarDiasVacios(){
+  let sep=null, hay=false;
+  const cierra=()=>{ if(sep) sep.style.display=hay?'':'none'; };
+  for(const el of $('#chatBox').children){
+    if(el.classList.contains('daysep')&&el.id!=='chatNuevos'){ cierra(); sep=el; hay=false; }
+    else if(el.style.display!=='none'&&!el.classList.contains('sys')) hay=true;
+  }
+  cierra();
+}
 function applyChatFilterTo(el){
   const f=$('#chatFilter')?.value||'all';
   const via=$('#chatViaFilter')?.value||'all';
@@ -2874,7 +2892,7 @@ function applyChatFilterTo(el){
   el.style.display = (passKind && passVia) ? '' : 'none';
 }
 $('#chatFilter').onchange=$('#chatViaFilter').onchange=()=>{
-  $('#chatBox').querySelectorAll('.msg').forEach(applyChatFilterTo);
+  $('#chatBox').querySelectorAll('.msg').forEach(applyChatFilterTo); ocultarDiasVacios();
 };
 $('#chatDownload').onclick=()=>{
   const log=loadChatLog();
@@ -3321,15 +3339,18 @@ $('#chatInput').addEventListener('input',()=>{
 })();
 function activeChatNode(){
   // Envía por el WIO elegido si está conectado; si no, por el que lo esté.
-  const ok=i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected;
+  const ok=i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected&&wNodes[i]._hydrated;
   const sel=+$('#chatNode').value;
   const idx=ok(sel)?sel:ok(2)?2:ok(1)?1:0;
   return idx?wNodes[idx]:null;
 }
 function refreshChatUI(){
   const n=activeChatNode();
-  $('#chatInput').disabled=!n;
+  const inp=$('#chatInput');
+  inp.disabled=!n;
   $('#chatSend').disabled=!n;
+  if(!n) inp.placeholder='Ningún WIO contesta: ahora no se puede enviar';
+  else if(inp.placeholder.startsWith('Ningún WIO')) inp.placeholder=convSel?'Privado a '+convSel+'…':'Escribe un mensaje...';
   $('#dot-chat').classList.toggle('on',!!n);
   updateListening();
 }
@@ -3411,7 +3432,7 @@ $('#chatBox').addEventListener('click',e=>{
   const b=e.target.closest('.msg.in.priv'); if(!b) return;
   const nombre=b.querySelector('.who b')?.textContent||'';
   const c=contactosChat().find(x=>x.name===nombre||x.pubkey.startsWith(nombre));
-  if(!c){ chatAdd('sys',null,'No tengo a '+nombre+' en los contactos: escanea vecinos en el Mapa.','',false); return; }
+  if(!c){ chatAviso('No tengo a '+nombre+' en los contactos: escanea vecinos en el Mapa.'); return; }
   elegirDestino(c);
 });
 // Barra lateral del chat: canales arriba, conversaciones privadas debajo y el
@@ -3451,7 +3472,7 @@ function pintarContactos(){
   }
   $('#ccLista').innerHTML=h;
 }
-function filtrarChat(){ $('#chatBox').querySelectorAll('.msg').forEach(applyChatFilterTo); const b=$('#chatBox'); b.scrollTop=b.scrollHeight; }
+function filtrarChat(){ $('#chatBox').querySelectorAll('.msg').forEach(applyChatFilterTo); ocultarDiasVacios(); const b=$('#chatBox'); b.scrollTop=b.scrollHeight; }
 function elegirCanal(v){
   convSel=null; canalSel=v;
   $('#chatFilter').value=v==='all'?'all':'chan'+v;
@@ -3682,13 +3703,31 @@ setInterval(pintarEqMap,60000);
 
 // Chat: pulsar un mensaje sitúa en el mapa al nodo que lo envió.
 $('#chatBox').addEventListener('scroll',actualizarAlFinal,{passive:true});
+// Captura: se adelanta a los otros clics de la burbuja (mapa, elegir privado).
+$('#chatBox').addEventListener('click',e=>{
+  const bt=e.target.closest('.resp'); if(!bt) return;
+  e.stopPropagation();
+  const m=bt.closest('.msg'); const quien=m.dataset.quien||m.querySelector('.who b')?.textContent||'';
+  if(m.dataset.kind==='priv'){
+    const c=contactosChat().find(x=>x.name===quien);
+    if(c) elegirDestino(c); else chatAviso('No tengo a '+quien+' en los contactos: escanea vecinos en el Mapa.');
+    return;
+  }
+  const ch=String(m.dataset.kind).replace('chan','');
+  if(convSel) elegirCanal(ch); else $('#chatChan').value=ch;
+  const inp=$('#chatInput'), tag='@['+quien+'] ';
+  if(!inp.value.startsWith(tag)) inp.value=(tag+inp.value).slice(0,130);
+  inp.dispatchEvent(new Event('input'));
+  if(!inp.disabled){ inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length); }
+  else chatAviso('Mención preparada para '+quien+'. Se podrá enviar cuando un WIO conteste.');
+},true);
 $('#chatAlFinal').addEventListener('click',()=>{ const b=$('#chatBox'); b.scrollTo({top:b.scrollHeight,behavior:'smooth'}); });
 $('#chatBox').addEventListener('click',e=>{
   const b=e.target.closest('.msg.in'); if(!b) return;
   const nombre=(b.querySelector('.who b')?.textContent||'').trim(); if(!nombre) return;
   let c=null;
   for(const i of [1,2]){ const d=loadNeighbors(i); c=c||((d&&d.contacts)||[]).find(x=>x.name===nombre&&(x.lat||x.lon)); }
-  if(!c){ chatAdd('sys',null,nombre+' no anuncia su posición: no se puede situar en el mapa.','',false); return; }
+  if(!c){ chatAviso(nombre+' no anuncia su posición: no se puede situar en el mapa.'); return; }
   const z=Math.max(map.getZoom(),12), ancho=window.innerWidth>860;
   const off=ancho?[Math.min(720,window.innerWidth-32)/2,0]:[0,Math.round(window.innerHeight*.33)];
   map.flyTo(map.unproject(map.project([c.lat,c.lon],z).add(off),z),z,{duration:.8});
@@ -3936,7 +3975,7 @@ setInterval(updateStatusBar,10000);
 // (Antes solo miraba el del desplegable: si enviabas por WIO1, lo que llegaba
 //  al WIO2 no se recogía nunca y parecía que el mensaje se perdía.)
 function connectedNodes(){
-  return [1,2].map(i=>wNodes[i]).filter(n=>n&&n.device&&n.device.gatt.connected);
+  return [1,2].map(i=>wNodes[i]).filter(n=>n&&n.device&&n.device.gatt.connected&&n._hydrated);
 }
 async function pullAll(){
   for(const n of connectedNodes()) await pullMessages(n);
@@ -3957,7 +3996,13 @@ $('#chatPull').onclick=async()=>{
 function updateListening(){
   const ns=connectedNodes();
   const note=$('#chatNote');
-  if(!ns.length){ note.textContent='Ningún WIO conectado. Conéctalos en la pestaña Panel.'; return; }
+  if(!ns.length){
+    const mudo=[1,2].find(i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected);
+    note.textContent = mudo
+      ? 'WIO'+mudo+' está enlazado pero no contesta. Apágalo y enciéndelo; si tienes la app MeshCore del móvil conectada a él, ciérrala.'
+      : 'Ningún WIO contesta ahora mismo. El PC lo sigue buscando solo; si está encendido y no vuelve en unos minutos, apágalo y enciéndelo.';
+    return;
+  }
   note.textContent='Escuchando en: '+ns.map(n=>n.info?n.info.name:'nodo').join(', ')+
                    ' · máx. 130 caracteres · se envía por el nodo del desplegable';
 }

@@ -3,6 +3,26 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.27.0] - 2026-10-21
+
+### Añadido
+- Chat: botón «Responder» en cada mensaje recibido. En un canal escribe la
+  mención `@[nombre]` (como la app de MeshCore) y deja el canal elegido; en un
+  privado abre la conversación con esa persona.
+
+### Corregido
+- El chat solo se activa cuando el WIO contesta de verdad. Antes bastaba con
+  que el Bluetooth estuviera enlazado: en los segundos en que el relay aún lo
+  intentaba se veía «Escuchando en WIO1» y no se podía enviar nada.
+- Si ningún WIO contesta, la nota y la caja de texto lo dicen («enlazado pero
+  no contesta: apágalo y enciéndelo») en vez de «Conéctalos en la pestaña
+  Panel», que no tiene sentido con el puente.
+- Pulsar varias veces un nombre ya no llena el chat de «no anuncia su
+  posición»: hay un solo aviso a la vez.
+- Al mirar una conversación, los días sin mensajes suyos ya no dejan el
+  separador de fecha vacío.
+- Los mensajes enviados ya no ponen el canal dos veces («Public · Public»).
+
 ## [1.26.1] - 2026-10-19
 
 ### Corregido
