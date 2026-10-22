@@ -18,7 +18,11 @@ $RunPs1    = Join-Path $InstallDir 'run-relay.ps1'
 $RunCmd    = Join-Path $InstallDir 'run-relay.cmd'
 $RunKey    = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $RunName   = 'PanelMeshCoreBleRelay'
-$GatewayWs = if ($env:MESHCORE_GATEWAY_WS) { $env:MESHCORE_GATEWAY_WS } else { 'ws://raspberrypi.local:8780/api/ble/relay' }
+$GatewayWs = if ($env:MESHCORE_GATEWAY_WS) { $env:MESHCORE_GATEWAY_WS } else { 'wss://raspberrypi.local/api/ble/relay' }
+# Huella SHA-256 del certificado de la Pi (en la Pi:
+# openssl x509 -in /etc/nginx/meshcore-tls/cert.pem -noout -fingerprint -sha256)
+$Huella = $env:MESHCORE_GATEWAY_FINGERPRINT
+if ($GatewayWs -like 'wss://*' -and [string]::IsNullOrWhiteSpace($Huella)) { throw 'Falta MESHCORE_GATEWAY_FINGERPRINT: la huella del certificado de la Pi (ver comentario).' }
 
 Write-Host '== comprobaciones =='
 if (-not (Test-Path $RelayPy)) { throw "No encuentro el relay en $RelayPy. Ejecuta este script desde la carpeta bridge del repo." }
@@ -48,6 +52,7 @@ $runLines = @(
     '$tokenPath = Join-Path $env:USERPROFILE ''.meshcore-ble-token'''
     '$env:MESHCORE_BLE_TOKEN = (Get-Content $tokenPath -Raw).Trim()'
     '$env:MESHCORE_GATEWAY_WS = ''' + $GatewayWs + ''''
+    '$env:MESHCORE_GATEWAY_FINGERPRINT = ''' + $Huella + ''''
     '$env:MESHCORE_BLE_PAIR = ''1'''
     '# El relay escribe su propio log UTF-8 con rotacion; aqui solo el supervisor.'
     '$env:MESHCORE_LOG_FILE = ''' + $LogPath + ''''

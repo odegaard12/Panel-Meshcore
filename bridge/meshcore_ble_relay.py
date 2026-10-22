@@ -48,6 +48,11 @@ NAMES = {
 
 GATEWAY_WS = os.getenv('MESHCORE_GATEWAY_WS', 'ws://raspberrypi.local:8780/api/ble/relay')
 TOKEN = os.getenv('MESHCORE_BLE_TOKEN', '')
+# wss:// por nginx con certificado autofirmado: se fija su huella SHA-256
+# (openssl x509 -in cert.pem -noout -fingerprint -sha256). Sin huella, wss://
+# verifica el certificado como cualquier web.
+_HUELLA = os.getenv('MESHCORE_GATEWAY_FINGERPRINT', '').replace(':', '').strip()
+GATEWAY_SSL = aiohttp.Fingerprint(bytes.fromhex(_HUELLA)) if _HUELLA else True
 PAIR = os.getenv('MESHCORE_BLE_PAIR', '1') == '1'
 SCAN_SECONDS = float(os.getenv('MESHCORE_BLE_SCAN_SECONDS', '6'))
 RETRY = float(os.getenv('MESHCORE_BLE_RECONNECT_SECONDS', '3'))
@@ -466,7 +471,10 @@ async def keep(wio: Wio, stop: asyncio.Event) -> None:
 async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.ClientSession) -> None:
     # Latido de 120 s (espera del pong: 60 s): conectar por Bluetooth en Windows bloquea
     # el bucle hasta 15-55 s y con 20 s el enlace se cortaba cada minuto (22/10/2026).
-    async with http.ws_connect(GATEWAY_WS, headers={'X-MeshCore-Token': TOKEN}, heartbeat=120) as ws:
+    if GATEWAY_WS.startswith('ws://') and not GATEWAY_WS.startswith(('ws://127.', 'ws://localhost')):
+        log.warning('el token viaja sin cifrar (ws://): mejor wss:// por nginx')
+    async with http.ws_connect(GATEWAY_WS, headers={'X-MeshCore-Token': TOKEN}, heartbeat=120,
+                               ssl=GATEWAY_SSL if GATEWAY_WS.startswith('wss://') else True) as ws:
         log.info('gateway conectado: %s', GATEWAY_WS)
 
         async def _enviar_estado(idx: int) -> None:

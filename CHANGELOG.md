@@ -3,6 +3,20 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.29.0] - 2026-10-23
+
+### Seguridad
+- El relay del PC habla con la Raspberry por `wss://` (TLS a través de nginx)
+  en vez de `ws://` en claro: el token ya no viaja sin cifrar por la red de
+  casa. El relay comprueba la huella SHA-256 del certificado autofirmado
+  (`MESHCORE_GATEWAY_FINGERPRINT`); con otra huella no manda nada.
+- El gateway solo escucha en la propia Pi (`MESHCORE_BIND=127.0.0.1`): el
+  puerto 8780 ya no se ve desde la red.
+- nginx solo deja entrar por `/api/ble/relay` a la IP del PC
+  (`MESHCORE_RELAY_IP` en `deploy/apply-nginx.sh`, validada como IP).
+- `install-windows.ps1` usa `wss://` por defecto y pide la huella.
+- El relay avisa en su registro si se le configura `ws://` hacia otra máquina.
+
 ## [1.28.0] - 2026-10-22
 
 ### Seguridad

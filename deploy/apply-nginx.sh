@@ -13,6 +13,9 @@ DST=/etc/nginx/sites-available/meshcore-panel.conf
 LINK=/etc/nginx/sites-enabled/meshcore-panel.conf
 TOKEN_FILE="${MESHCORE_BLE_TOKEN_FILE:-$HOME/.meshcore-ble-token}"
 PI_IP="${PI_IP:-$(hostname -I | awk '{print $1}')}"
+# IP del PC del relay: la unica que puede entrar por wss:// a /api/ble/relay.
+RELAY_IP="${MESHCORE_RELAY_IP:-}"
+[ -n "$RELAY_IP" ] || { echo "ERROR: falta MESHCORE_RELAY_IP (la IP del PC del relay; fijala en el router)" >&2; exit 1; }
 TMP=$(mktemp)
 trap 'rm -f "$TMP"' EXIT
 
@@ -21,10 +24,14 @@ trap 'rm -f "$TMP"' EXIT
 TOKEN=$(tr -d '\n' < "$TOKEN_FILE")
 
 # Sustitucion con python: sed se rompe con las barras y comillas del token.
-python3 - "$SRC" "$TMP" "$PI_IP" "$TOKEN" <<'PY'
-import sys
-src, dst, ip, token = sys.argv[1:5]
+python3 - "$SRC" "$TMP" "$PI_IP" "$TOKEN" "$RELAY_IP" <<'PY'
+import ipaddress, sys
+src, dst, ip, token, relay = sys.argv[1:6]
+for r in relay.split(','):
+    ipaddress.ip_address(r.strip())   # solo IP: nada que se pueda colar en nginx
 text = open(src, encoding='utf-8').read()
+allow = ''.join('allow %s;\n        ' % r.strip() for r in relay.split(',')).rstrip()
+text = text.replace('allow __RELAY_IP__;', allow)
 text = text.replace('__PI_IP__', ip).replace('__GATEWAY_TOKEN__', '"%s"' % token)
 open(dst, 'w', encoding='utf-8').write(text)
 PY
@@ -33,7 +40,7 @@ PY
 for needed in 'listen 443 ssl' 'location /' 'proxy_pass'; do
   grep -q "$needed" "$TMP" || { echo "ERROR: la config generada no contiene '$needed'" >&2; exit 1; }
 done
-grep -q '__PI_IP__\|__GATEWAY_TOKEN__' "$TMP" && { echo "ERROR: quedan placeholders sin sustituir" >&2; exit 1; }
+grep -q '__PI_IP__\|__GATEWAY_TOKEN__\|__RELAY_IP__' "$TMP" && { echo "ERROR: quedan placeholders sin sustituir" >&2; exit 1; }
 [ "$(wc -l < "$TMP")" -ge 20 ] || { echo "ERROR: config sospechosamente corta" >&2; exit 1; }
 
 BACKUP=/etc/nginx/meshcore-panel.conf.$(date +%Y%m%d-%H%M%S).bak

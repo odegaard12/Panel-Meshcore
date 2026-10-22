@@ -54,7 +54,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway :8780 (Raspberr
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.28.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.29.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
@@ -102,7 +102,8 @@ En Windows, desde `bridge/`:
 
 ```powershell
 .\install-windows.ps1                 # entorno del relay
-$env:MESHCORE_GATEWAY_WS = 'ws://<IP-de-tu-Pi>:8780/api/ble/relay'
+$env:MESHCORE_GATEWAY_WS = 'wss://<IP-de-tu-Pi>/api/ble/relay'
+$env:MESHCORE_GATEWAY_FINGERPRINT = '<huella SHA-256 del certificado de la Pi>'
 $env:MESHCORE_WIO1_NAME  = 'nombre-BLE-del-companion-1'
 $env:MESHCORE_WIO2_NAME  = 'nombre-BLE-del-companion-2'   # '-' si solo tienes uno
 .\instalar-vigilante.ps1              # tarea que lo mantiene vivo
@@ -113,7 +114,8 @@ En Linux/macOS, a mano (o con tu propio servicio systemd/launchd):
 ```bash
 cd bridge && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 MESHCORE_BLE_TOKEN="$(cat ~/.meshcore-ble-token)" \
-MESHCORE_GATEWAY_WS='ws://<IP-de-tu-Pi>:8780/api/ble/relay' \
+MESHCORE_GATEWAY_WS='wss://<IP-de-tu-Pi>/api/ble/relay' \
+MESHCORE_GATEWAY_FINGERPRINT='<huella SHA-256 del certificado de la Pi>' \
 MESHCORE_WIO1_NAME='nombre-BLE-del-companion-1' \
 MESHCORE_WIO2_NAME='nombre-BLE-del-companion-2' \
 .venv/bin/python meshcore_ble_relay.py
@@ -134,11 +136,15 @@ Avisos al móvil (opcional): pon en el servicio del gateway
 y te llegará un aviso si la batería del repetidor baja de 3,8 V o si deja de
 haber datos durante 3 h.
 
-**Limitar el gateway a tu PC (recomendado).** En el servicio del gateway pon
-`MESHCORE_ALLOWED_IPS=<IP-de-tu-PC>`: el puerto 8780 solo atenderá a ese PC
-(el relay) y a la propia Pi (nginx). **Si cambias de PC**, pon ahí la IP del
-nuevo (varias separadas por comas) y reinicia el gateway; si no, el relay del
-PC nuevo recibirá 403. Fija esa IP en el router (reserva DHCP) para que no cambie.
+**El relay entra cifrado y solo desde tu PC.** El gateway escucha solo en la
+propia Pi (`MESHCORE_BIND=127.0.0.1`) y el relay llega por nginx con TLS
+(`wss://<IP-de-tu-Pi>/api/ble/relay`), comprobando la huella del certificado
+autofirmado. Saca la huella en la Pi con
+`openssl x509 -in /etc/nginx/meshcore-tls/cert.pem -noout -fingerprint -sha256`.
+nginx solo deja pasar la IP de tu PC (`MESHCORE_RELAY_IP=<IP-de-tu-PC>` al
+ejecutar `deploy/install.sh` o `deploy/apply-nginx.sh`). **Si cambias de PC**,
+vuelve a aplicar nginx con la IP nueva (varias separadas por comas). Fija esa IP
+en el router (reserva DHCP) para que no cambie.
 
 Temperatura de la caja (opcional, con Home Assistant): `MESHCORE_HA_URL`,
 `MESHCORE_HA_TOKEN`, `MESHCORE_HA_CAJA=sensor.tu_sensor` y, si el repetidor se
