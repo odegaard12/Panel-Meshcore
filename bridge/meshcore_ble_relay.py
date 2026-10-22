@@ -157,6 +157,23 @@ async def pair_with_pin(address: str, label: str, forzar: bool = False) -> None:
     log.info('%s: emparejado con PIN -> estado %s', label, int(result.status))
 
 
+def _escanear(addr: str, names: tuple[str, ...], segundos: float) -> tuple[str, str] | None:
+    """Escaneo BLE en el hilo que lo llama: devuelve (dirección, nombre) o None."""
+    async def buscar():
+        if addr:
+            with contextlib.suppress(Exception):
+                found = await BleakScanner.find_device_by_address(addr, timeout=segundos)
+                if found:
+                    return found.address, found.name or names[0]
+        wanted = {n.lower() for n in names}
+        for dev in await BleakScanner.discover(timeout=segundos):
+            name = (dev.name or '').strip().lower()
+            if name in wanted or any(name.startswith(x.lower()) for x in names):
+                return dev.address, dev.name
+        return None
+    return asyncio.run(buscar())
+
+
 def b64(raw: bytes) -> str:
     return base64.b64encode(raw).decode('ascii')
 
@@ -238,16 +255,14 @@ class Wio:
         self.set_state(SCANNING)
         env_key = f'MESHCORE_WIO{self.idx}_ADDRESS'
         addr = os.getenv(env_key, '').strip() or _known_addresses().get(str(self.idx), '')
-        if addr:
-            with contextlib.suppress(Exception):
-                found = await BleakScanner.find_device_by_address(addr, timeout=SCAN_SECONDS)
-                if found:
-                    return found
-        wanted = {name.lower() for name in self.names}
-        for dev in await BleakScanner.discover(timeout=SCAN_SECONDS):
-            name = (dev.name or '').strip().lower()
-            if name in wanted or any(name.startswith(x.lower()) for x in self.names):
-                return dev
+        # El escaneo de WinRT llegaba a congelar el bucle 43 s (22/10/2026): el
+        # gateway no recibía el pong del heartbeat y cortaba el enlace cada
+        # minuto. En un hilo con su propio bucle ya no puede parar al resto.
+        with contextlib.suppress(Exception):
+            hallado = await asyncio.wait_for(
+                asyncio.to_thread(_escanear, addr, self.names, SCAN_SECONDS), SCAN_SECONDS * 3 + 20)
+            if hallado:
+                return BLEDevice(hallado[0], hallado[1], None)
         # Si Windows ya tiene el nodo conectado, este deja de anunciarse y
         # ningun escaneo lo ve: por direccion WinRT lo alcanza igual.
         if addr:
@@ -449,13 +464,31 @@ async def keep(wio: Wio, stop: asyncio.Event) -> None:
 
 
 async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.ClientSession) -> None:
-    async with http.ws_connect(GATEWAY_WS, headers={'X-MeshCore-Token': TOKEN}, heartbeat=20) as ws:
+    # Latido de 120 s (espera del pong: 60 s): conectar por Bluetooth en Windows bloquea
+    # el bucle hasta 15-55 s y con 20 s el enlace se cortaba cada minuto (22/10/2026).
+    async with http.ws_connect(GATEWAY_WS, headers={'X-MeshCore-Token': TOKEN}, heartbeat=120) as ws:
         log.info('gateway conectado: %s', GATEWAY_WS)
 
-        def announce(idx: int) -> None:
+        async def _enviar_estado(idx: int) -> None:
+            # El fallo de envío va dentro de la task: antes salía como
+            # «Task exception was never retrieved» al cerrarse el socket.
             with contextlib.suppress(Exception):
-                asyncio.create_task(ws.send_json({'op': 'status', 'idx': idx,
-                                                  'status': wios[idx].status()}))
+                await ws.send_json({'op': 'status', 'idx': idx, 'status': wios[idx].status()})
+
+        def announce(idx: int) -> None:
+            asyncio.create_task(_enviar_estado(idx))
+
+        async def vigia_bucle() -> None:
+            # Si algo bloquea el bucle más de unos segundos, el gateway no recibe
+            # el pong del heartbeat y corta: así queda escrito quién lo bloqueó.
+            loop = asyncio.get_running_loop()
+            while True:
+                t = loop.time()
+                await asyncio.sleep(1)
+                retraso = loop.time() - t - 1
+                if retraso > 2:
+                    log.warning('bucle parado %.1f s (estados: %s)', retraso,
+                                ', '.join(f'{w.label}={w.state}' for w in wios.values()))
 
         for wio in wios.values():
             wio.on_change = announce
@@ -494,6 +527,7 @@ async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.Clien
         en_vuelo: set[asyncio.Task] = set()
         tasks = [asyncio.create_task(keep(w, stop)) for w in wios.values()]
         tasks += [asyncio.create_task(pump_pushes(w, ws, stop)) for w in wios.values()]
+        tasks.append(asyncio.create_task(vigia_bucle()))
         await ws.send_json({'op': 'hello', 'wios': [w.status() for w in wios.values()]})
         try:
             async for msg in ws:
@@ -516,6 +550,7 @@ async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.Clien
                 t = asyncio.create_task(atender(req))
                 en_vuelo.add(t)
                 t.add_done_callback(en_vuelo.discard)
+            log.info('gateway cerró el enlace: código %s %s', ws.close_code, ws.exception() or '')
         finally:
             for wio in wios.values():
                 wio.on_change = None

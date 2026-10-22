@@ -75,9 +75,29 @@ def _stored_hash(user: str) -> str | None:
     return None
 
 
+def _primer_usuario() -> str | None:
+    try:
+        for line in HTPASSWD.read_text().splitlines():
+            if ':' in line and line.strip():
+                return line.partition(':')[0]
+    except OSError:
+        return None
+    return None
+
+
+def _firma(user: str, expiry: int) -> bytes:
+    # El hash de la contraseña entra en la firma (sin ir en la cookie): al
+    # cambiar la contraseña, todas las sesiones abiertas dejan de valer.
+    payload = f'{user}|{expiry}|{_stored_hash(user) or ""}'
+    return hmac.new(_secret(), payload.encode(), hashlib.sha256).digest()
+
+
 def locked_out(ip: str) -> bool:
     now = time.time()
     recent = [t for t in _fails.get(ip, []) if now - t < LOCKOUT_SECONDS]
+    if not recent:
+        _fails.pop(ip, None)   # sin esto el dict guardaba para siempre cada IP que falló una vez
+        return False
     _fails[ip] = recent
     return len(recent) >= MAX_FAILS
 
@@ -91,7 +111,19 @@ def check_password(user: str, password: str, ip: str = '-') -> bool:
         return False
     digest = _stored_hash(user)
     # Se calcula igual aunque el usuario no exista, para no filtrar por tiempo
-    # de respuesta cuales son validos.
+    # de respuesta cuales son validos: con un usuario inexistente se verifica
+    # contra el primero del fichero (mismo tipo de hash, mismo coste) y se
+    # da por fallido pase lo que pase.
+    if digest is None:
+        otro = _primer_usuario()
+        if otro and (_stored_hash(otro) or '').startswith(('$2y$', '$2b$', '$2a$')):
+            try:
+                subprocess.run(['htpasswd', '-i', '-v', str(HTPASSWD), otro],
+                               input=b'\x00' + password.encode(), capture_output=True, timeout=10)
+            except (OSError, subprocess.TimeoutExpired):
+                pass
+            _note_failure(ip)
+            return False
     reference = digest or '$apr1$xxxxxxxx$xxxxxxxxxxxxxxxxxxxxxx'
     # bcrypt (htpasswd -B): mucho mas lento de romper que apr1, que es MD5. Lo
     # verifica htpasswd leyendo la contrasena por stdin (nunca en la linea de
@@ -132,13 +164,16 @@ def check_password(user: str, password: str, ip: str = '-') -> bool:
 def make_session(user: str) -> str:
     expiry = int(time.time() + SESSION_HOURS * 3600)
     payload = f'{user}|{expiry}'
-    sig = hmac.new(_secret(), payload.encode(), hashlib.sha256).digest()
+    sig = _firma(user, expiry)
     token = payload.encode() + b'|' + base64.urlsafe_b64encode(sig)
     return base64.urlsafe_b64encode(token).decode()
 
 
-def read_session(cookie: str | None) -> str | None:
-    """Devuelve el usuario si la sesion es valida y no ha caducado."""
+def read_session(cookie: str | None, max_age_s: float | None = None) -> str | None:
+    """Devuelve el usuario si la sesion es valida y no ha caducado.
+
+    max_age_s: además, que no se abriera hace más de eso (la terminal con sudo
+    pide una sesión reciente aunque la del panel dure días)."""
     if not cookie:
         return None
     try:
@@ -149,8 +184,9 @@ def read_session(cookie: str | None) -> str | None:
         return None
     if time.time() > expiry:
         return None
-    payload = f'{user}|{expiry}'
-    expected = hmac.new(_secret(), payload.encode(), hashlib.sha256).digest()
+    if max_age_s is not None and time.time() - (expiry - SESSION_HOURS * 3600) > max_age_s:
+        return None
+    expected = _firma(user, expiry)
     try:
         given = base64.urlsafe_b64decode(sig_s.encode())
     except Exception:

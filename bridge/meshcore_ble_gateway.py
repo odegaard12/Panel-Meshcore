@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.27.0'
+PANEL_VERSION = '1.28.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -142,7 +142,8 @@ def _privado(path: Path) -> None:
 def auth(req) -> bool:
     # Solo por cabecera: en la URL (?token=) acabaria en logs e historiales.
     supplied = req.headers.get('X-MeshCore-Token', '')
-    return secrets.compare_digest(supplied, token())
+    # En bytes: con str, una cabecera no ASCII hacía saltar TypeError (500).
+    return secrets.compare_digest(supplied.encode('utf-8', 'surrogateescape'), token().encode())
 
 
 def b64(raw: bytes) -> str:
@@ -279,6 +280,11 @@ class RelayGateway:
                 if not fut.done():
                     fut.set_exception(RuntimeError('relay desconectado'))
             self.pending.clear()
+            # Lo recibido del relay anterior no vale para el siguiente: sin esto,
+            # tras reconectar se servían tramas viejas como si fueran de ahora.
+            self.last_push_by_type = {k: {} for k in CHANNELS}
+            self.messages_waiting = {k: False for k in CHANNELS}
+            self.last_push_type = {k: None for k in CHANNELS}
 
     async def receive(self, msg: dict):
         op = msg.get('op')
@@ -760,7 +766,10 @@ async def wio_pausa(req):
     body = await cuerpo(req)
     if not g.ws:
         raise web.HTTPServiceUnavailable(text='relay BLE no conectado')
-    await g.ws.send_json({'op': 'pausa', 'idx': idx, 'on': bool(body.get('on'))})
+    try:
+        await g.ws.send_json({'op': 'pausa', 'idx': idx, 'on': bool(body.get('on'))})
+    except Exception:
+        raise web.HTTPServiceUnavailable(text='el relay se desconectó a mitad')
     return web.json_response({'ok': True})
 
 
@@ -873,7 +882,9 @@ async def wio_remote_cmd(req):
 async def relay(req):
     if not auth(req):
         raise web.HTTPUnauthorized()
-    ws = web.WebSocketResponse(heartbeat=20)
+    # Latido de 120 s (espera del pong: 60 s): conectar por Bluetooth en Windows bloquea
+    # el bucle hasta 15-55 s y con 20 s el enlace se cortaba cada minuto (22/10/2026).
+    ws = web.WebSocketResponse(heartbeat=120)
     await ws.prepare(req)
     await g.attach(ws)
     try:
@@ -940,7 +951,15 @@ async def auth_login(req):
 
 async def auth_verify(req):
     """Subpeticion interna de nginx: 200 deja pasar, 401 manda al login."""
-    user = auth_mod.read_session(req.cookies.get(auth_mod.COOKIE_NAME))
+    # ?max_horas=N (la pone nginx para la terminal): sesión abierta hace menos de N h.
+    try:
+        max_h = float(req.query.get('max_horas', ''))
+    except ValueError:
+        max_h = None
+    if max_h is not None and not (0 < max_h < 10000):
+        max_h = None
+    user = auth_mod.read_session(req.cookies.get(auth_mod.COOKIE_NAME),
+                                 max_age_s=max_h * 3600 if max_h else None)
     if not user:
         raise web.HTTPUnauthorized()
     return web.Response(text='', headers={'X-MeshCore-User': user})

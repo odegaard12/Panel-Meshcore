@@ -3,6 +3,32 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.28.0] - 2026-10-22
+
+### Seguridad
+- Revisión a raíz de PHP2Shell (CVE-2026-109618/109619): el proyecto no usa
+  PHP en ningún sitio, pero se buscaron los mismos tipos de fallo.
+- Las sesiones quedan ligadas a la contraseña: al cambiarla, todas las
+  sesiones abiertas dejan de valer (hay que volver a entrar una vez).
+- La terminal web (con sudo) solo deja pasar sesiones abiertas hace menos de
+  2 horas, y lleva su propia CSP y Permissions-Policy.
+- Un usuario inexistente tarda lo mismo en fallar que uno real (antes se
+  podía saber por el tiempo de respuesta qué usuarios existen).
+- El registro de intentos fallidos ya no crece sin límite.
+- Un token con caracteres no ASCII ya no provoca un error 500.
+- Al caer el relay se borra lo que había mandado (avisos y tramas): el
+  siguiente relay ya no hereda estado viejo.
+- «Lo he apagado / encendido» ya no da 500 si el relay cae a mitad.
+- `install-pi.sh` exige `MESHCORE_RELAY_IP`: el gateway solo atiende al PC
+  del relay (o `*` para abrirlo, con aviso).
+- CI con permisos de solo lectura.
+
+### Corregido
+- El relay perdía la conexión con la Raspberry cada minuto: el escaneo
+  Bluetooth de Windows congelaba el relay hasta 55 s y la Pi cortaba por falta
+  de respuesta al latido. El escaneo va ahora en su propio hilo y el latido
+  admite hasta 60 s sin respuesta. El relay deja escrito si algo lo bloquea.
+
 ## [1.27.0] - 2026-10-21
 
 ### Añadido

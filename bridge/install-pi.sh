@@ -21,6 +21,21 @@ cp "$ROOT/bridge/login.html" "$PANEL/www/login.html"
 cp "$ROOT"/pwa/* "$PANEL/www/"
 # dashboard.html ya trae sus <script> del guard y del gateway: no se parchea.
 
+# El token viaja por la LAN: el gateway solo debe atender al PC del relay.
+# MESHCORE_RELAY_IP=IP-DEL-PC bash install-pi.sh   (o '*' para abrirlo, con aviso)
+RELAY_IP="${MESHCORE_RELAY_IP:-}"
+if [ -z "$RELAY_IP" ]; then
+  echo 'Falta MESHCORE_RELAY_IP: la IP del PC donde corre el relay (fíjala en el router).' >&2
+  echo "Ejemplo: MESHCORE_RELAY_IP=<IP-del-PC> bash $0" >&2
+  exit 1
+fi
+if [ "$RELAY_IP" = '*' ]; then
+  echo 'AVISO: el gateway atenderá a cualquier equipo de la red que tenga el token.' >&2
+  ALLOWED_LINE=''
+else
+  ALLOWED_LINE="Environment=MESHCORE_ALLOWED_IPS=$RELAY_IP"
+fi
+
 TOKEN_FILE="$HOME/.meshcore-ble-token"
 if [ ! -s "$TOKEN_FILE" ]; then
   umask 077
@@ -43,6 +58,7 @@ Type=simple
 User=$USER_NAME
 WorkingDirectory=$ROOT
 Environment=MESHCORE_BLE_TOKEN_FILE=$TOKEN_FILE
+$ALLOWED_LINE
 ExecStart=$VENV/bin/python $ROOT/bridge/meshcore_ble_gateway.py
 Restart=always
 RestartSec=3
