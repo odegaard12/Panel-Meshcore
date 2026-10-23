@@ -1519,7 +1519,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.29.0';
+const PANEL_VERSION='1.29.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1736,14 +1736,14 @@ function loadSavedPos(idx){
 }
 function markerPopup(idx,aprox){
   const st=loadNodeState(idx)||{};
-  const online = wNodes[idx] && wNodes[idx].device && wNodes[idx].device.gatt.connected;
-  let h='<b>'+(st.name||('WIO'+idx))+'</b><br>';
+  const online = wNodes[idx] && wNodes[idx].device && wNodes[idx].device.gatt.connected && wNodes[idx]._hydrated;
+  let h='<b>'+esc(st.name||('WIO'+idx))+'</b><br>';   // el nombre viene del nodo y de localStorage
   h+= online ? '<span style="color:#3fd67a">● conectado ahora</span><br>'
              : '<span style="color:#8b98a8">○ visto '+humanAgo(st.seen)+'</span><br>';
   if(st.batt!=null) h+='Batería: <b>'+st.batt+'%</b> ('+(st.mv/1000).toFixed(2)+'V)<br>';
   if(st.freq)      h+='Radio: '+st.freq.toFixed(3)+' MHz · SF'+st.sf+'<br>';
   if(st.tx!=null)  h+='TX: '+st.tx+' dBm';
-  h+='<br><span style="color:#8b98a8">'+NODE_SITES[idx].label+'</span>';
+  h+='<br><span style="color:#8b98a8">'+esc(NODE_SITES[idx].label)+'</span>';
   const pos=(idx===1?w1Marker:w2Marker);
   if(pos){
     const d=distKm([pos.getLatLng().lat,pos.getLatLng().lng],REPEATER_POS);

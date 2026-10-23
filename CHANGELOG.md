@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.29.1] - 2026-10-23
+
+### Seguridad
+- La ficha del mapa de cada WIO escapa el nombre y el sitio (vienen del nodo
+  y del navegador): nada de HTML colado en el popup.
+- La ficha solo dice «conectado ahora» si el WIO contesta, igual que el chat.
+- Alertas de dependencias (Dependabot) activadas y revisión semanal de las
+  dependencias de Python y de las actions de la CI.
+- Las actions de la CI van fijadas por commit (SHA), no por etiqueta.
+
 ## [1.29.0] - 2026-10-23
 
 ### Seguridad
