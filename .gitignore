@@ -10,3 +10,8 @@ __pycache__/
 # Ficheros de datos y registros del gateway
 *.jsonl
 *.log
+
+# Segredos locais (23/10/2026)
+.env
+.env.*
+!.env.example
