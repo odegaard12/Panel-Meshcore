@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.33.3] - 2026-10-25
+
+### Corregido
+- Acceso: el botón «Ver» de la contraseña se llamaba «Mostrar la contraseña» para
+  un lector de pantalla y no coincidía con lo que se ve; ahora dice «Ver la
+  contraseña» / «Ocultar la contraseña» (lo detectó axe-core 4.14).
+
+### Cambiado
+- axe-core de las pruebas de navegador sube a 4.14.0.
+
 ## [1.33.2] - 2026-10-24
 
 ### Cambiado

@@ -58,7 +58,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway 127.0.0.1:8780 
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.33.2** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.33.3** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 

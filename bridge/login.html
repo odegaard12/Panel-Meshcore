@@ -93,7 +93,7 @@ button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
         <label for="p">Contraseña</label>
         <div class="pw">
           <input id="p" name="password" type="password" autocomplete="current-password" required>
-          <button type="button" id="ojo" class="ojo" aria-label="Mostrar la contraseña" aria-pressed="false">Ver</button>
+          <button type="button" id="ojo" class="ojo" aria-label="Ver la contraseña">Ver</button>
         </div>
         <div class="caps" id="caps" hidden>Bloq Mayús está activado</div>
       </div>
@@ -126,8 +126,7 @@ button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
     const ver = pw.type === 'password';
     pw.type = ver ? 'text' : 'password';
     ojo.textContent = ver ? 'Ocultar' : 'Ver';
-    ojo.setAttribute('aria-pressed', ver);
-    ojo.setAttribute('aria-label', ver ? 'Ocultar la contraseña' : 'Mostrar la contraseña');
+    ojo.setAttribute('aria-label', ver ? 'Ocultar la contraseña' : 'Ver la contraseña');
     pw.focus();
   });
   const revisaCaps = (e) => { caps.hidden = !(e.getModifierState && e.getModifierState('CapsLock')); };
