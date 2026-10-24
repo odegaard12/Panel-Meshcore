@@ -3,6 +3,32 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.32.0] - 2026-10-24
+
+### Cambiado
+- Un solo lenguaje de formas en todo el panel: controles (botones, campos,
+  desplegables) con esquina de 10 px, tarjetitas de 12 px, tarjetas de 16 px y
+  píldoras donde ya las había. Antes mezclaba 6, 10, 12 y 16 px según la pantalla.
+- Alturas iguales: botones de 34 px y campos de 38 px como mínimo.
+- «Red y notas» ya tiene la misma cabecera de página que Analítica (título y
+  subtítulo); la etiqueta repetida de la barra lateral se esconde en pantallas anchas.
+- Página de acceso rediseñada con el mismo lenguaje que el panel: la marca del
+  icono en vez de un emoji, la misma tipografía (sin letra monoespaciada), botón
+  para ver u ocultar la contraseña, aviso de Bloq Mayús, entrada suave y una
+  sacudida corta cuando la contraseña no vale.
+- Chat: el aviso de la caja de texto cuando no hay WIO es más corto y cabe en el móvil.
+
+### Añadido
+- Los mensajes nuevos del chat y los diálogos entran con una transición corta
+  (se apagan con «reducir movimiento»), y los botones se hunden un píxel al pulsarlos.
+- Prueba de la página de acceso (`tools/test_login.js`): protege la defensa
+  contra redirecciones abiertas, el autocompletado y que no cargue nada de fuera.
+
+### Corregido
+- En la pestaña Equipos, los botones de pestañas (WIO1, WIO2…) usaban otra
+  esquina que el resto de controles.
+- Las cuatro secciones de Analítica caben en pantallas de 320 px.
+
 ## [1.31.0] - 2026-10-24
 
 ### Cambiado

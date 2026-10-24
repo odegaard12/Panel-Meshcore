@@ -11,8 +11,7 @@
   --bg:#0a0d12;--pan:#121822;--card:#141b26;--brd:#232e3d;
   --fg:#e8eef4;--dim:#8b98a8;--dim2:#5c6b7d;
   --acc:#3fd67a;--err:#ff6b6b;
-  --mono:ui-monospace,'Cascadia Code',Consolas,monospace;
-  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --sans:Inter,'Inter var',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -32,14 +31,14 @@ body{
   background:linear-gradient(90deg,var(--acc),#2fb968)}
 h1{font-size:21px;margin:0;font-weight:800;letter-spacing:.01em}
 h1 span{color:var(--acc)}
-.sub{color:var(--dim);font-size:12.5px;margin-top:4px;font-family:var(--mono)}
-.logo{font-size:34px;line-height:1;margin-bottom:14px}
+.sub{color:var(--dim);font-size:13px;margin-top:4px}
+.logo{display:block;width:44px;height:44px;margin-bottom:14px}
 form{margin-top:26px;display:flex;flex-direction:column;gap:14px}
 label{font-size:11px;color:var(--dim2);text-transform:uppercase;letter-spacing:.07em;
   display:block;margin-bottom:6px;font-weight:700}
 input{
   width:100%;background:#0c1119;color:var(--fg);
-  border:1px solid var(--brd);border-radius:9px;
+  border:1px solid var(--brd);border-radius:10px;
   padding:12px 13px;font:inherit;font-size:15px;
   transition:border-color .15s,box-shadow .15s;
 }
@@ -48,7 +47,7 @@ input:disabled{opacity:.55}
 button{
   margin-top:6px;width:100%;
   background:linear-gradient(180deg,#42dd82,#2fb968);color:#04180c;
-  border:none;border-radius:9px;padding:13px;
+  border:none;border-radius:10px;padding:13px;
   font:inherit;font-size:15px;font-weight:800;cursor:pointer;
   transition:filter .15s;
 }
@@ -61,15 +60,28 @@ button:disabled{opacity:.6;cursor:progress}
 }
 .msg.on{display:block}
 .foot{margin-top:24px;padding-top:18px;border-top:1px solid var(--brd);
-  color:var(--dim2);font-size:11.5px;font-family:var(--mono);text-align:center}
+  color:var(--dim2);font-size:11.5px;text-align:center}
+.pw{position:relative}
+.pw input{padding-right:84px}
+button.ojo{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:auto;margin:0;padding:6px 10px;
+  background:transparent;color:var(--dim);font-size:12px;font-weight:600;border-radius:8px}
+button.ojo:hover:not(:disabled){filter:none;color:var(--fg)}
+button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.caps{margin-top:6px;font-size:12px;color:#f2b23a}
+.caps[hidden]{display:none}
+.card{animation:entra .35s cubic-bezier(.2,.8,.2,1) both}
+.card.sacude{animation:sacude .38s ease}
+@keyframes entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes sacude{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@media (prefers-reduced-motion:reduce){.card,.card.sacude{animation:none}}
 @media (max-width:420px){.card{padding:26px 20px}h1{font-size:19px}}
 </style>
 </head>
 <body>
   <div class="card">
-    <div class="logo">📡</div>
+    <svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Panel MeshCore"><rect width="64" height="64" rx="14" fill="#0f151f"/><g stroke="#3fd67a" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M18 44 L32 26 L46 44 Z" opacity=".55"/><path d="M24.5 17.5 a10.5 10.5 0 0 1 15 0" opacity=".8"/><path d="M20 13 a17 17 0 0 1 24 0" opacity=".45"/></g><g fill="#3fd67a"><circle cx="32" cy="26" r="5"/><circle cx="18" cy="44" r="4.2"/><circle cx="46" cy="44" r="4.2"/></g></svg>
     <h1>Mesh<span>Core</span> Galicia</h1>
-    <div class="sub">Panel de equipos</div>
+    <div class="sub">Acceso al panel</div>
 
     <form id="f" autocomplete="on">
       <div>
@@ -79,7 +91,11 @@ button:disabled{opacity:.6;cursor:progress}
       </div>
       <div>
         <label for="p">Contraseña</label>
-        <input id="p" name="password" type="password" autocomplete="current-password" required>
+        <div class="pw">
+          <input id="p" name="password" type="password" autocomplete="current-password" required>
+          <button type="button" id="ojo" class="ojo" aria-label="Mostrar la contraseña" aria-pressed="false">Ver</button>
+        </div>
+        <div class="caps" id="caps" hidden>Bloq Mayús está activado</div>
       </div>
       <button id="b" type="submit">Entrar</button>
     </form>
@@ -101,7 +117,24 @@ button:disabled{opacity:.6;cursor:progress}
     btn.disabled = false;
     document.getElementById('p').value = '';
     document.getElementById('p').focus();
+    const c = document.querySelector('.card');   // el formulario se sacude: se ve que no ha entrado
+    c.classList.remove('sacude'); void c.offsetWidth; c.classList.add('sacude');
   }
+
+  // Ver u ocultar la contraseña y avisar del Bloq Mayús (en el móvil se teclea peor).
+  const pw = document.getElementById('p'), ojo = document.getElementById('ojo'), caps = document.getElementById('caps');
+  ojo.addEventListener('click', () => {
+    const ver = pw.type === 'password';
+    pw.type = ver ? 'text' : 'password';
+    ojo.textContent = ver ? 'Ocultar' : 'Ver';
+    ojo.setAttribute('aria-pressed', ver);
+    ojo.setAttribute('aria-label', ver ? 'Ocultar la contraseña' : 'Mostrar la contraseña');
+    pw.focus();
+  });
+  const revisaCaps = (e) => { caps.hidden = !(e.getModifierState && e.getModifierState('CapsLock')); };
+  pw.addEventListener('keydown', revisaCaps);
+  pw.addEventListener('keyup', revisaCaps);
+  pw.addEventListener('blur', () => { caps.hidden = true; });
 
   form.addEventListener('submit', async (ev) => {
     ev.preventDefault();

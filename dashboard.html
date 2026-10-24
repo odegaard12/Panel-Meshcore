@@ -390,7 +390,7 @@ select{padding:9px 10px;font-size:12px}
   --acc:#3fd67a;--acc-d:rgba(63,214,122,.12);--acc-fg:#04170b;
   --ok:#3fd67a;--warn:#f2b23a;--err:#f26b6b;--info:#5aaef0;--viol:#a48cf5;
   --ok-bg:rgba(63,214,122,.10);--warn-bg:rgba(242,178,58,.10);--err-bg:rgba(242,107,107,.10);--info-bg:rgba(90,174,240,.10);
-  --r1:6px;--r2:10px;--r3:12px;
+  --r1:10px;--r2:12px;--r3:16px;
   --sh1:0 1px 0 rgba(255,255,255,.03) inset,0 1px 2px rgba(0,0,0,.35);
   --sh2:0 1px 0 rgba(255,255,255,.04) inset,0 10px 30px -12px rgba(0,0,0,.65);
   --ring:0 0 0 2px var(--bg),0 0 0 4px rgba(63,214,122,.55);
@@ -681,6 +681,21 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+/* Unificación (1.32): una escala de esquinas (controles 10 · tarjetitas 12 · tarjetas 16), alturas mínimas
+   iguales, mensajes que entran suavemente, diálogos con transición y cabecera de página común */
+button:not([class]),button.p{min-height:34px}
+input[type=text],input[type=password],input[type=number],select{min-height:38px}
+button:active:not(:disabled){transform:translateY(1px)}
+.msg.nuevo{animation:msgIn .24s cubic-bezier(.2,.8,.2,1) both}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+dialog[open]{animation:dlgIn .18s ease both}
+dialog[open]::backdrop{animation:fundido .18s ease both}
+@keyframes dlgIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.redHead{margin:0 0 18px}
+@media (min-width:861px){.redSidebar .sidebarLabel:first-child{display:none}}
+#tab-equipos .devTab{border-radius:var(--r1)}
+@media (max-width:360px){.statsTabs button{padding:0 10px;font-size:12.5px}}
+@media (prefers-reduced-motion:reduce){.msg.nuevo,dialog[open],dialog[open]::backdrop{animation:none!important}}
 /* Analítica por secciones (1.31): misma píldora que la barra de pestañas de arriba */
 .statsTabs{display:flex;gap:2px;background:var(--raise);border-radius:999px;padding:4px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none;margin:0 0 16px}
 .statsTabs::-webkit-scrollbar{display:none}
@@ -1222,6 +1237,12 @@ footer{color:var(--dim2)}
       <button class="layer-toggle red-nav" data-target="red-herramientas">Herramientas</button>
     </div>
     <div class="redContent">
+    <div class="statsHead redHead">
+      <div>
+        <div class="statsTitle">Red y notas</div>
+        <div class="statsSub">Contexto, normas y recursos de la comunidad.</div>
+      </div>
+    </div>
     <div class="grid">
 
     <div class="card rescard" id="red-top" style="grid-column:1/-1">
@@ -1617,7 +1638,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.31.0';
+const PANEL_VERSION='1.32.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2901,7 +2922,7 @@ function chatAdd(cls,who,text,meta,persist=true,dedupKey=null,kind='out',at=null
   }
   const pegado=box.scrollHeight-box.scrollTop-box.clientHeight<140;   // si estabas leyendo arriba, no te arrastra
   const d=document.createElement('div');
-  d.className='msg '+cls+(kind==='priv'&&cls!=='sys'?' priv':'');
+  d.className='msg '+cls+(kind==='priv'&&cls!=='sys'?' priv':'')+(persist&&cls!=='sys'?' nuevo':'');
   d.dataset.kind=kind;
   const m=String(meta||'');
   d.dataset.via=[1,2].find(i=>m.includes(CFG.wios[i].nombre.replace(/^MeshCore-/,'')))||'';
@@ -3875,8 +3896,8 @@ function refreshChatUI(){
   const inp=$('#chatInput');
   inp.disabled=!n;
   $('#chatSend').disabled=!n;
-  if(!n) inp.placeholder='Ningún WIO contesta: ahora no se puede enviar';
-  else if(inp.placeholder.startsWith('Ningún WIO')) inp.placeholder=convSel?'Privado a '+convSel+'…':'Escribe un mensaje...';
+  if(!n) inp.placeholder='Sin WIO: no se puede enviar';
+  else if(inp.placeholder.startsWith('Sin WIO')) inp.placeholder=convSel?'Privado a '+convSel+'…':'Escribe un mensaje...';
   $('#dot-chat').classList.toggle('on',!!n);
   updateListening();
 }
