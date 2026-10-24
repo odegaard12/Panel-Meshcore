@@ -247,16 +247,16 @@
             if(logEl) logEl.textContent='El PC ve el WIO por Bluetooth pero no contesta a los comandos ('+e.message+'). Se reintenta solo cada pocos segundos; si sigue así, apágalo y enciéndelo.';
           }
         }
-        if(st && st.connected && !n._manualOff && n._hydrated && Date.now()-(n._batAt||0)>(n._batOk?120000:15000)){
+        if(st && st.connected && !n._manualOff && n._hydrated && Date.now()-(n._batAt||0)>(n._batOk?120000:Math.min(120000,15000*Math.pow(2,n._batFallos||0)))){
           n._batAt=Date.now();
           try{
             const mv=await n.battery();
-            n._batOk=true;
+            n._batOk=true; n._batFallos=0;
             $('#w'+idx+'-batt').textContent=pct(mv)+'% ('+(mv/1000).toFixed(2)+'V)';
             if(typeof setBattBar==='function') setBattBar(idx,pct(mv));
             if(typeof saveNodeState==='function') saveNodeState(idx,{batt:pct(mv),mv});
           }catch(e){
-            n._batOk=false;
+            n._batOk=false; n._batFallos=(n._batFallos||0)+1;
             const b=$('#w'+idx+'-batt'); if(b) b.textContent=b.textContent.replace(/ ?\(sin leer ahora\)$/,'')+' (sin leer ahora)';
           }
         }

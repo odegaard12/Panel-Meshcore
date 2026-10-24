@@ -95,7 +95,7 @@ nav.tabs button .badge2{display:inline-block;min-width:17px;padding:0 5px;margin
 .statEmpty{color:var(--dim2);font-size:11.5px;padding:24px 4px;text-align:center}
 
 .wrap{max-width:1200px;margin:0 auto;padding:28px 24px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:18px}
 
 .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--brd);border-radius:var(--r3);padding:20px;position:relative;overflow:hidden;box-shadow:var(--sh1);transition:border-color var(--t),box-shadow var(--t)}
 .card:hover{border-color:var(--brd2);box-shadow:var(--sh2)}
@@ -681,6 +681,8 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+.redContent .grid>*{min-width:0}
+.redContent .card{overflow-wrap:anywhere}
 .kpiD{font-size:12px;font-weight:600;margin-top:5px;color:var(--dim)}
 .kpiD.up{color:#3fd67a}.kpiD.dn{color:#f26b6b}.kpiD span{font-weight:400;color:var(--dim2)}
 .statFoot{color:var(--dim2);font-size:12px;margin-top:6px;line-height:1.4}
@@ -1570,7 +1572,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.30.0';
+const PANEL_VERSION='1.30.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1627,10 +1629,11 @@ const wNodes={1:null,2:null};
 // ============ Pestañas ============
 let unreadChat=0;
 function showTab(name){
+  const venia=document.querySelector('.tabview.on')?.id;   // pestaña de la que se sale
   if(name==='mapa'){ name='equipos'; setTimeout(()=>document.querySelector('.devTab[data-dev="mapa"]')?.click(),0); }
   document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
   document.querySelectorAll('.tabview').forEach(v=>v.classList.toggle('on',v.id==='tab-'+name));
-  if(name!=='chat') marcarChatVisto();
+  if(venia==='tab-chat' && name!=='chat') marcarChatVisto();
   if(name==='chat'){ unreadChat=0; updateChatBadge(); fitChatCardToViewport(); requestAnimationFrame(()=>posicionarChat()); }
   if(name==='mapa') fitMapWrapToViewport();
   // Un solo mapa (el completo, con sus capas y herramientas): vive en el
@@ -2937,7 +2940,7 @@ function applyChatFilterTo(el){
   if(typeof convSel!=='undefined' && convSel && !el.classList.contains('sys')){
     const quien=el.querySelector('.who b')?.textContent||'';
     const meta=el.querySelector('.meta')?.textContent||'';
-    passKind = el.dataset.kind==='priv' && (quien===convSel || meta.includes('· a '+convSel));
+    passKind = el.dataset.kind==='priv' && (quien===convSel || metaEsA(meta,convSel));
   }
   const passVia = via==='all' || el.classList.contains('sys') || el.dataset.via==='' || String(el.dataset.via)===via;
   el.style.display = (passKind && passVia) ? '' : 'none';
@@ -2958,9 +2961,11 @@ $('#chatDownload').onclick=()=>{
   a.download='meshcore-chat-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.txt';
   a.click();
 };
+// «… · a Nombre» al final: comparación exacta, no por trozo (Ana ≠ Anabel).
+function metaEsA(meta,n){ const m=String(meta||''), i=m.lastIndexOf('· a '); return i>=0 && m.slice(i+4).trim()===n; }
 function alcanceBorrado(){
   const log=loadChatLog();
-  const deConv=n=>e=>e.kind==='priv'&&(e.who===n||String(e.meta||'').includes('· a '+n));
+  const deConv=n=>e=>e.kind==='priv'&&(e.who===n||metaEsA(e.meta,n));
   if(convSel){ const n=convSel, f=deConv(n); return {titulo:'«'+n+'»', cuantos:log.filter(f), resto:e=>!f(e), conv:true}; }
   if(canalSel!=='all'){ const k='chan'+canalSel, nom=CANAL_NOMBRE[k]||('Canal '+canalSel); return {titulo:'el canal «'+nom+'»', cuantos:log.filter(e=>e.kind===k), resto:e=>e.kind!==k}; }
   return {titulo:'todo el chat', cuantos:log, resto:()=>false};
@@ -3362,7 +3367,10 @@ function pintarMapaCalor(datos){
     s+='<text x="'+(L-7)+'" y="'+(y+ch/2+3.5).toFixed(1)+'" font-size="10.5" fill="'+(r===6?'#e8eef4':G_TXT)+'"'+(r===6?' font-weight="700"':'')+' text-anchor="end">'+nom+'</text>';
     for(let h=0;h<24;h++){
       const ini=new Date(dia.getFullYear(),dia.getMonth(),dia.getDate(),h).getTime()/1000;
-      const e=mapa.get(Math.floor(ini/3600)*3600), x=(L+h*cw).toFixed(1);
+      const fin=new Date(dia.getFullYear(),dia.getMonth(),dia.getDate(),h+1).getTime()/1000;
+      let e=null;   // las horas repetidas del cambio de octubre se suman en una casilla
+      for(let t=Math.floor(ini/3600)*3600;t<fin;t+=3600){ const q=mapa.get(t); if(q) e=e?{n:e.n+q.n,snr:q.n>e.n?q.snr:e.snr}:q; }
+      const x=(L+h*cw).toFixed(1);
       const base='x="'+x+'" y="'+y.toFixed(1)+'" width="'+(cw-2).toFixed(1)+'" height="'+ch.toFixed(1)+'" rx="4"';
       const cuando=nom+' '+dia.getDate()+'/'+(dia.getMonth()+1)+' · '+hh2(h)+' h';
       if(ini>ahoraS) s+='<rect '+base+' fill="none" stroke="'+G_GRID+'"/>';

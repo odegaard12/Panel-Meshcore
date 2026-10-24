@@ -3,6 +3,21 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.30.1] - 2026-10-24
+
+### Corregido
+- Chat: el aviso «N mensajes nuevos» se perdía si, antes de abrir el chat,
+  pasabas por otra pestaña. Ahora el chat solo se marca como visto al salir de él.
+- Chat: con contactos de nombre parecido (Ana y Anabel), borrar o filtrar la
+  conversación de uno afectaba también a los mensajes enviados al otro. El
+  destino ahora se compara entero. Prueba nueva: `tools/test_chat_nombres.js`.
+- Mapa de calor: el domingo del cambio de hora de octubre (día de 25 h) las dos
+  horas repetidas de las 02:00 se juntan en una casilla; antes la segunda no se veía.
+- Red y notas: en pantallas de 320 px las tarjetas se salían por la derecha. La
+  rejilla general pedía columnas de 320 px como mínimo.
+- Batería del WIO: si la lectura falla seguido, el reintento se espacia
+  (15 s, 30 s, 1 min, 2 min) en vez de mandar un comando al radio cada 15 s.
+
 ## [1.30.0] - 2026-10-24
 
 ### Añadido
