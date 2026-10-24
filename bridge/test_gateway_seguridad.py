@@ -103,6 +103,46 @@ async def main():
         # 8. Version en /healthz.
         r = await c.get('/healthz')
         assert (await r.json())['version'] == gw.PANEL_VERSION
+
+        # 9. Un token con caracteres no ASCII es un 401, no un 500.
+        r = await c.get('/api/ble/status', headers={'X-MeshCore-Token': 'café'.encode('utf-8').decode('latin-1')})
+        assert r.status == 401, r.status
+
+        # 10. La terminal (con sudo) pide una sesion abierta hace menos de 2 h
+        # (nginx pasa ?max_horas=2); el panel acepta la misma sesion mientras dure.
+        auth_mod.SESSION_HOURS = 168
+        with open(os.environ['MESHCORE_HTPASSWD'], 'w') as fh:
+            fh.write('oscar:$apr1$abc$def\n')
+        ck = {'Cookie': f'{auth_mod.COOKIE_NAME}={auth_mod.make_session("oscar")}'}
+        assert (await c.get('/api/auth/verify?max_horas=2', headers={**H, **ck})).status == 200
+        real = auth_mod.time.time
+        auth_mod.time.time = lambda: real() + 3 * 3600
+        try:
+            assert (await c.get('/api/auth/verify?max_horas=2', headers={**H, **ck})).status == 401
+            assert (await c.get('/api/auth/verify', headers={**H, **ck})).status == 200
+            assert (await c.get('/api/auth/verify?max_horas=x', headers={**H, **ck})).status == 200  # basura = sin limite
+        finally:
+            auth_mod.time.time = real
+        # Cambiar la contrasena (el hash) invalida las sesiones abiertas.
+        with open(os.environ['MESHCORE_HTPASSWD'], 'w') as fh:
+            fh.write('oscar:$apr1$abc$otro\n')
+        assert (await c.get('/api/auth/verify', headers={**H, **ck})).status == 401
+
+        # 11. Pausa: si el relay cae a mitad del envio, 503 y no 500.
+        class WsRoto:
+            async def send_json(self, _):
+                raise ConnectionResetError('cerrado')
+        gw.g.ws = WsRoto()
+        assert await st('/api/ble/wio/1/pausa', json={'on': True}) == 503
+
+        # 12. Al caer el relay no queda estado suyo para el siguiente.
+        gw.g.messages_waiting[1] = True
+        gw.g.last_push_type[1] = 0x83
+        gw.g.last_push_by_type[1] = {0x87: b'viejo'}
+        await gw.g.detach(gw.g.ws)
+        assert gw.g.messages_waiting[1] is False
+        assert gw.g.last_push_type[1] is None
+        assert gw.g.last_push_by_type[1] == {}
     print('OK')
 
 asyncio.run(main())

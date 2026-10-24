@@ -9,7 +9,10 @@
 # Quitar la tarea:  Unregister-ScheduledTask -TaskName 'PanelMeshCore-Relay' -Confirm:$false
 $ErrorActionPreference = 'Stop'
 # Direccion del gateway de tu Pi (o MESHCORE_GATEWAY_WS en el entorno).
-$GatewayWs = if ($env:MESHCORE_GATEWAY_WS) { $env:MESHCORE_GATEWAY_WS } else { 'ws://raspberrypi.local:8780/api/ble/relay' }
+$GatewayWs = if ($env:MESHCORE_GATEWAY_WS) { $env:MESHCORE_GATEWAY_WS } else { 'wss://raspberrypi.local/api/ble/relay' }
+# Huella SHA-256 del certificado de la Pi (openssl x509 -in /etc/nginx/meshcore-tls/cert.pem -noout -fingerprint -sha256).
+$Huella = $env:MESHCORE_GATEWAY_FINGERPRINT
+if ($GatewayWs -like 'wss://*' -and [string]::IsNullOrWhiteSpace($Huella)) { throw 'Falta MESHCORE_GATEWAY_FINGERPRINT: la huella del certificado de la Pi (ver comentario).' }
 # Nombres BLE de tus WIO (MESHCORE_WIO1_NAME / MESHCORE_WIO2_NAME): se guardan en
 # el lanzador para que el relay los encuentre aunque cambie su direccion.
 $nombres = ''
@@ -36,6 +39,7 @@ if (-not `$tengo) { exit }
 `$tokenPath = Join-Path `$env:USERPROFILE '.meshcore-ble-token'
 `$env:MESHCORE_BLE_TOKEN = (Get-Content `$tokenPath -Raw).Trim()
 `$env:MESHCORE_GATEWAY_WS = '$GatewayWs'
+`$env:MESHCORE_GATEWAY_FINGERPRINT = '$Huella'
 `$env:MESHCORE_BLE_PAIR = '1'
 $nombres# El relay escribe su propio log UTF-8 con rotacion; aqui solo el supervisor.
 `$env:MESHCORE_LOG_FILE = '$dir\relay.log'

@@ -3,6 +3,23 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.29.2] - 2026-10-24
+
+### Corregido
+- `instalar-vigilante.ps1` seguía poniendo `ws://…:8780` por defecto: ahora
+  usa `wss://` y pide la huella del certificado, igual que `install-windows.ps1`.
+- El esquema del README refleja la entrada del relay por `wss://` y el gateway
+  solo en la Pi.
+
+### Pruebas
+- Nueva `test_relay_escaneo_wss.py`: el escaneo Bluetooth ya no puede parar el
+  bucle del relay (el fallo del 22/10) y la huella de `wss://` se interpreta bien.
+- `test_gateway_seguridad.py` cubre los arreglos de la 1.28: token con tildes
+  (401, no 500), sesión de la terminal limitada a 2 h, sesiones invalidadas al
+  cambiar la contraseña, pausa sin 500 y estado limpio al caer el relay.
+- `test_relay_estado.py` ya no lee la pausa real de quien lo ejecuta: fallaba
+  en un PC con un WIO marcado en pausa.
+
 ## [1.29.1] - 2026-10-23
 
 ### Seguridad

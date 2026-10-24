@@ -43,8 +43,8 @@
 ## Cómo funciona
 
 ```
-navegador ──HTTPS──> nginx (TLS + login) ──> gateway :8780 (Raspberry)
-                                                   ▲ WebSocket con token
+navegador ──HTTPS──> nginx (TLS + login) ──> gateway 127.0.0.1:8780 (Raspberry)
+                                                   ▲ wss:// con token (nginx, solo la IP del PC)
                                   relay (PC con Bluetooth) ──BLE──> companion 1 / 2
                                                                        │ LoRa
                                                                  tu repetidor
@@ -54,7 +54,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway :8780 (Raspberr
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.29.1** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.29.2** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 

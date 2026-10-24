@@ -6,6 +6,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import meshcore_ble_relay as r
 
 r.RETRY = 0.05
+import tempfile
+r.PAUSA_FILE = r.Path(tempfile.mkdtemp()) / "pausa.json"   # no leer la pausa real de quien lo ejecuta
 estados = []
 
 
