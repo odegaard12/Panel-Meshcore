@@ -14,6 +14,7 @@
   <img alt="Raspberry Pi" src="https://img.shields.io/badge/Raspberry%20Pi-gateway-c51a4a">
   <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-3776ab">
   <img alt="EU868" src="https://img.shields.io/badge/LoRa-EU868-0f151f">
+  <a href="https://github.com/odegaard12/Panel-Meshcore/actions/workflows/tests.yml"><img alt="Pruebas" src="https://github.com/odegaard12/Panel-Meshcore/actions/workflows/tests.yml/badge.svg"></a>
 </p>
 
 <p align="center"><img src="docs/img/equipos.png" alt="Pestaña Panel" width="860"></p>
@@ -57,7 +58,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway 127.0.0.1:8780 
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.33.1** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.33.2** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
@@ -196,6 +197,7 @@ pip install playwright && python -m playwright install chromium
 npm ci --prefix tools/e2e
 python tools/e2e/test_e2e.py            # E2E_CANAL=msedge para usar Edge en Windows
 python tools/e2e/servidor_ejemplo.py    # el panel con datos de ejemplo en http://127.0.0.1:8111
+python tools/e2e/capturas.py            # regenera las capturas de este README (docs/img)
 ```
 
 ## Licencia

@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.33.2] - 2026-10-24
+
+### Cambiado
+- Las capturas del README (Panel, Mapa, Analítica, Chat y Gestión) se regeneran
+  con `python tools/e2e/capturas.py` a partir de los datos de ejemplo, así que
+  siempre enseñan el diseño actual.
+- Insignia de estado de las pruebas en el README y Dependabot vigila también
+  las dependencias de las pruebas de navegador.
+
 ## [1.33.1] - 2026-10-24
 
 ### Añadido
