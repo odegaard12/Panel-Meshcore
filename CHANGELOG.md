@@ -3,6 +3,30 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.31.0] - 2026-10-24
+
+### Cambiado
+- Analítica ordenada en cuatro secciones: Resumen, Señal, Tráfico y Repetidor
+  (el panel recuerda la última que abriste, y se maneja con el teclado: flechas,
+  Inicio y Fin). Cada sección enseña solo sus cifras y sus gráficas, en vez de
+  diez gráficas seguidas.
+- Resumen: cuatro cifras con su flecha frente al periodo anterior y una franja
+  de avisos que solo cuenta lo que merece mirarse (picos de ruido, emisión
+  cerca del límite legal, batería baja, paquetes al límite, medida atrasada).
+- Cifras nuevas: batería y emisión del repetidor.
+
+### Añadido
+- Animaciones suaves: las barras crecen, las líneas se dibujan, las casillas del
+  mapa de calor aparecen en onda, las cifras suben hasta su valor, las pestañas
+  cambian con un fundido y las gráficas muestran un esqueleto mientras cargan.
+  Todo se apaga si el sistema pide «reducir movimiento».
+- Pruebas de los cálculos (`tools/test_analitica_calculos.js`): contadores del
+  repetidor que dan la vuelta o se reinician, picos de ruido y tramos con huecos.
+
+### Mejorado
+- Al cambiar de sección no se vuelven a pedir los datos (se reutilizan 30 s), y
+  al redimensionar la ventana las gráficas se redibujan sin animación.
+
 ## [1.30.1] - 2026-10-24
 
 ### Corregido

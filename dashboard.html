@@ -681,6 +681,43 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+/* Analítica por secciones (1.31): misma píldora que la barra de pestañas de arriba */
+.statsTabs{display:flex;gap:2px;background:var(--raise);border-radius:999px;padding:4px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none;margin:0 0 16px}
+.statsTabs::-webkit-scrollbar{display:none}
+.statsTabs button{height:34px;line-height:34px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--dim);font-size:13px;font-weight:600;white-space:nowrap;transition:background var(--t),color var(--t)}
+.statsTabs button:hover:not(.on){background:var(--hover);color:var(--fg)}
+.statsTabs button.on{background:var(--fg);color:var(--bg)}
+#tab-stats[data-sub="resumen"] [data-g]:not([data-g~="resumen"]),
+#tab-stats[data-sub="senal"] [data-g]:not([data-g~="senal"]),
+#tab-stats[data-sub="trafico"] [data-g]:not([data-g~="trafico"]),
+#tab-stats[data-sub="repetidor"] [data-g]:not([data-g~="repetidor"]){display:none}
+.statcard[data-ancho="2"]{grid-column:1/-1}
+#tab-stats[data-sub="repetidor"] [data-o="1"]{order:1}
+#tab-stats[data-sub="repetidor"] [data-o="2"]{order:2}
+#tab-stats[data-sub="repetidor"] [data-o="3"]{order:3}
+.statsAlertas{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.statsAlertas:empty{display:none}
+.alerta{display:flex;gap:8px;align-items:center;border-radius:12px;padding:8px 12px;font-size:13px;border:1px solid}
+.alerta.warn{background:var(--warn-bg);border-color:rgba(242,178,58,.35);color:var(--warn)}
+.alerta.ok{background:var(--ok-bg);border-color:rgba(63,214,122,.3);color:var(--ok)}
+.alerta.info{background:var(--info-bg);border-color:rgba(90,174,240,.3);color:var(--info)}
+.statcard{transition:border-color .2s}
+.statcard:hover{border-color:var(--brd2)}
+/* Animaciones: todas se apagan con «reducir movimiento» del sistema */
+.tabview.on{animation:tabIn .2s ease both}
+@keyframes tabIn{from{opacity:0}to{opacity:1}}
+.subIn{animation:subIn .24s ease both}
+@keyframes subIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.statSvg .gbar>path,.statSvg .gbar>rect:not([fill="transparent"]){transform-box:fill-box;transform-origin:50% 100%;animation:barGrow .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}
+@keyframes barGrow{from{transform:scaleY(0);opacity:.25}to{transform:none;opacity:1}}
+.statSvg path[fill-opacity]{animation:fundido .9s ease both}
+@keyframes fundido{from{opacity:0}to{opacity:1}}
+.statSvg .cel{transform-box:fill-box;transform-origin:center;animation:celIn .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes celIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+.statSvg.cargando{min-height:150px;border-radius:12px;background:linear-gradient(90deg,var(--raise) 25%,var(--hover) 37%,var(--raise) 63%);background-size:400% 100%;animation:brillo 1.4s ease infinite}
+@keyframes brillo{0%{background-position:100% 50%}100%{background-position:0 50%}}
+#tab-stats.sinanim .statSvg *{animation:none!important}
+@media (prefers-reduced-motion:reduce){.tabview.on,.subIn,.statSvg *,.statSvg.cargando{animation:none!important}}
 .redContent .grid>*{min-width:0}
 .redContent .card{overflow-wrap:anywhere}
 .kpiD{font-size:12px;font-weight:600;margin-top:5px;color:var(--dim)}
@@ -1432,7 +1469,7 @@ footer{color:var(--dim2)}
   </div>
   </section>
 
-  <section class="tabview" id="tab-stats">
+  <section class="tabview" id="tab-stats" data-sub="resumen">
     <div class="statsHead">
       <div>
         <div class="statsTitle">Analítica de radio</div>
@@ -1449,10 +1486,18 @@ footer{color:var(--dim2)}
       </div>
     </div>
 
+    <div class="statsTabs" id="statsTabs" role="tablist" aria-label="Secciones de la analítica">
+      <button type="button" role="tab" data-sub="resumen" aria-selected="true">Resumen</button>
+      <button type="button" role="tab" data-sub="senal" aria-selected="false" tabindex="-1">Señal</button>
+      <button type="button" role="tab" data-sub="trafico" aria-selected="false" tabindex="-1">Tráfico</button>
+      <button type="button" role="tab" data-sub="repetidor" aria-selected="false" tabindex="-1">Repetidor</button>
+    </div>
+
     <div class="statsKpis" id="statsKpis"></div>
+    <div class="statsAlertas" id="statsAlertas" data-g="resumen" aria-live="polite"></div>
 
     <div class="statsGrid">
-      <div class="card statcard">
+      <div class="card statcard" data-g="resumen senal">
         <div class="statHead"><span class="statIcon">📶</span>
           <div><div class="statName">Calidad de señal (SNR)</div>
           <div class="statHint">Cuánto destaca la señal sobre el ruido. Por debajo de 0 dB LoRa aún decodifica, pero justo.</div></div>
@@ -1460,7 +1505,7 @@ footer{color:var(--dim2)}
         <svg id="snrChart" class="statSvg"></svg>
       </div>
 
-      <div class="card statcard">
+      <div class="card statcard" data-g="senal">
         <div class="statHead"><span class="statIcon">📡</span>
           <div><div class="statName">Potencia recibida (RSSI)</div>
           <div class="statHint">Fuerza con la que llega. Dos grupos separados = vecinos cercanos vs. red lejana repetida.</div></div>
@@ -1468,7 +1513,7 @@ footer{color:var(--dim2)}
         <svg id="rssiChart" class="statSvg"></svg>
       </div>
 
-      <div class="card statcard">
+      <div class="card statcard" data-g="senal" data-ancho="2">
         <div class="statHead"><span class="statIcon">🌗</span>
           <div><div class="statName">Cómo cambia la señal durante el día</div>
           <div class="statHint">Mediana del SNR en cada hora del día (línea) y el 50 % central de los paquetes (banda).</div></div>
@@ -1477,7 +1522,7 @@ footer{color:var(--dim2)}
         <div class="statFoot">Si la línea baja de 0 dB a cierta hora, algo la tapa: ruido, tormenta o un vecino que se apaga.</div>
       </div>
 
-      <div class="card statcard">
+      <div class="card statcard" data-g="resumen trafico">
         <div class="statHead"><span class="statIcon">🗓️</span>
           <div><div class="statName">Cuándo hay más tráfico</div>
           <div class="statHint">Paquetes oídos por hora y día (últimos 7 días). Más verde = más tráfico.</div></div>
@@ -1486,7 +1531,7 @@ footer{color:var(--dim2)}
         <div class="statFoot" id="mapaCalorPie">Pasa el ratón por una casilla para ver el detalle. Las rayadas son ratos sin datos.</div>
       </div>
 
-      <div class="card statcard">
+      <div class="card statcard" data-g="trafico">
         <div class="statHead"><span class="statIcon">⏱️</span>
           <div><div class="statName">Actividad por hora</div>
           <div class="statHint">Paquetes oídos en cada hora. Sirve para ver las horas punta de la malla.</div></div>
@@ -1494,7 +1539,7 @@ footer{color:var(--dim2)}
         <svg id="actChart" class="statSvg"></svg>
       </div>
 
-      <div class="card statcard">
+      <div class="card statcard" data-g="trafico">
         <div class="statHead"><span class="statIcon">🔗</span>
           <div><div class="statName">Vecinos por saltos</div>
           <div class="statHint">De los contactos escaneados en el Mapa, cuántos saltos hay hasta cada uno.</div></div>
@@ -1503,7 +1548,7 @@ footer{color:var(--dim2)}
         <svg id="hopsChart" class="statSvg"></svg>
       </div>
 
-      <div class="card statcard">
+      <div class="card statcard" data-g="trafico">
         <div class="statHead"><span class="statIcon">🔀</span>
           <div><div class="statName">Cómo se mueve el tráfico</div>
           <div class="statHint">Paquetes recibidos por el repetidor cada hora: a todos (inundación) o con ruta fija (directo), y cuántos llegan repetidos.</div></div>
@@ -1513,7 +1558,7 @@ footer{color:var(--dim2)}
         <div class="statFoot">Muchos duplicados = muchos repetidores se oyen entre sí: la malla es robusta, pero gasta aire. Últimas 24 h.</div>
       </div>
 
-      <div class="card statcard">
+      <div class="card statcard" data-g="repetidor" data-ancho="2" data-o="3">
         <div class="statHead"><span class="statIcon">📻</span>
           <div><div class="statName">Cuánto aire ocupa la radio</div>
           <div class="statHint">Tiempo que el canal está ocupado: por lo que oye el repetidor y por lo que emite. Últimas 24 h.</div></div>
@@ -1523,7 +1568,7 @@ footer{color:var(--dim2)}
         <div class="statFoot">Útil para saber si el canal se satura antes de poner otro repetidor cerca.</div>
       </div>
 
-      <div class="card statcard" style="grid-column:1/-1">
+      <div class="card statcard" data-g="resumen repetidor" data-ancho="2" data-o="2" style="grid-column:1/-1">
         <div class="statHead"><span class="statIcon">🔇</span>
           <div><div class="statName">Ruido de fondo del repetidor</div>
           <div class="statHint">Lo que oye el repetidor cuando nadie habla (últimos 7 días). Un pico sostenido suele ser una interferencia.</div></div>
@@ -1533,7 +1578,7 @@ footer{color:var(--dim2)}
         <div class="statFoot">Se marcan solos los picos de más de 6 dB sobre lo normal, con su hora.</div>
       </div>
 
-      <div class="card statcard" style="grid-column:1/-1">
+      <div class="card statcard" data-g="repetidor" data-ancho="2" data-o="1" style="grid-column:1/-1">
         <div class="statHead"><span class="statIcon">🔋</span>
           <div><div class="statName">El repetidor en el tiempo</div>
           <div class="statHint">Medido por radio desde la Raspberry cada 15 min. Pasa el ratón por encima para ver cada medida; las zonas rayadas son ratos sin ningún WIO conectado.</div></div>
@@ -1543,7 +1588,7 @@ footer{color:var(--dim2)}
       </div>
     </div>
 
-    <div class="statsNote">
+    <div class="statsNote" data-g="senal trafico">
       Los datos de SNR y RSSI vienen del propio nodo (aviso <code>0x88 LOG_RX_DATA</code>), que informa de cada
       paquete que capta por radio aunque no sea para ti. Se guardan en la Raspberry (hasta 30 000 paquetes, más o menos una semana), así que
       no se pierden al recargar esta página ni al reiniciar el gateway. Los saltos salen de "Leer vecinos por radio" en el Mapa.
@@ -1572,7 +1617,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.30.1';
+const PANEL_VERSION='1.31.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1643,7 +1688,7 @@ function showTab(name){
     if(m && m.parentNode!==destino) destino.prepend(m);
     setTimeout(pintarEqMap,30);
   }
-  if(name==='stats'){ renderStats(); pintarHistoricoRak(); }
+  if(name==='stats'){ statsAnimaKpis=true; renderStats(true); pintarHistoricoRak(); }
   try{ history.replaceState(null,'',name==='equipos'?location.pathname+location.search:'#'+name); }catch(e){}
 }
 // Al recargar se vuelve a la pestaña en la que estabas (va en la URL: #mapa…).
@@ -3033,7 +3078,7 @@ function barraRedonda(x,y,w,h,r){
 // buckets: [{label,n,actual?}] · opts: {color (str o fn(b,i)), unidad, eje, alto}
 function statBars(sel,buckets,opts){
   opts=opts||{};
-  const el=$(sel); if(!el) return;
+  const el=$(sel); if(!el||oculto(el)) return;
   const H=opts.alto||210, W=svgTam(el,H);
   const L=36,R=6,T=20,B=opts.eje?42:26;
   const total=buckets.reduce((a,b)=>a+b.n,0);
@@ -3054,7 +3099,7 @@ function statBars(sel,buckets,opts){
     const x=L+i*(bw+gap), y=Y(b.n), h=H-B-y;
     const col=typeof opts.color==='function'?opts.color(b,i):opts.color;
     const pct=Math.round(100*b.n/total);
-    s+='<g class="gbar"><title>'+esc(b.label+(opts.unidad?' '+opts.unidad:''))+': '+b.n+' ('+pct+' %)</title>';
+    s+='<g class="gbar" style="--d:'+(i*28)+'ms"><title>'+esc(b.label+(opts.unidad?' '+opts.unidad:''))+': '+b.n+' ('+pct+' %)</title>';
     s+='<rect x="'+x.toFixed(1)+'" y="'+T+'" width="'+bw.toFixed(1)+'" height="'+(H-T-B)+'" fill="transparent"/>';
     s+= b.n ? '<path d="'+barraRedonda(x,y,bw,Math.max(h,2),Math.min(5,bw/3))+'" fill="'+col+'"'+
               (b.actual?' stroke="#e8eef4" stroke-opacity=".55" stroke-width="1.2"':'')+'/>'
@@ -3105,25 +3150,34 @@ const COL_SNR=['#ff6b6b','#ff8f5a','#f0b429','#d8cf4f','#9bdc6a','#3fd67a','#2fb
 // Cada llamada lleva su numero: si llega la respuesta de una vieja (cambio de
 // rango rapido) despues de una nueva, no pinta encima.
 let renderStatsSeq=0, histRakSeq=0;
-async function renderStats(){
+// forzar: pedir datos nuevos (si no, se reutilizan los de hace menos de 30 s al cambiar de sección).
+// silencioso: sin animaciones (al redimensionar la ventana).
+async function renderStats(forzar,silencioso){
   const mi=++renderStatsSeq;
+  $('#tab-stats').classList.toggle('sinanim',!!silencioso);
   const sub=$('#statsSub');
   const horas=+$('#statsRange').value;
-  let muestras=[], total=0;
-  if(typeof rakRxLog==='function'){
-    try{
-      const r=await rakRxLog(4000);
-      if(mi!==renderStatsSeq) return;
-      muestras=r.samples||[]; total=r.total||muestras.length;
-    }catch(e){ sub.textContent='No se pudo leer el registro de radio: '+e.message; }
-  }else{
-    sub.textContent='Puente no cargado: no hay acceso al registro de radio.';
+  let muestras=[], total=0, hist=[], horasRx=null, fallo=false;
+  const reciente=!forzar && statsCache && Date.now()-statsCache.t<30000;
+  if(reciente){ ({muestras,total,hist,horasRx}=statsCache); }
+  else{
+    // Esqueleto brillante mientras llegan los datos (solo en las gráficas aún vacías).
+    document.querySelectorAll('#tab-stats .statSvg').forEach(s=>{ if(!s.firstChild) s.classList.add('cargando'); });
+    if(typeof rakRxLog==='function'){
+      try{
+        const r=await rakRxLog(4000);
+        if(mi!==renderStatsSeq) return;
+        muestras=r.samples||[]; total=r.total||muestras.length;
+      }catch(e){ fallo=true; sub.textContent='No se pudo leer el registro de radio: '+e.message; }
+    }else{
+      fallo=true; sub.textContent='Puente no cargado: no hay acceso al registro de radio.';
+    }
+    // Historial del repetidor (ruido, tráfico, aire) y paquetes por hora (mapa de calor).
+    try{ if(typeof rakHistory==='function') hist=((await rakHistory(1500)).samples||[]); }catch(e){}
+    try{ if(typeof rakRxHoras==='function') horasRx=await rakRxHoras(7); }catch(e){}
+    if(mi!==renderStatsSeq) return;
+    if(!fallo) statsCache={t:Date.now(),muestras,total,hist,horasRx};
   }
-  // Historial del repetidor (ruido, tráfico, aire) y paquetes por hora (mapa de calor).
-  let hist=[], horasRx=null;
-  try{ if(typeof rakHistory==='function') hist=((await rakHistory(1500)).samples||[]); }catch(e){}
-  try{ if(typeof rakRxHoras==='function') horasRx=await rakRxHoras(7); }catch(e){}
-  if(mi!==renderStatsSeq) return;
   const ahoraS=Date.now()/1000;
   const todas=muestras;   // sin recortar: hace falta para comparar con el periodo anterior
   if(horas>0) muestras=muestras.filter(m=>m.at>=ahoraS-horas*3600);
@@ -3169,6 +3223,7 @@ async function renderStats(){
   const cubre=hist.length && hist[0].at<=ahoraS-2*hv*3600+1800;
   const ruidoAhora=medRuido(enVentana(hv,-1)), ruidoAntes=cubre?medRuido(enVentana(2*hv,hv)):null;
   const dupAhora=pctDup(hv,-1), dupAntes=cubre?pctDup(2*hv,hv):null;
+  const batU=[...hist].reverse().find(x=>x.bat_mv), dutyU=[...hist].reverse().find(x=>x.duty_cycle!=null);
   $('#statsKpis').innerHTML=
     kpi('Paquetes oídos',muestras.length.toLocaleString(),horas>0?('en '+horas+' h · '+total.toLocaleString()+' guardados'):(total.toLocaleString()+' guardados'),null,
         prev?deltaKpi(100*(muestras.length-prev.n)/prev.n,' %',null,1,0):'')+
@@ -3183,7 +3238,12 @@ async function renderStats(){
     kpi('Ruido de fondo',ruidoAhora==null?'—':Math.round(ruidoAhora)+' dBm','mediana · últimas '+hv+' h',null,
         ruidoAhora!=null&&ruidoAntes!=null?deltaKpi(ruidoAhora-ruidoAntes,' dB',false,1,0):'')+
     kpi('Duplicados',dupAhora==null?'—':Math.round(dupAhora)+' %','de lo que recibe el repetidor',null,
-        dupAhora!=null&&dupAntes!=null?deltaKpi(dupAhora-dupAntes,' pts',null,2,0):'');
+        dupAhora!=null&&dupAntes!=null?deltaKpi(dupAhora-dupAntes,' pts',null,2,0):'')+
+    kpi('Batería',batU?(batU.bat_mv/1000).toFixed(2)+' V':'—',batU?'última medida '+humanAgo(batU.at*1000):'del repetidor',batU&&batU.bat_mv<3800?'#ff6b6b':null)+
+    kpi('Emisión',dutyU?dutyU.duty_cycle.toFixed(2).replace('.',',')+' %':'—','del tiempo · límite legal 10 %',dutyU?(dutyU.duty_cycle<=10?'#3fd67a':'#ff6b6b'):null);
+  [...$('#statsKpis').children].forEach((k,i)=>{ k.dataset.g=KPI_G[i]||''; });
+  pintarAlertas({muestras,hist,snr:snr.length,pctDebil});
+  if(statsAnimaKpis){ statsAnimaKpis=false; contarKpis(); }
 
   if(muestras.length) sub.textContent='Medidas reales de cada paquete que oye tu nodo, no texto del chat.';
   else if(!algunWio) sub.textContent='Ningún WIO encendido: las gráficas de radio se llenan en cuanto conectes uno.';
@@ -3256,6 +3316,8 @@ async function renderStats(){
                   ()=>pintarAire(hist),()=>pintarRuido(hist)]){
     try{ f(); }catch(e){ console.error('Analítica:',e); }
   }
+  document.querySelectorAll('#tab-stats .statSvg.cargando').forEach(s=>s.classList.remove('cargando'));
+  ['#snrChart','#rssiChart','#snrHoraChart','#actChart','#hopsChart','#mapaCalorChart','#traficoChart','#aireChart','#ruidoChart'].forEach(q=>animarSvg($(q)));
 }
 
 // ---- Gráficas de Analítica añadidas en la 1.30 ----
@@ -3304,7 +3366,7 @@ function tramos(puntos,huecoS){
 
 // B · SNR por hora del día: mediana y 50 % central.
 function pintarSnrHora(muestras,vacio){
-  const el=$('#snrHoraChart'); if(!el) return;
+  const el=$('#snrHoraChart'); if(!el||oculto(el)) return;
   const H=210, W=svgTam(el,H);
   const por=Array.from({length:24},()=>[]);
   for(const m of muestras) if(m.snr!=null) por[new Date(m.at*1000).getHours()].push(m.snr);
@@ -3352,7 +3414,7 @@ function pintarSnrHora(muestras,vacio){
 
 // A · mapa de calor: 7 días x 24 horas, con los paquetes por hora que da el gateway.
 function pintarMapaCalor(datos){
-  const el=$('#mapaCalorChart'); if(!el) return;
+  const el=$('#mapaCalorChart'); if(!el||oculto(el)) return;
   const H=214, W=svgTam(el,H);
   const mapa=new Map(); let max=0;
   for(const h of ((datos&&datos.horas)||[])){ mapa.set(h.t,h); if(h.n>max) max=h.n; }
@@ -3374,7 +3436,7 @@ function pintarMapaCalor(datos){
       const base='x="'+x+'" y="'+y.toFixed(1)+'" width="'+(cw-2).toFixed(1)+'" height="'+ch.toFixed(1)+'" rx="4"';
       const cuando=nom+' '+dia.getDate()+'/'+(dia.getMonth()+1)+' · '+hh2(h)+' h';
       if(ini>ahoraS) s+='<rect '+base+' fill="none" stroke="'+G_GRID+'"/>';
-      else if(e) s+='<rect '+base+' fill="#3fd67a" fill-opacity="'+(0.14+0.8*Math.sqrt(e.n/max)).toFixed(2)+'"><title>'+cuando+' · '+e.n+(e.n===1?' paquete':' paquetes')+(e.snr!=null?' · SNR mediana '+e.snr.toFixed(1).replace('.',',')+' dB':'')+'</title></rect>';
+      else if(e) s+='<rect '+base+' class="cel" style="animation-delay:'+(h*16+r*30)+'ms" fill="#3fd67a" fill-opacity="'+(0.14+0.8*Math.sqrt(e.n/max)).toFixed(2)+'"><title>'+cuando+' · '+e.n+(e.n===1?' paquete':' paquetes')+(e.snr!=null?' · SNR mediana '+e.snr.toFixed(1).replace('.',',')+' dB':'')+'</title></rect>';
       else if(ini+3600<=desde) s+='<rect '+base+' fill="none" stroke="'+G_DIM+'" stroke-opacity=".5" stroke-dasharray="3 3"><title>'+cuando+' · sin datos guardados</title></rect>';
       else s+='<rect '+base+' fill="#3fd67a" fill-opacity=".05"><title>'+cuando+' · ningún paquete</title></rect>';
     }
@@ -3391,7 +3453,7 @@ function pintarMapaCalor(datos){
 
 // D · tráfico por hora: inundación y directo apilados, y % de duplicados.
 function pintarTrafico(hist){
-  const el=$('#traficoChart'); if(!el) return;
+  const el=$('#traficoChart'); if(!el||oculto(el)) return;
   const H=210, W=svgTam(el,H), extra=$('#traficoExtra');
   const ahoraS=Date.now()/1000, ini=Math.floor(ahoraS/3600)*3600-23*3600;
   const b=Array.from({length:24},()=>({fl:0,di:0,du:0}));
@@ -3414,7 +3476,7 @@ function pintarTrafico(hist){
   const pts=[];
   b.forEach((x,i)=>{
     const xx=L+i*bw, h=new Date((ini+i*3600)*1000).getHours(), tot=x.fl+x.di, pd=tot?Math.min(100,100*x.du/tot):null;
-    s+='<g class="gbar"><title>'+hh2(h)+' h · '+x.fl+' a todos (inundación) · '+x.di+' directos'+(pd!=null?' · '+Math.round(pd)+' % duplicados':'')+'</title>'+
+    s+='<g class="gbar" style="--d:'+(i*22)+'ms"><title>'+hh2(h)+' h · '+x.fl+' a todos (inundación) · '+x.di+' directos'+(pd!=null?' · '+Math.round(pd)+' % duplicados':'')+'</title>'+
        '<rect x="'+xx.toFixed(1)+'" y="'+T+'" width="'+bw.toFixed(1)+'" height="'+(H-T-B)+'" fill="transparent"/>';
     if(x.fl) s+='<rect x="'+xx.toFixed(1)+'" y="'+Y(x.fl).toFixed(1)+'" width="'+(bw-3).toFixed(1)+'" height="'+(Y(0)-Y(x.fl)).toFixed(1)+'" rx="2" fill="#a78bfa"/>';
     if(x.di) s+='<rect x="'+xx.toFixed(1)+'" y="'+Y(x.fl+x.di).toFixed(1)+'" width="'+(bw-3).toFixed(1)+'" height="'+(Y(x.fl)-Y(x.fl+x.di)).toFixed(1)+'" rx="2" fill="#5aaef0"/>';
@@ -3431,7 +3493,7 @@ function pintarTrafico(hist){
 
 // E · ocupación del aire: lo que oye y lo que emite el repetidor, en % del tiempo.
 function pintarAire(hist){
-  const el=$('#aireChart'); if(!el) return;
+  const el=$('#aireChart'); if(!el||oculto(el)) return;
   const H=210, W=svgTam(el,H), extra=$('#aireExtra');
   const ahoraS=Date.now()/1000, t0=ahoraS-24*3600;
   const pts=deltasRepetidor(hist).filter(d=>d.at>=t0&&d.rx!=null&&d.tx!=null&&d.up>0)
@@ -3472,21 +3534,11 @@ function pintarAire(hist){
 
 // C · ruido de fondo del repetidor, 7 días, con los picos marcados.
 function pintarRuido(hist){
-  const el=$('#ruidoChart'); if(!el) return;
+  const el=$('#ruidoChart'); if(!el||oculto(el)) return;
   const H=210, W=svgTam(el,H), extra=$('#ruidoExtra');
-  const t1=Date.now()/1000, t0=t1-7*86400;
-  const pts=hist.filter(x=>x.at>=t0&&typeof x.noise_floor==='number'&&x.noise_floor>-150&&x.noise_floor<-50).map(x=>({at:x.at,v:x.noise_floor}));
+  const t1=Date.now()/1000;
+  const {pts,base,picos}=detectarPicos(hist);
   if(pts.length<6){ svgVacio(el,W,H,'Aún sin medidas suficientes del repetidor'); if(extra) extra.textContent=''; return; }
-  const base=mediana(pts.map(p=>p.v));
-  // Picos: grupos seguidos (menos de 1 h entre medidas) a más de 6 dB sobre lo normal.
-  const picos=[]; let cur=null;
-  for(const p of pts){
-    if(p.v-base>=6){
-      if(cur&&p.at-cur.ult<=3600){ cur.ult=p.at; if(p.v>cur.v){ cur.v=p.v; cur.at=p.at; } }
-      else{ cur={at:p.at,ult:p.at,v:p.v}; picos.push(cur); }
-    }
-  }
-  picos.sort((a,b)=>b.v-a.v);
   const top=picos.slice(0,3);
   if(extra) extra.innerHTML='Normal: <b>'+Math.round(base)+' dBm</b> · '+(picos.length?'<b style="color:#f26b6b">'+picos.length+(picos.length===1?' pico':' picos')+'</b> de interferencia':'sin picos de interferencia')+' en 7 días';
   const lo=Math.floor((Math.min(base-4,...pts.map(p=>p.v))-1)/5)*5, hi=Math.ceil((Math.max(base+8,...pts.map(p=>p.v))+1)/5)*5;
@@ -3520,6 +3572,115 @@ function pintarRuido(hist){
   el.innerHTML=s;
 }
 
+// ---- Analítica por secciones y animaciones (1.31) ----
+const oculto=el=>!el.getClientRects().length;
+const SIN_MOVIMIENTO=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+// En qué secciones sale cada tarjeta de cifras, en el orden en que se pintan.
+const KPI_G=['resumen trafico','trafico','resumen senal','senal','senal','resumen repetidor','resumen trafico','repetidor','repetidor'];
+let statsCache=null, statsAnimaKpis=true;
+
+// Picos de ruido de fondo en 7 días: grupos seguidos (menos de 1 h entre medidas) a +6 dB de lo normal.
+function detectarPicos(hist){
+  const t0=Date.now()/1000-7*86400;
+  const pts=hist.filter(x=>x.at>=t0&&typeof x.noise_floor==='number'&&x.noise_floor>-150&&x.noise_floor<-50).map(x=>({at:x.at,v:x.noise_floor}));
+  if(pts.length<6) return {pts,base:null,picos:[]};
+  const base=mediana(pts.map(p=>p.v)), picos=[]; let cur=null;
+  for(const p of pts){
+    if(p.v-base>=6){
+      if(cur&&p.at-cur.ult<=3600){ cur.ult=p.at; if(p.v>cur.v){ cur.v=p.v; cur.at=p.at; } }
+      else{ cur={at:p.at,ult:p.at,v:p.v}; picos.push(cur); }
+    }
+  }
+  picos.sort((a,b)=>b.v-a.v);
+  return {pts,base,picos};
+}
+
+// Avisos de la sección Resumen: solo lo que merece mirarse.
+function pintarAlertas(c){
+  const el=$('#statsAlertas'); if(!el) return;
+  const a=[], al=(cls,ico,t)=>a.push('<div class="alerta '+cls+'"><span aria-hidden="true">'+ico+'</span><span>'+esc(t)+'</span></div>');
+  if(!c.muestras.length&&!c.hist.length) al('info','ⓘ','Sin datos todavía: cuando un WIO esté encendido esto se va llenando.');
+  const {base,picos}=detectarPicos(c.hist);
+  if(picos.length){
+    const k=picos[0], f=new Date(k.at*1000);
+    al('warn','⚠',(picos.length===1?'1 pico de ruido':picos.length+' picos de ruido')+' en 7 días; el más alto, +'+Math.round(k.v-base)+' dB el '+DIAS_ES[f.getDay()]+' a las '+hh2(f.getHours())+' h');
+  }
+  const duty=[...c.hist].reverse().find(x=>x.duty_cycle!=null);
+  if(duty){
+    if(duty.duty_cycle>10) al('warn','⚠','La emisión del repetidor pasa del 10 % legal ('+duty.duty_cycle.toFixed(1).replace('.',',')+' %)');
+    else al('ok','✓','Emisión dentro del 10 % legal ('+duty.duty_cycle.toFixed(2).replace('.',',')+' %)');
+  }
+  const bat=[...c.hist].reverse().find(x=>x.bat_mv);
+  if(bat&&bat.bat_mv<3800) al('warn','⚠','Batería del repetidor baja: '+(bat.bat_mv/1000).toFixed(2).replace('.',',')+' V');
+  if(c.snr>=30&&c.pctDebil>=50) al('warn','⚠','El '+c.pctDebil+' % de los paquetes llega al límite (SNR por debajo de 0 dB)');
+  const ult=c.hist.length?c.hist[c.hist.length-1].at:0;
+  if(ult&&Date.now()/1000-ult>3*3600) al('warn','⚠','Última medida del repetidor '+humanAgo(ult*1000));
+  if(!a.length) al('ok','✓','Todo en orden');
+  el.innerHTML=a.join('');
+}
+
+// Las líneas se dibujan de izquierda a derecha (barras y áreas se animan por CSS).
+function animarSvg(el){
+  if(!el||oculto(el)||SIN_MOVIMIENTO()||$('#tab-stats').classList.contains('sinanim')) return;
+  el.querySelectorAll('path[fill="none"][stroke]').forEach(p=>{
+    try{
+      const L=p.getTotalLength(); if(!(L>0)||L>20000) return;
+      p.style.transition='none'; p.style.strokeDasharray=L; p.style.strokeDashoffset=L;
+      p.getBoundingClientRect();
+      p.style.transition='stroke-dashoffset .9s cubic-bezier(.2,.7,.2,1)'; p.style.strokeDashoffset=0;
+      setTimeout(()=>{ p.style.strokeDasharray=''; p.style.strokeDashoffset=''; p.style.transition=''; },1000);
+    }catch(e){}
+  });
+}
+
+// Las cifras grandes suben hasta su valor (y acaban con el texto exacto de siempre).
+function contarKpis(){
+  if(SIN_MOVIMIENTO()) return;
+  document.querySelectorAll('#statsKpis .kpiV').forEach(el=>{
+    const t=el.textContent, m=t.match(/^([−-]?)(\d{1,3}(?:\.\d{3})+|\d+(?:[.,]\d+)?)(.*)$/);
+    if(!m) return;
+    const miles=/^\d{1,3}(\.\d{3})+$/.test(m[2]);
+    const dec=miles?0:((m[2].split(/[.,]/)[1]||'').length), sep=/,/.test(m[2])?',':'.';
+    const fin=miles?+m[2].replace(/\./g,''):parseFloat(m[2].replace(',','.'));
+    if(!isFinite(fin)) return;
+    const t0=performance.now(), D=650;
+    const fmt=v=>m[1]+(miles?Math.round(v).toLocaleString('es-ES'):v.toFixed(dec).replace('.',sep))+m[3];
+    const paso=now=>{
+      const k=Math.min(1,(now-t0)/D), e=1-Math.pow(1-k,3);
+      if(k<1){ el.textContent=fmt(fin*e); requestAnimationFrame(paso); } else el.textContent=t;
+    };
+    requestAnimationFrame(paso);
+  });
+}
+
+// Secciones de Analítica: Resumen · Señal · Tráfico · Repetidor (se recuerda la última).
+const STATS_SUBS=['resumen','senal','trafico','repetidor'];
+function statsIr(g,foco){
+  if(!STATS_SUBS.includes(g)) g='resumen';
+  $('#tab-stats').dataset.sub=g;
+  document.querySelectorAll('#statsTabs button').forEach(b=>{
+    const on=b.dataset.sub===g;
+    b.classList.toggle('on',on); b.setAttribute('aria-selected',on); b.tabIndex=on?0:-1;
+    if(on&&foco) b.focus();
+  });
+  try{ localStorage.setItem('meshcore-stats-sub',g); }catch(e){}
+}
+function statsRedibuja(){
+  for(const q of ['#statsKpis','#statsAlertas','#tab-stats .statsGrid']){
+    const e=document.querySelector(q); if(e){ e.classList.remove('subIn'); void e.offsetWidth; e.classList.add('subIn'); }
+  }
+  renderStats(); dibujarHistoricoRak(); setTimeout(()=>animarSvg($('#repHistChart')),30);
+}
+document.querySelectorAll('#statsTabs button').forEach(b=>{
+  b.onclick=()=>{ statsIr(b.dataset.sub); statsRedibuja(); };
+  b.onkeydown=e=>{
+    const bs=[...document.querySelectorAll('#statsTabs button')], i=bs.indexOf(b);
+    const j=e.key==='ArrowRight'?(i+1)%bs.length:e.key==='ArrowLeft'?(i+bs.length-1)%bs.length:e.key==='Home'?0:e.key==='End'?bs.length-1:null;
+    if(j!=null){ e.preventDefault(); statsIr(bs[j].dataset.sub,true); statsRedibuja(); }
+  };
+});
+(function(){ let g='resumen'; try{ g=localStorage.getItem('meshcore-stats-sub')||'resumen'; }catch(e){} statsIr(g); })();
+
 // Historico del repetidor: dos paneles con el mismo eje de tiempo. Con las dos
 // series en un solo panel y ejes a izquierda y derecha las curvas se montaban
 // y no se sabia cual era cual.
@@ -3544,7 +3705,7 @@ async function pintarHistoricoRak(){
   }
 }
 function dibujarHistoricoRak(){
-  const el=$('#repHistChart'); if(!el || !repHist) return;
+  const el=$('#repHistChart'); if(!el || !repHist || oculto(el)) return;
   const s=repHist.s;
   const H=300, W=svgTam(el,H);
   if(s.length<2){ svgVacio(el,W,H,'Aún no hay suficientes medidas'); return; }
@@ -3671,10 +3832,10 @@ let statsResizeT=null;
 window.addEventListener('resize',()=>{
   if(!$('#tab-stats').classList.contains('on')) return;
   clearTimeout(statsResizeT);
-  statsResizeT=setTimeout(()=>{ renderStats(); dibujarHistoricoRak(); },180);
+  statsResizeT=setTimeout(()=>{ renderStats(false,true); dibujarHistoricoRak(); },180);
 });
-$('#btn-stats-refresh').onclick=()=>{ renderStats(); pintarHistoricoRak(); };
-$('#statsRange').onchange=renderStats;
+$('#btn-stats-refresh').onclick=()=>{ statsAnimaKpis=true; renderStats(true); pintarHistoricoRak(); };
+$('#statsRange').onchange=()=>renderStats();
 // Pantalla completa del chat: igual que la del mapa, Esc para salir.
 $('#btn-chat-full').onclick=()=>{
   const c=$('#card-chat'); c.classList.toggle('chat-full');

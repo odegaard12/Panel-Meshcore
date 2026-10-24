@@ -26,7 +26,7 @@
 | **🛡️ Gestión remota** | Login y comandos CLI al repetidor por LoRa, con política de seguridad (bloquea lo destructivo, pide confirmación en lo arriesgado, no deja salirse de la banda legal) y comprobación de legalidad ERC/REC 70-03 |
 | **💬 Chat** | Canales y privados, con historial, separadores por día y pantalla completa. Se abre donde lo dejaste («N mensajes nuevos») puedes responder a un mensaje con mención y borrar una conversación, un canal o todo |
 | **🗺️ Mapa** (dentro del Panel) | Capas, vecinos por radio, análisis de enlace con perfil de terreno y zona de Fresnel, traceroute, alcance por regiones y exportación a CSV |
-| **📊 Analítica** | SNR/RSSI de cada paquete oído, cada cifra comparada con el periodo anterior, señal por hora del día, mapa de calor de 7 días, tráfico (inundación, directo, duplicados), ocupación del aire, ruido de fondo con sus picos e histórico del repetidor |
+| **📊 Analítica** | Cuatro secciones: **Resumen** (cifras con su variación frente al periodo anterior y avisos), **Señal** (SNR, RSSI y señal por hora del día), **Tráfico** (mapa de calor de 7 días, actividad, inundación/directo/duplicados, vecinos) y **Repetidor** (batería, emisión, ocupación del aire y ruido de fondo con sus picos) |
 | **🖥️ Terminal** | Terminal web opcional de la Raspberry, tras el mismo login |
 
 <table>
@@ -54,7 +54,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway 127.0.0.1:8780 
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.30.1** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.31.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
