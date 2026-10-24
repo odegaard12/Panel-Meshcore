@@ -11,6 +11,11 @@ __pycache__/
 *.jsonl
 *.log
 
+# Segredos locais (23/10/2026)
+.env
+.env.*
+!.env.example
+
 # Instrucciones de asistentes: nunca al repo
 CLAUDE.md
 .claude/

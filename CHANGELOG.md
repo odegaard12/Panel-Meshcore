@@ -3,6 +3,93 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.29.2] - 2026-10-24
+
+### Corregido
+- `instalar-vigilante.ps1` seguía poniendo `ws://…:8780` por defecto: ahora
+  usa `wss://` y pide la huella del certificado, igual que `install-windows.ps1`.
+- El esquema del README refleja la entrada del relay por `wss://` y el gateway
+  solo en la Pi.
+
+### Pruebas
+- Nueva `test_relay_escaneo_wss.py`: el escaneo Bluetooth ya no puede parar el
+  bucle del relay (el fallo del 22/10) y la huella de `wss://` se interpreta bien.
+- `test_gateway_seguridad.py` cubre los arreglos de la 1.28: token con tildes
+  (401, no 500), sesión de la terminal limitada a 2 h, sesiones invalidadas al
+  cambiar la contraseña, pausa sin 500 y estado limpio al caer el relay.
+- `test_relay_estado.py` ya no lee la pausa real de quien lo ejecuta: fallaba
+  en un PC con un WIO marcado en pausa.
+
+## [1.29.1] - 2026-10-23
+
+### Seguridad
+- La ficha del mapa de cada WIO escapa el nombre y el sitio (vienen del nodo
+  y del navegador): nada de HTML colado en el popup.
+- La ficha solo dice «conectado ahora» si el WIO contesta, igual que el chat.
+- Alertas de dependencias (Dependabot) activadas y revisión semanal de las
+  dependencias de Python y de las actions de la CI.
+- Las actions de la CI van fijadas por commit (SHA), no por etiqueta.
+
+## [1.29.0] - 2026-10-23
+
+### Seguridad
+- El relay del PC habla con la Raspberry por `wss://` (TLS a través de nginx)
+  en vez de `ws://` en claro: el token ya no viaja sin cifrar por la red de
+  casa. El relay comprueba la huella SHA-256 del certificado autofirmado
+  (`MESHCORE_GATEWAY_FINGERPRINT`); con otra huella no manda nada.
+- El gateway solo escucha en la propia Pi (`MESHCORE_BIND=127.0.0.1`): el
+  puerto 8780 ya no se ve desde la red.
+- nginx solo deja entrar por `/api/ble/relay` a la IP del PC
+  (`MESHCORE_RELAY_IP` en `deploy/apply-nginx.sh`, validada como IP).
+- `install-windows.ps1` usa `wss://` por defecto y pide la huella.
+- El relay avisa en su registro si se le configura `ws://` hacia otra máquina.
+
+## [1.28.0] - 2026-10-22
+
+### Seguridad
+- Revisión a raíz de PHP2Shell (CVE-2026-109618/109619): el proyecto no usa
+  PHP en ningún sitio, pero se buscaron los mismos tipos de fallo.
+- Las sesiones quedan ligadas a la contraseña: al cambiarla, todas las
+  sesiones abiertas dejan de valer (hay que volver a entrar una vez).
+- La terminal web (con sudo) solo deja pasar sesiones abiertas hace menos de
+  2 horas, y lleva su propia CSP y Permissions-Policy.
+- Un usuario inexistente tarda lo mismo en fallar que uno real (antes se
+  podía saber por el tiempo de respuesta qué usuarios existen).
+- El registro de intentos fallidos ya no crece sin límite.
+- Un token con caracteres no ASCII ya no provoca un error 500.
+- Al caer el relay se borra lo que había mandado (avisos y tramas): el
+  siguiente relay ya no hereda estado viejo.
+- «Lo he apagado / encendido» ya no da 500 si el relay cae a mitad.
+- `install-pi.sh` exige `MESHCORE_RELAY_IP`: el gateway solo atiende al PC
+  del relay (o `*` para abrirlo, con aviso).
+- CI con permisos de solo lectura.
+
+### Corregido
+- El relay perdía la conexión con la Raspberry cada minuto: el escaneo
+  Bluetooth de Windows congelaba el relay hasta 55 s y la Pi cortaba por falta
+  de respuesta al latido. El escaneo va ahora en su propio hilo y el latido
+  admite hasta 60 s sin respuesta. El relay deja escrito si algo lo bloquea.
+
+## [1.27.0] - 2026-10-21
+
+### Añadido
+- Chat: botón «Responder» en cada mensaje recibido. En un canal escribe la
+  mención `@[nombre]` (como la app de MeshCore) y deja el canal elegido; en un
+  privado abre la conversación con esa persona.
+
+### Corregido
+- El chat solo se activa cuando el WIO contesta de verdad. Antes bastaba con
+  que el Bluetooth estuviera enlazado: en los segundos en que el relay aún lo
+  intentaba se veía «Escuchando en WIO1» y no se podía enviar nada.
+- Si ningún WIO contesta, la nota y la caja de texto lo dicen («enlazado pero
+  no contesta: apágalo y enciéndelo») en vez de «Conéctalos en la pestaña
+  Panel», que no tiene sentido con el puente.
+- Pulsar varias veces un nombre ya no llena el chat de «no anuncia su
+  posición»: hay un solo aviso a la vez.
+- Al mirar una conversación, los días sin mensajes suyos ya no dejan el
+  separador de fecha vacío.
+- Los mensajes enviados ya no ponen el canal dos veces («Public · Public»).
+
 ## [1.26.1] - 2026-10-19
 
 ### Corregido

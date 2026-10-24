@@ -10,7 +10,7 @@ otros servicios. La Pi no usa Bluetooth: el gateway solo recibe al relay del PC.
 | `nginx` | **443** | TLS + login del panel (auth_request contra el gateway). Única vía al panel |
 | `nginx` | **7443** | TLS + el mismo login delante de la terminal web |
 | `meshcore-panel` | 8765 (solo `127.0.0.1`) | `http.server` que entrega `www/`. Detrás de nginx |
-| `meshcore-ble-gateway` | 8780 (`MESHCORE_BIND`) | API, histórico, registro de radio y login. Exige `X-MeshCore-Token` (el relay entra directo; el resto, por nginx) |
+| `meshcore-ble-gateway` | 8780 (`MESHCORE_BIND`) | API, histórico, registro de radio y login. Exige `X-MeshCore-Token`. Solo escucha en la Pi: el relay entra por nginx con `wss://` |
 | `meshcore-terminal` | 7681 (solo `127.0.0.1`) | `ttyd`: shell de la Pi. Solo por nginx 7443 |
 
 Pensado para tu red local. Si lo expones a internet, ponlo detrás de una capa de acceso
@@ -19,9 +19,10 @@ Pensado para tu red local. Si lo expones a internet, ponlo detrás de una capa d
 ### `MESHCORE_BIND`
 
 Dirección en la que escucha el gateway (variable de entorno del servicio
-`meshcore-ble-gateway`). El relay del PC tiene que llegar a ella, así que por defecto escucha
-en la LAN. Si el relay entra por un túnel o VPN que termina en la propia Pi, ponla en
-`127.0.0.1` y el puerto 8780 deja de verse desde la red:
+`meshcore-ble-gateway`). `install-pi.sh` la deja en `127.0.0.1`: el relay del PC
+entra por nginx con TLS (`wss://<IP-de-la-Pi>/api/ble/relay`, solo desde
+`MESHCORE_RELAY_IP`) y el puerto 8780 no se ve desde la red. En una instalación
+anterior que aún escuche en la LAN:
 
 ```bash
 sudo systemctl edit meshcore-ble-gateway    # [Service] Environment=MESHCORE_BIND=127.0.0.1

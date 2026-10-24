@@ -57,6 +57,24 @@ check('la correcta tambien se rechaza estando bloqueado',
       not auth.check_password('usuario','secreta123',ip))
 check('otra IP no se ve afectada', auth.check_password('usuario','secreta123','8.8.8.8'))
 
+print('=== seguridad 1.28 ===')
+auth.SESSION_HOURS = 168   # la prueba de caducidad lo dejó a 0
+tok = auth.make_session('usuario')
+check('sesion reciente vale con max_age de 2 h', auth.read_session(tok, max_age_s=7200) == 'usuario')
+viejo = auth.time.time
+auth.time.time = lambda: viejo() + 3 * 3600
+check('sesion de hace 3 h no vale para la terminal (2 h)', auth.read_session(tok, max_age_s=7200) is None)
+check('la misma sesion sigue valiendo para el panel', auth.read_session(tok) == 'usuario')
+auth.time.time = viejo
+h2 = subprocess.run(['openssl','passwd','-apr1','-salt','OtraSal1','-stdin'],
+                    input=b'nueva456', capture_output=True).stdout.decode().strip()
+hp.write_text('usuario:'+h2+chr(10))
+check('cambiar la contrasena invalida las sesiones abiertas', auth.read_session(tok) is None)
+check('una sesion nueva vale tras el cambio', auth.read_session(auth.make_session('usuario')) == 'usuario')
+auth._fails['7.7.7.7'] = [0.0]
+auth.locked_out('7.7.7.7')
+check('las IP sin fallos recientes se purgan', '7.7.7.7' not in auth._fails)
+
 print()
 if fails:
     print(f'FALLARON {len(fails)}: {fails}'); sys.exit(1)

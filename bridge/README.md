@@ -27,7 +27,8 @@ Instala Python 3.11+, copia el token de la Pi a `%USERPROFILE%\.meshcore-ble-tok
 
 ```powershell
 .\install-windows.ps1
-$env:MESHCORE_GATEWAY_WS = 'ws://<IP-de-tu-Pi>:8780/api/ble/relay'
+$env:MESHCORE_GATEWAY_WS = 'wss://<IP-de-tu-Pi>/api/ble/relay'
+$env:MESHCORE_GATEWAY_FINGERPRINT = '<huella SHA-256 del cert.pem de la Pi>'
 $env:MESHCORE_WIO1_NAME  = 'nombre-BLE-del-companion-1'
 .\instalar-vigilante.ps1
 ```
@@ -37,7 +38,7 @@ El vigilante se registra en el Programador de tareas y relanza el relay si cae.
 ## Relay en Linux/macOS
 
 No hay tarea programada: lánzalo a mano o con tu propio servicio. Variables:
-`MESHCORE_BLE_TOKEN`, `MESHCORE_GATEWAY_WS`, `MESHCORE_WIO1_NAME`, `MESHCORE_WIO2_NAME`
+`MESHCORE_BLE_TOKEN`, `MESHCORE_GATEWAY_WS`, `MESHCORE_GATEWAY_FINGERPRINT`, `MESHCORE_WIO1_NAME`, `MESHCORE_WIO2_NAME`
 (ejemplo completo en el [README](../README.md#instalación)).
 
 ## Notas

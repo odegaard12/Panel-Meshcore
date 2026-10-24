@@ -21,6 +21,11 @@ cp "$ROOT/bridge/login.html" "$PANEL/www/login.html"
 cp "$ROOT"/pwa/* "$PANEL/www/"
 # dashboard.html ya trae sus <script> del guard y del gateway: no se parchea.
 
+# El gateway solo escucha en la propia Pi: el relay del PC entra por nginx
+# con TLS (wss://), y nginx solo deja pasar la IP del PC (MESHCORE_RELAY_IP,
+# la pide deploy/apply-nginx.sh). El token ya no viaja en claro por la LAN.
+BIND_LINE="Environment=MESHCORE_BIND=${MESHCORE_BIND:-127.0.0.1}"
+
 TOKEN_FILE="$HOME/.meshcore-ble-token"
 if [ ! -s "$TOKEN_FILE" ]; then
   umask 077
@@ -43,6 +48,7 @@ Type=simple
 User=$USER_NAME
 WorkingDirectory=$ROOT
 Environment=MESHCORE_BLE_TOKEN_FILE=$TOKEN_FILE
+$BIND_LINE
 ExecStart=$VENV/bin/python $ROOT/bridge/meshcore_ble_gateway.py
 Restart=always
 RestartSec=3
