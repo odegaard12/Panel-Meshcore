@@ -57,7 +57,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway 127.0.0.1:8780 
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.33.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.33.1** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
@@ -184,7 +184,18 @@ IP privadas, coordenadas precisas o enlaces de invitación en el repo.
 ## Pruebas
 
 ```bash
-PYTHON=bridge/.venv/bin/python bash tools/run-tests.sh
+PYTHON=bridge/.venv/bin/python bash tools/run-tests.sh      # lógica, gateway, relay, estructura de la página
+```
+
+Pruebas de navegador: abren el panel con datos **inventados** (`tools/e2e`), pulsan todos los botones
+—también con nombres y mensajes que intentan inyectar código—, comprueban cada pantalla y sección, que no
+se desborde en móvil, «reducir movimiento» y la accesibilidad (axe-core). Corren solas en la CI.
+
+```bash
+pip install playwright && python -m playwright install chromium
+npm ci --prefix tools/e2e
+python tools/e2e/test_e2e.py            # E2E_CANAL=msedge para usar Edge en Windows
+python tools/e2e/servidor_ejemplo.py    # el panel con datos de ejemplo en http://127.0.0.1:8111
 ```
 
 ## Licencia

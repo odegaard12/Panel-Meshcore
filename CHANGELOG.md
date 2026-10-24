@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.33.1] - 2026-10-24
+
+### Añadido
+- Pruebas de navegador en la CI (`tools/e2e`): abren el panel con datos
+  inventados y pulsan todos los botones (también con nombres y mensajes que
+  intentan inyectar código), comprueban cada pantalla y sección de Analítica y
+  Gestión, que no se desborde en móvil, «reducir movimiento», la página de acceso
+  y la accesibilidad con axe-core en 14 pantallas. Antes todo esto solo se
+  probaba a mano.
+- `tools/e2e/servidor_ejemplo.py`: el panel con datos de ejemplo, sin Raspberry
+  ni nodos, para probar o hacer capturas.
+
 ## [1.33.0] - 2026-10-24
 
 ### Añadido
