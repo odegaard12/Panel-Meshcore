@@ -66,7 +66,7 @@ sudo htpasswd -B /etc/nginx/meshcore-tls/htpasswd TU_USUARIO
   login.html, *.js
 ~/.meshcore-ble-token               <- token del gateway (600)
 ~/.meshcore-history.jsonl           <- histórico del repetidor (cada 15 min)
-~/.meshcore-rxlog.jsonl             <- registro de radio (últimos 4000 paquetes)
+~/.meshcore-rxlog.jsonl             <- registro de radio (últimos 30000 paquetes)
 /etc/nginx/meshcore-tls/            <- cert, key y htpasswd
 ```
 

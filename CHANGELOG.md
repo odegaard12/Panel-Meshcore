@@ -3,6 +3,30 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.30.0] - 2026-10-24
+
+### Añadido
+- Analítica, seis gráficas nuevas con lo que el panel ya guardaba:
+  - Resumen frente al periodo anterior: las tarjetas de arriba llevan una flecha
+    (▲/▼) que dice si paquetes, SNR y paquetes al límite van mejor o peor que en
+    el periodo anterior, y hay tarjetas nuevas de ruido de fondo y duplicados.
+  - Cómo cambia la señal durante el día: mediana del SNR por hora del día con su
+    banda central, las líneas de 0 dB y del límite del SF, y la peor hora.
+  - Cuándo hay más tráfico: mapa de calor de 7 días por 24 horas, con detalle al
+    pasar el ratón y las casillas sin datos rayadas.
+  - Cómo se mueve el tráfico: paquetes por hora recibidos por inundación o
+    directos, y el porcentaje de duplicados.
+  - Cuánto aire ocupa la radio: lo que oye y lo que emite el repetidor, con la
+    línea del 10 % legal.
+  - Ruido de fondo del repetidor en 7 días, con los picos de interferencia
+    marcados con su hora.
+- Gateway: `/api/ble/rxlog/horas` devuelve los paquetes agrupados por hora (para
+  el mapa de calor) sin mandar el registro entero.
+
+### Cambiado
+- El registro de paquetes oídos guarda hasta 30 000 (antes 4000): con tráfico
+  normal son unos 7 días, los que enseña el mapa de calor.
+
 ## [1.29.2] - 2026-10-24
 
 ### Corregido

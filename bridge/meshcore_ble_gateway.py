@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.29.2'
+PANEL_VERSION = '1.30.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -163,7 +163,8 @@ CHANNELS = (1, 2)
 # meshcore_py): LOGIN_SUCCESS/LOGIN_FAILED confirman si la contraseña vale.
 # La respuesta real de un comando CLI remoto llega por el canal normal de
 # mensajes (SYNC_NEXT_MSG), no por aqui.
-RX_LOG_MAX = 4000
+# 30000 paquetes (~ 1 semana con tráfico normal): el mapa de calor de Analítica enseña 7 días.
+RX_LOG_MAX = 30000
 # El registro RF vivia solo en memoria: cada reinicio del gateway lo vaciaba.
 RX_LOG_FILE = Path(os.getenv('MESHCORE_RXLOG_FILE', str(Path.home() / '.meshcore-rxlog.jsonl')))
 PUSH_LOG_RX_DATA = 0x88
@@ -976,6 +977,32 @@ async def auth_whoami(req):
     return web.json_response({'ok': bool(user), 'user': user})
 
 
+async def rxlog_horas(req):
+    """Paquetes oídos agrupados por hora, para el mapa de calor de Analítica: no se
+    manda el registro entero (decenas de miles de líneas) para pintar 168 casillas."""
+    await guard(req)
+    try:
+        dias = max(1, min(int(req.query.get('dias', 7)), 30))
+    except ValueError:
+        dias = 7
+    desde = time.time() - dias * 86400
+    por_hora: dict[int, list] = {}
+    primero = None
+    for m in g.rx_log:
+        at = m.get('at')
+        if not isinstance(at, (int, float)):
+            continue
+        if primero is None or at < primero:
+            primero = at
+        if at >= desde:
+            por_hora.setdefault(int(at // 3600) * 3600, []).append(m.get('snr'))
+    horas = []
+    for t, snrs in sorted(por_hora.items()):
+        v = sorted(x for x in snrs if isinstance(x, (int, float)))
+        horas.append({'t': t, 'n': len(snrs), 'snr': v[len(v) // 2] if v else None})
+    return web.json_response({'ok': True, 'desde': primero, 'total': len(g.rx_log), 'horas': horas})
+
+
 async def rxlog(req):
     """Medidas RF por paquete oido (SNR/RSSI), acumuladas desde el arranque."""
     await guard(req)
@@ -1016,6 +1043,7 @@ app.router.add_post('/api/ble/wio/{idx:[12]}/binary_req', wio_binary_req)
 app.router.add_post('/api/ble/wio/{idx:[12]}/trace', wio_trace)
 app.router.add_get('/api/ble/wio/{idx:[12]}/pushes', wio_pushes)
 app.router.add_get('/api/ble/rxlog', rxlog)
+app.router.add_get('/api/ble/rxlog/horas', rxlog_horas)
 app.router.add_get('/api/ble/history', history)
 app.router.add_get('/api/ble/caja', caja)
 app.router.add_get('/api/ble/elevation', elevation)

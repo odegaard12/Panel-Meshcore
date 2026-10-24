@@ -535,6 +535,7 @@
   window.cajaTemp = ()=>api('/caja');
   window.wioPausa = (idx,on)=>api(`/wio/${idx}/pausa`,{method:'POST',body:JSON.stringify({on})});
   window.rakRxLog = (limit=2000)=>api(`/rxlog?limit=${limit}`);
+  window.rakRxHoras = (dias=7)=>api(`/rxlog/horas?dias=${dias}`);
   window.rakHistorySampleNow = ()=>api('/history/sample',{method:'POST',body:'{}'});
 
   window.rakRequestStatus = async function(viaIdx, pubkeyHex, timeoutMs=20000){
