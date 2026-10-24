@@ -16,6 +16,9 @@ __pycache__/
 .env.*
 !.env.example
 
+# Dependencias de las pruebas de navegador (se instalan con npm ci)
+node_modules/
+
 # Instrucciones de asistentes: nunca al repo
 CLAUDE.md
 .claude/

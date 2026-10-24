@@ -3,6 +3,167 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.33.3] - 2026-10-25
+
+### Corregido
+- Acceso: el botón «Ver» de la contraseña se llamaba «Mostrar la contraseña» para
+  un lector de pantalla y no coincidía con lo que se ve; ahora dice «Ver la
+  contraseña» / «Ocultar la contraseña» (lo detectó axe-core 4.14).
+
+### Cambiado
+- axe-core de las pruebas de navegador sube a 4.14.0.
+
+## [1.33.2] - 2026-10-24
+
+### Cambiado
+- Las capturas del README (Panel, Mapa, Analítica, Chat y Gestión) se regeneran
+  con `python tools/e2e/capturas.py` a partir de los datos de ejemplo, así que
+  siempre enseñan el diseño actual.
+- Insignia de estado de las pruebas en el README y Dependabot vigila también
+  las dependencias de las pruebas de navegador.
+
+## [1.33.1] - 2026-10-24
+
+### Añadido
+- Pruebas de navegador en la CI (`tools/e2e`): abren el panel con datos
+  inventados y pulsan todos los botones (también con nombres y mensajes que
+  intentan inyectar código), comprueban cada pantalla y sección de Analítica y
+  Gestión, que no se desborde en móvil, «reducir movimiento», la página de acceso
+  y la accesibilidad con axe-core en 14 pantallas. Antes todo esto solo se
+  probaba a mano.
+- `tools/e2e/servidor_ejemplo.py`: el panel con datos de ejemplo, sin Raspberry
+  ni nodos, para probar o hacer capturas.
+
+## [1.33.0] - 2026-10-24
+
+### Añadido
+- Página **Gestión**: separa lo que cambia cosas de lo que solo mira (el Panel).
+  Cuatro secciones, con el mismo selector que Analítica:
+  - **Repetidor**: sesión de administración con su estado, consola con atajos
+    separados en «leer» y «acción», respuestas con su hora y la comprobación de
+    que el repetidor es legal, con su resultado a la vista.
+  - **Equipos**: estado claro de cada WIO (conectado, sin responder, en pausa) con
+    conectar, «lo he apagado / encendido», colocar en el mapa y copia de la
+    clave; y el estado del relay del PC.
+  - **Acceso**: tu sesión (quién eres, cuándo entraste y cuándo caduca), cerrar
+    sesión, la terminal de la Raspberry (avisa si tu sesión es demasiado vieja
+    para abrirla: pide haber entrado hace menos de 2 horas) y cómo cambiar la
+    contraseña.
+  - **Datos**: tu chat (descargar y borrar con confirmación), exportar contactos
+    a CSV, olvidar preferencias y recargar el panel.
+- `/api/auth/whoami` devuelve también cuándo se abrió la sesión y cuándo caduca.
+- Pruebas: `tools/test_estructura.js` (ids únicos, lo que vive en Gestión,
+  zonas y nombres para lectores de pantalla) y la de `whoami`.
+
+### Cambiado
+- El Panel ya no mezcla leer y cambiar: «Cambiar el repetidor» y la pausa, la
+  posición y la copia de clave de los WIO pasan a Gestión (con enlaces desde el
+  Panel). La ficha «Ajustes» se llama **Mapa**, que es lo que contiene.
+- Las preguntas de lo arriesgado usan una ventana con nombre en lugar del
+  `confirm()` del navegador.
+
+### Corregido
+- «Colocar en mapa» no funcionaba (daba un error y no llevaba al mapa) y la
+  herramienta de medir fallaba igual: el aviso que buscaban ya no existía. Ahora
+  «Colocar en mapa» lleva al mapa y avisa, y medir también avisa.
+- Cinco pestañas caben en pantallas de 360 px.
+
+### Accesibilidad
+- Auditado con axe-core en las 14 pantallas y estados: cero fallos.
+- Zona principal, nombre para las dos barras de navegación, enlace «Saltar al
+  contenido», `aria-current` en la pestaña activa, nombre para 9 desplegables,
+  nombre para las gráficas, un botón que contenía un enlace, y mejor contraste
+  en las etiquetas de la consola. La página de acceso también tiene zona principal.
+
+## [1.32.0] - 2026-10-24
+
+### Cambiado
+- Un solo lenguaje de formas en todo el panel: controles (botones, campos,
+  desplegables) con esquina de 10 px, tarjetitas de 12 px, tarjetas de 16 px y
+  píldoras donde ya las había. Antes mezclaba 6, 10, 12 y 16 px según la pantalla.
+- Alturas iguales: botones de 34 px y campos de 38 px como mínimo.
+- «Red y notas» ya tiene la misma cabecera de página que Analítica (título y
+  subtítulo); la etiqueta repetida de la barra lateral se esconde en pantallas anchas.
+- Página de acceso rediseñada con el mismo lenguaje que el panel: la marca del
+  icono en vez de un emoji, la misma tipografía (sin letra monoespaciada), botón
+  para ver u ocultar la contraseña, aviso de Bloq Mayús, entrada suave y una
+  sacudida corta cuando la contraseña no vale.
+- Chat: el aviso de la caja de texto cuando no hay WIO es más corto y cabe en el móvil.
+
+### Añadido
+- Los mensajes nuevos del chat y los diálogos entran con una transición corta
+  (se apagan con «reducir movimiento»), y los botones se hunden un píxel al pulsarlos.
+- Prueba de la página de acceso (`tools/test_login.js`): protege la defensa
+  contra redirecciones abiertas, el autocompletado y que no cargue nada de fuera.
+
+### Corregido
+- En la pestaña Equipos, los botones de pestañas (WIO1, WIO2…) usaban otra
+  esquina que el resto de controles.
+- Las cuatro secciones de Analítica caben en pantallas de 320 px.
+
+## [1.31.0] - 2026-10-24
+
+### Cambiado
+- Analítica ordenada en cuatro secciones: Resumen, Señal, Tráfico y Repetidor
+  (el panel recuerda la última que abriste, y se maneja con el teclado: flechas,
+  Inicio y Fin). Cada sección enseña solo sus cifras y sus gráficas, en vez de
+  diez gráficas seguidas.
+- Resumen: cuatro cifras con su flecha frente al periodo anterior y una franja
+  de avisos que solo cuenta lo que merece mirarse (picos de ruido, emisión
+  cerca del límite legal, batería baja, paquetes al límite, medida atrasada).
+- Cifras nuevas: batería y emisión del repetidor.
+
+### Añadido
+- Animaciones suaves: las barras crecen, las líneas se dibujan, las casillas del
+  mapa de calor aparecen en onda, las cifras suben hasta su valor, las pestañas
+  cambian con un fundido y las gráficas muestran un esqueleto mientras cargan.
+  Todo se apaga si el sistema pide «reducir movimiento».
+- Pruebas de los cálculos (`tools/test_analitica_calculos.js`): contadores del
+  repetidor que dan la vuelta o se reinician, picos de ruido y tramos con huecos.
+
+### Mejorado
+- Al cambiar de sección no se vuelven a pedir los datos (se reutilizan 30 s), y
+  al redimensionar la ventana las gráficas se redibujan sin animación.
+
+## [1.30.1] - 2026-10-24
+
+### Corregido
+- Chat: el aviso «N mensajes nuevos» se perdía si, antes de abrir el chat,
+  pasabas por otra pestaña. Ahora el chat solo se marca como visto al salir de él.
+- Chat: con contactos de nombre parecido (Ana y Anabel), borrar o filtrar la
+  conversación de uno afectaba también a los mensajes enviados al otro. El
+  destino ahora se compara entero. Prueba nueva: `tools/test_chat_nombres.js`.
+- Mapa de calor: el domingo del cambio de hora de octubre (día de 25 h) las dos
+  horas repetidas de las 02:00 se juntan en una casilla; antes la segunda no se veía.
+- Red y notas: en pantallas de 320 px las tarjetas se salían por la derecha. La
+  rejilla general pedía columnas de 320 px como mínimo.
+- Batería del WIO: si la lectura falla seguido, el reintento se espacia
+  (15 s, 30 s, 1 min, 2 min) en vez de mandar un comando al radio cada 15 s.
+
+## [1.30.0] - 2026-10-24
+
+### Añadido
+- Analítica, seis gráficas nuevas con lo que el panel ya guardaba:
+  - Resumen frente al periodo anterior: las tarjetas de arriba llevan una flecha
+    (▲/▼) que dice si paquetes, SNR y paquetes al límite van mejor o peor que en
+    el periodo anterior, y hay tarjetas nuevas de ruido de fondo y duplicados.
+  - Cómo cambia la señal durante el día: mediana del SNR por hora del día con su
+    banda central, las líneas de 0 dB y del límite del SF, y la peor hora.
+  - Cuándo hay más tráfico: mapa de calor de 7 días por 24 horas, con detalle al
+    pasar el ratón y las casillas sin datos rayadas.
+  - Cómo se mueve el tráfico: paquetes por hora recibidos por inundación o
+    directos, y el porcentaje de duplicados.
+  - Cuánto aire ocupa la radio: lo que oye y lo que emite el repetidor, con la
+    línea del 10 % legal.
+  - Ruido de fondo del repetidor en 7 días, con los picos de interferencia
+    marcados con su hora.
+- Gateway: `/api/ble/rxlog/horas` devuelve los paquetes agrupados por hora (para
+  el mapa de calor) sin mandar el registro entero.
+
+### Cambiado
+- El registro de paquetes oídos guarda hasta 30 000 (antes 4000): con tráfico
+  normal son unos 7 días, los que enseña el mapa de calor.
+
 ## [1.29.2] - 2026-10-24
 
 ### Corregido

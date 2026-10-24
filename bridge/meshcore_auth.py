@@ -199,5 +199,17 @@ def read_session(cookie: str | None, max_age_s: float | None = None) -> str | No
     return user
 
 
+def session_info(cookie: str | None) -> dict | None:
+    """{'user','abierta','caduca'} (segundos Unix) si la sesion vale; para «Tu sesion» en Gestion."""
+    user = read_session(cookie)
+    if not user:
+        return None
+    try:
+        expiry = int(base64.urlsafe_b64decode(cookie.encode()).decode().rsplit('|', 2)[1])
+    except Exception:
+        return None
+    return {'user': user, 'caduca': expiry, 'abierta': expiry - int(SESSION_HOURS * 3600)}
+
+
 def cookie_max_age() -> int:
     return int(SESSION_HOURS * 3600)
