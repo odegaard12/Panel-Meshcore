@@ -10,6 +10,7 @@ for t in bridge/test_*.py; do corre "$PY" "$t"; done
 corre node bridge/test_gateway_js.js
 corre node tools/test_legal.js dashboard.html
 corre node tools/test_login.js
+corre node tools/test_estructura.js
 corre node tools/test_chat_nombres.js
 corre node tools/test_analitica_calculos.js
 corre "$PY" tools/check-ids.py dashboard.html

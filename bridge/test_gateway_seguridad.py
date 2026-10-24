@@ -115,6 +115,11 @@ async def main():
             fh.write('oscar:$apr1$abc$def\n')
         ck = {'Cookie': f'{auth_mod.COOKIE_NAME}={auth_mod.make_session("oscar")}'}
         assert (await c.get('/api/auth/verify?max_horas=2', headers={**H, **ck})).status == 200
+        # «Tu sesion» (Gestion): quien eres, cuando entraste y cuando caduca.
+        j = await (await c.get('/api/auth/whoami', headers=ck)).json()
+        assert j['ok'] and j['user'] == 'oscar' and j['caduca'] - j['abierta'] == 168 * 3600, j
+        assert abs(j['abierta'] - auth_mod.time.time()) < 5, j
+        assert (await (await c.get('/api/auth/whoami')).json())['ok'] is False
         real = auth_mod.time.time
         auth_mod.time.time = lambda: real() + 3 * 3600
         try:

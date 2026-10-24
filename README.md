@@ -27,6 +27,7 @@
 | **💬 Chat** | Canales y privados, con historial, separadores por día y pantalla completa. Se abre donde lo dejaste («N mensajes nuevos») puedes responder a un mensaje con mención y borrar una conversación, un canal o todo |
 | **🗺️ Mapa** (dentro del Panel) | Capas, vecinos por radio, análisis de enlace con perfil de terreno y zona de Fresnel, traceroute, alcance por regiones y exportación a CSV |
 | **📊 Analítica** | Cuatro secciones: **Resumen** (cifras con su variación frente al periodo anterior y avisos), **Señal** (SNR, RSSI y señal por hora del día), **Tráfico** (mapa de calor de 7 días, actividad, inundación/directo/duplicados, vecinos) y **Repetidor** (batería, emisión, ocupación del aire y ruido de fondo con sus picos) |
+| **🛠️ Gestión** | Lo que cambia cosas, aparte del Panel (que solo mira): sesión de administración del repetidor con consola y comprobación de legalidad, acciones de cada WIO (pausa, posición, copia de clave), tu sesión y la terminal, y tus datos (chat, CSV, preferencias) |
 | **🖥️ Terminal** | Terminal web opcional de la Raspberry, tras el mismo login |
 
 <table>
@@ -37,6 +38,8 @@
   </tr>
   <tr align="center"><td>Mapa</td><td>Analítica</td><td>Chat</td></tr>
 </table>
+
+<p align="center"><img src="docs/img/gestion.png" alt="Página Gestión" width="860"></p>
 
 <sub>Capturas con la configuración y los datos de ejemplo.</sub>
 
@@ -54,7 +57,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway 127.0.0.1:8780 
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.32.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.33.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 

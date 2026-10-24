@@ -681,6 +681,55 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 #tab-chat .msg.in{cursor:pointer}
 .popChat .leaflet-popup-content{font-size:13px}
 #devpanel-mapa{padding-top:4px}
+/* Revisión 1.33 */
+.saltar{position:fixed;left:12px;top:-60px;z-index:9999;background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:var(--r1);font-weight:600;font-size:13px;text-decoration:none;transition:top .15s}
+.saltar:focus{top:10px}
+#mapHint[hidden]{display:none}
+#contenido:focus{outline:none}
+/* cinco pestañas en pantallas de 360 px: relleno más estrecho para que quepan todas */
+@media (max-width:400px){header nav.tabs button{padding:0 8px!important;font-size:12.5px!important}}
+/* Gestión (1.33) */
+#tab-gestion[data-sub="repetidor"] [data-g]:not([data-g~="repetidor"]),
+#tab-gestion[data-sub="equipos"] [data-g]:not([data-g~="equipos"]),
+#tab-gestion[data-sub="acceso"] [data-g]:not([data-g~="acceso"]),
+#tab-gestion[data-sub="datos"] [data-g]:not([data-g~="datos"]){display:none}
+#g-terminal-card[hidden]{display:none!important}
+.gcampo{display:flex;flex-direction:column;gap:6px;min-width:0}
+.gcampo label{font-size:12px;font-weight:600;color:var(--dim)}
+.gfila{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.gfila>.gcampo{flex:1 1 200px}
+.gchip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600;border:1px solid var(--brd2);color:var(--dim);white-space:nowrap}
+.gchip.ok{color:var(--ok);background:var(--ok-bg);border-color:rgba(63,214,122,.3)}
+.gchip.warn{color:var(--warn);background:var(--warn-bg);border-color:rgba(242,178,58,.35)}
+.gchip.off{color:var(--dim)}
+.gtit{display:flex;align-items:center;gap:12px;margin:0 0 4px}
+.gtit .n{font-weight:650;font-size:15px}
+.gtit .gchip{margin-left:auto}
+.gsub{color:var(--dim);font-size:12.5px;margin:0 0 14px;max-width:70ch}
+.gfoot{color:var(--dim2);font-size:12px;margin:14px 0 0}
+.gchips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 0}
+.quick-rak-cmd.accion{border-color:rgba(242,178,58,.45)!important;color:var(--warn)!important}
+.glabel{font-size:11.5px;font-weight:600;color:var(--dim);margin:16px 0 2px;letter-spacing:.02em}
+.gresp{background:var(--sunk);border:1px solid var(--brd);border-radius:12px;padding:4px 14px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;max-height:260px;overflow-y:auto}
+.gresp .l{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--brd)}
+.gresp .l:last-child{border-bottom:0}
+.gresp .t{color:var(--dim2);flex:none}.gresp .r{color:var(--fg);min-width:0;overflow-wrap:anywhere}
+.gresp .vacio .r{color:var(--dim);font-family:var(--sans)}
+.gaviso{border:1px solid rgba(242,178,58,.3);background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;font-size:13px;margin:0 0 14px}
+.gfilak{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--brd);flex-wrap:wrap}
+.gfilak:last-child{border-bottom:0;padding-bottom:0}
+.gfilak[hidden]{display:none}
+.gfilak .t{font-weight:600;font-size:14px}.gfilak .d{color:var(--dim);font-size:12.5px;margin-top:2px;max-width:60ch}
+.gbotones{display:flex;gap:8px;flex-wrap:wrap}
+button.peligro{color:#ffb3b3;border-color:rgba(242,107,107,.45)}
+.gboton{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:7px 14px;border-radius:var(--r1);border:1px solid var(--brd2);background:var(--raise);color:var(--fg);font-size:13px;font-weight:500;text-decoration:none}
+.gboton:hover{background:var(--hover)}
+.gboton.p{background:var(--acc);color:var(--acc-fg);border-color:transparent;font-weight:600}
+.gdet summary{cursor:pointer;font-weight:600;font-size:13.5px;padding:6px 0}
+.gvinculo{display:flex;align-items:center;gap:8px;margin:14px 0 0;padding:12px 14px;border-radius:12px;background:var(--raise);color:var(--fg);font-size:13px;font-weight:600;border:1px solid var(--brd2);text-decoration:none}
+.gvinculo:hover{background:var(--hover)}
+.gvinculo span{margin-left:auto;color:var(--acc);white-space:nowrap}
+.gmas{display:inline-block;margin-top:8px;font-size:12.5px}
 /* Unificación (1.32): una escala de esquinas (controles 10 · tarjetitas 12 · tarjetas 16), alturas mínimas
    iguales, mensajes que entran suavemente, diálogos con transición y cabecera de página común */
 button:not([class]),button.p{min-height:34px}
@@ -812,7 +861,7 @@ body.pastilla-choca #tab-equipos>#map .leaflet-top.leaflet-left{top:68px}
 }
 @media (max-width:860px){
   .devTab[data-dev="mapa"] .devTabName{font-size:0}
-  .devTab[data-dev="mapa"] .devTabName::after{content:'Ajustes';font-size:13px}
+  .devTab[data-dev="mapa"] .devTabName::after{content:'Mapa';font-size:13px}
   .redWrap{flex-direction:column;width:auto!important;margin:-28px -14px -28px!important}
   .redSidebar{position:static!important;width:auto!important;max-width:100vw;min-width:0;box-sizing:border-box;flex-direction:row!important;flex-wrap:nowrap;overflow-x:auto;gap:6px!important;padding:8px 12px!important;max-height:none!important;scrollbar-width:none}
   .redSidebar .sidebarLabel{display:none}
@@ -909,22 +958,24 @@ footer{color:var(--dim2)}
 <div id="splash" role="status" aria-live="polite"><div class="spCaja">
   <svg viewBox="0 0 24 24" width="64" height="64" aria-hidden="true"><path d="M12 8.5 5.5 17h13z" fill="none" stroke="#3fd67a" stroke-width="1.3"/><g fill="#3fd67a"><circle class="spN" cx="12" cy="8.5" r="2.6"/><circle class="spN" cx="5.5" cy="17" r="2.3"/><circle class="spN" cx="18.5" cy="17" r="2.3"/></g></svg>
   <div class="spT">Cargando el panel…</div></div></div>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
 <header>
   <h1 id="cfg-titulo">Mesh<span>Core</span> Panel</h1>
   <span class="sub" id="cfg-subtitulo">Panel de equipos</span>
-  <nav class="tabs">
+  <nav class="tabs" aria-label="Secciones del panel">
     <button class="on" data-tab="equipos">Panel</button>
     <button data-tab="chat">Chat<span class="badge2" id="chatBadge" style="display:none">0</span></button>
     <button data-tab="mapa">Mapa</button>
         <button data-tab="stats">Analítica</button>
+    <button data-tab="gestion">Gestión</button>
     <button data-tab="red">Red y notas</button>
   </nav>
   <div class="spacer"></div>
-  <nav class="top">
+  <nav class="top" aria-label="Enlaces">
     <a id="cfg-terminal" href="#" target="_blank" rel="noopener" hidden>Terminal →</a></nav>
 </header>
 
-<div class="wrap">
+<div class="wrap" role="main" id="contenido" tabindex="-1">
   <section class="tabview on" id="tab-equipos">
     <div id="eqMap" aria-label="Mapa de tus equipos y vecinos"></div>
     <div class="eqLeyenda" aria-hidden="true"><span><i style="background:#3fd67a"></i>directo</span><span><i style="background:#a78bfa"></i>1–2 saltos</span><span><i style="background:#f0b429"></i>3+</span><span><i style="background:#5c6b7d"></i>sin ruta</span></div>
@@ -1007,7 +1058,7 @@ footer{color:var(--dim2)}
                   <details class="rakBox">
                     <summary>Leer el repetidor (estado, telemetría, histórico)</summary>
                     <div class="maprow" style="align-items:center">
-                      <select id="rak-status-via" style="margin-left:auto"><option value="2">vía WIO2</option><option value="1">vía WIO1</option></select>
+                      <select id="rak-status-via" style="margin-left:auto" aria-label="WIO por el que preguntar al repetidor"><option value="2">vía WIO2</option><option value="1">vía WIO1</option></select>
                       <button class="p" id="btn-rak-status">Estado</button>
                       <button id="btn-rak-telemetry">Telemetría</button>
                       <button id="btn-rak-history">Histórico</button>
@@ -1034,46 +1085,7 @@ footer{color:var(--dim2)}
                       la comunidad exige mantenerlo bajo (límite legal habitual 10%).
                     </div>
                   </details>
-                  <details class="rakBox">
-                    <summary>Cambiar el repetidor (con su contraseña de admin)</summary>
-                    <div class="maprow" style="gap:8px;margin-top:10px">
-                    </div>
-                    <div class="maprow" style="gap:8px;margin-top:10px;align-items:end">
-                      <div class="fieldgroup" style="min-width:100px"><span class="fieldlabel">Companion</span>
-                        <select id="rak-remote-via">
-                          <option value="1">WIO1</option>
-                          <option value="2">WIO2</option>
-                        </select>
-                      </div>
-                      <div class="fieldgroup" style="flex:1"><span class="fieldlabel">Contraseña de admin</span>
-                        <input type="password" id="rak-remote-pass" placeholder="••••••••">
-                      </div>
-                      <button class="p" id="btn-rak-remote-login">Conectar sesión</button>
-                    </div>
-                    <div class="maprow" style="gap:8px;margin-top:10px;align-items:end">
-                      <div class="fieldgroup" style="flex:1"><span class="fieldlabel">Comando CLI</span>
-                        <input type="text" id="rak-remote-cmd" placeholder="ej: get freq" disabled>
-                      </div>
-                      <button id="btn-rak-remote-send" disabled>Enviar</button>
-                    </div>
-                    <span class="fieldlabel" style="margin-top:10px">Atajos</span>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px" id="rak-remote-quick">
-                      <button class="quick-rak-cmd" data-cmd="ver" disabled>Firmware</button>
-                      <button class="quick-rak-cmd" data-cmd="clock" disabled>Reloj</button>
-                      <button class="quick-rak-cmd" data-cmd="get freq" disabled>Frecuencia</button>
-                      <button class="quick-rak-cmd" data-cmd="get radio" disabled>Radio</button>
-                      <button class="quick-rak-cmd" data-cmd="get repeat" disabled>Modo</button>
-                      <button class="quick-rak-cmd" data-cmd="get name" disabled>Nombre</button>
-                      <button class="quick-rak-cmd" data-cmd="get tx" disabled>TX</button>
-                      <button class="quick-rak-cmd" data-cmd="neighbors" disabled>Vecinos</button>
-                      <button class="quick-rak-cmd" data-cmd="advert" disabled>Anunciarse</button>
-                    </div>
-                    <button class="p" id="btn-rak-legal" disabled style="margin-top:12px">Comprobar que el repetidor es legal</button>
-                    <pre class="loglet" id="rak-legal-out" style="display:none;max-height:none"></pre>
-                    <div class="cardsub" style="margin-top:8px;color:var(--dim2);font-size:10.5px">
-                      Firmware no actualizable en remoto: el bootloader UF2 exige USB físico y doble reset. Aquí solo se leen/ajustan parámetros por CLI.
-                    </div>
-                  </details>
+                  <a class="gvinculo" href="#gestion" data-ir="gestion">Cambiar el repetidor, abrir una sesión o comprobar que es legal <span>Gestión →</span></a>
                   <div class="k" style="margin:14px 0 0">Respuestas del repetidor</div>
                   <pre class="loglet" id="rak-log">Aquí salen las respuestas al leer o cambiar el repetidor.</pre>
       
@@ -1101,9 +1113,8 @@ footer{color:var(--dim2)}
                     <div class="metric"><div class="k">Potencia TX</div><div class="v" id="w1-tx" style="font-size:11px">—</div></div>
                   </div>
                   <div class="cardactions">
-                    <button class="p" id="btn-w1-connect">Conectar</button> <button id="btn-w1-pausa" hidden>Lo he apagado: deja de buscarlo</button> <span id="w1-device-status" class="device-status" style="margin-left:8px">No detectado</span>
-                    <button id="btn-w1-place">Colocar en mapa</button>
-                    <button id="btn-w1-export" onclick="wioExportKey(1)">Exportar clave</button>
+                    <button class="p" id="btn-w1-connect">Conectar</button> <span id="w1-device-status" class="device-status" style="margin-left:8px">No detectado</span>
+                    <a class="linklike gmas" href="#gestion" data-ir="gestion">Más acciones en Gestión →</a>
                   </div>
                   <pre class="loglet" id="w1-log">Sin conectar aún.</pre>
     
@@ -1131,9 +1142,8 @@ footer{color:var(--dim2)}
                     <div class="metric"><div class="k">Potencia TX</div><div class="v" id="w2-tx" style="font-size:11px">—</div></div>
                   </div>
                   <div class="cardactions">
-                    <button class="p" id="btn-w2-connect">Conectar</button> <button id="btn-w2-pausa" hidden>Lo he apagado: deja de buscarlo</button> <span id="w2-device-status" class="device-status" style="margin-left:8px">No detectado</span>
-                    <button id="btn-w2-place">Colocar en mapa</button>
-                    <button id="btn-w2-export" onclick="wioExportKey(2)">Exportar clave</button>
+                    <button class="p" id="btn-w2-connect">Conectar</button> <span id="w2-device-status" class="device-status" style="margin-left:8px">No detectado</span>
+                    <a class="linklike gmas" href="#gestion" data-ir="gestion">Más acciones en Gestión →</a>
                   </div>
                   <pre class="loglet" id="w2-log">Sin conectar aún.</pre>
     
@@ -1175,14 +1185,14 @@ footer{color:var(--dim2)}
           <div class="cardsub">a través del WIO conectado al puente</div>
         </div>
         <div class="chatTools">
-          <select id="chatFilter" title="Qué mensajes ver">
+          <select id="chatFilter" title="Qué mensajes ver" aria-label="Qué mensajes ver">
             <option value="all">Todo</option>
             <option value="chan0">Canal Public</option>
             <option value="chan1">Canal 1</option>
             <option value="chan2">Canal 2</option>
             <option value="priv">Privados</option>
           </select>
-          <select id="chatViaFilter" hidden title="Por qué WIO llegaron">
+          <select id="chatViaFilter" hidden title="Por qué WIO llegaron" aria-label="Por qué WIO llegaron">
             <option value="all">Cualquier WIO</option>
             <option value="1">Solo WIO1</option>
             <option value="2">Solo WIO2</option>
@@ -1204,11 +1214,11 @@ footer{color:var(--dim2)}
       </div>
       <button id="chatAlFinal" type="button" hidden>↓ Ir al final</button>
       <div class="chatComposer">
-        <select id="chatNode" hidden title="El chat siempre muestra los mensajes de ambos WIO; esto solo elige por cuál se envía">
+        <select id="chatNode" hidden aria-label="WIO por el que se envía" title="El chat siempre muestra los mensajes de ambos WIO; esto solo elige por cuál se envía">
           <option value="1">WIO1</option>
           <option value="2" selected>WIO2</option>
         </select>
-        <select id="chatChan" title="Canal por el que se envía">
+        <select id="chatChan" title="Canal por el que se envía" aria-label="Canal por el que se envía">
           <option value="0">Public</option>
           <option value="1">Canal 1</option>
           <option value="2">Canal 2</option>
@@ -1296,10 +1306,10 @@ footer{color:var(--dim2)}
     <div class="card rescard" id="red-normas" style="grid-column:1/-1">
       <div class="cardhead">
         <div class="icon">🤝</div>
-        <div><div class="cardtitle">Comunidad y normas</div><div class="cardsub">resumen de las normas habituales (ej. <a href="https://mesh.gal/comunidade/" target="_blank" rel="noopener">mesh.gal/comunidade</a>)</div></div>
+        <div><div class="cardtitle">Comunidad y normas</div><div class="cardsub">resumen de las normas habituales de la comunidad</div></div>
       </div>
       <div class="okbox">
-        <b>Convivencia</b><br>
+        <b>Convivencia</b> <span style="color:var(--dim)">(más en <a href="https://mesh.gal/comunidade/" target="_blank" rel="noopener">mesh.gal/comunidade</a>)</span><br>
         · Respeto y colaboración entre gente con distinto nivel de experiencia.<br>
         · Privacidad: no publiques coordenadas, nombres ni identificadores de otras personas sin permiso.<br>
         · Uso responsable de la radio: la configuración acordada, sin emisiones/telemetrías/anuncios automáticos innecesarios.
@@ -1371,7 +1381,7 @@ footer{color:var(--dim2)}
             <summary>Vecinos por radio</summary>
             <div class="mapGroupBody">
               <div class="cardsub">Pide a un WIO conectado su lista de contactos: nombre, tipo, saltos y posición si la anuncian.</div>
-              <select id="neighbors-via-select">
+              <select id="neighbors-via-select" aria-label="De qué WIO ver los contactos">
               <option value="both">Ver: WIO1 + WIO2</option>
               <option value="1">Ver: solo WIO1</option>
               <option value="2">Ver: solo WIO2</option>
@@ -1390,7 +1400,7 @@ footer{color:var(--dim2)}
             <summary>Análisis de enlace</summary>
             <div class="mapGroupBody">
               <div class="cardsub">Perfil de terreno real y zona de Fresnel: si el enlace existe de verdad, no solo en el mapa.</div>
-              <select id="link-target"></select>
+              <select id="link-target" aria-label="Nodo con el que comprobar el enlace"></select>
               <div class="maprow" style="gap:6px">
               <div class="fieldgroup" style="flex:1;min-width:0"><span class="fieldlabel">Antena aquí (m)</span>
               <input type="text" id="link-h1" value="6" style="width:100%"></div>
@@ -1439,7 +1449,7 @@ footer{color:var(--dim2)}
           </div>
           <div class="nlTools">
             <input type="text" id="nlFilter" placeholder="Buscar nodo…">
-            <select id="nlSort"><option value="hops">Ordenar por saltos</option><option value="dist">Por distancia</option><option value="name">Por nombre</option><option value="visto">Vistos hace menos</option></select>
+            <select id="nlSort" aria-label="Ordenar la tabla de nodos"><option value="hops">Ordenar por saltos</option><option value="dist">Por distancia</option><option value="name">Por nombre</option><option value="visto">Vistos hace menos</option></select>
             <button id="nlClose" aria-label="Cerrar la tabla" title="Cerrar la tabla">✕</button>
           </div>
         </div>
@@ -1497,7 +1507,7 @@ footer{color:var(--dim2)}
         <div class="statsSub" id="statsSub">Medidas reales de cada paquete que oye tu nodo, no texto del chat.</div>
       </div>
       <div class="statsActions">
-        <select id="statsRange" title="Periodo a analizar">
+        <select id="statsRange" title="Periodo a analizar" aria-label="Periodo a analizar">
           <option value="1">Última hora</option>
           <option value="6">Últimas 6 h</option>
           <option value="24" selected>Últimas 24 h</option>
@@ -1615,6 +1625,144 @@ footer{color:var(--dim2)}
       no se pierden al recargar esta página ni al reiniciar el gateway. Los saltos salen de "Leer vecinos por radio" en el Mapa.
     </div>
   </section>
+
+  <section class="tabview" id="tab-gestion" data-sub="repetidor">
+    <div class="statsHead">
+      <div>
+        <div class="statsTitle">Gestión</div>
+        <div class="statsSub">Aquí se cambian cosas: el repetidor, tus WIO, el acceso y tus datos. Para mirar, está el Panel.</div>
+      </div>
+    </div>
+
+    <div class="statsTabs" id="gestionTabs" role="tablist" aria-label="Secciones de Gestión">
+      <button type="button" role="tab" data-sub="repetidor" aria-selected="true">Repetidor</button>
+      <button type="button" role="tab" data-sub="equipos" aria-selected="false" tabindex="-1">Equipos</button>
+      <button type="button" role="tab" data-sub="acceso" aria-selected="false" tabindex="-1">Acceso</button>
+      <button type="button" role="tab" data-sub="datos" aria-selected="false" tabindex="-1">Datos</button>
+    </div>
+
+    <div class="statsGrid" id="gestionGrid">
+
+      <!-- ===== Repetidor ===== -->
+      <div class="card statcard" data-g="repetidor" data-ancho="2" aria-labelledby="g-t-sesion">
+        <div class="gtit"><span class="n" id="g-t-sesion">Sesión de administración</span><span class="gchip off" id="g-sesion-chip" role="status">● Sin sesión</span></div>
+        <p class="gsub">Para cambiar algo en el repetidor hay que abrir una sesión con su contraseña. Mientras no la abras, el panel solo lee. El aviso llega por radio: puede tardar unos segundos.</p>
+        <div class="gfila">
+          <div class="gcampo"><label for="rak-remote-via">Hablar con el repetidor a través de</label>
+            <select id="rak-remote-via"><option value="1">WIO1</option><option value="2">WIO2</option></select></div>
+          <div class="gcampo"><label for="rak-remote-pass">Contraseña de admin del repetidor</label>
+            <input type="password" id="rak-remote-pass" placeholder="••••••••" autocomplete="off"></div>
+          <button class="p" id="btn-rak-remote-login">Abrir sesión</button>
+        </div>
+      </div>
+
+      <div class="card statcard gdim" data-g="repetidor" data-ancho="2" id="g-consola" aria-labelledby="g-t-consola">
+        <div class="gtit"><span class="n" id="g-t-consola">Consola</span><span class="gchip off" id="g-consola-chip">Se activa al abrir la sesión</span></div>
+        <p class="gsub">Escribe un comando o usa los botones. El panel bloquea lo destructivo y pide confirmación en lo arriesgado.</p>
+        <div class="gfila">
+          <div class="gcampo"><label for="rak-remote-cmd">Comando</label>
+            <input type="text" id="rak-remote-cmd" placeholder="ej: get freq" disabled autocomplete="off" spellcheck="false"></div>
+          <button id="btn-rak-remote-send" disabled>Enviar</button>
+        </div>
+        <div class="glabel" id="g-t-leer">LEER</div>
+        <div class="gchips" role="group" aria-labelledby="g-t-leer" id="rak-remote-quick">
+          <button class="quick-rak-cmd" data-cmd="ver" disabled>Firmware</button>
+          <button class="quick-rak-cmd" data-cmd="clock" disabled>Reloj</button>
+          <button class="quick-rak-cmd" data-cmd="get freq" disabled>Frecuencia</button>
+          <button class="quick-rak-cmd" data-cmd="get radio" disabled>Radio</button>
+          <button class="quick-rak-cmd" data-cmd="get repeat" disabled>Modo</button>
+          <button class="quick-rak-cmd" data-cmd="get name" disabled>Nombre</button>
+          <button class="quick-rak-cmd" data-cmd="get tx" disabled>TX</button>
+          <button class="quick-rak-cmd" data-cmd="neighbors" disabled>Vecinos</button>
+        </div>
+        <div class="glabel" id="g-t-accion">ACCIÓN</div>
+        <div class="gchips" role="group" aria-labelledby="g-t-accion">
+          <button class="quick-rak-cmd accion" data-cmd="advert" disabled title="El repetidor se anuncia a la malla: lo oyen todos los vecinos">Anunciarse</button>
+        </div>
+        <div class="glabel" id="g-t-resp">RESPUESTAS</div>
+        <div class="gresp" id="g-resp" role="log" aria-live="polite" aria-labelledby="g-t-resp"><div class="l vacio"><span class="r">Aquí saldrán las respuestas del repetidor, con su hora.</span></div></div>
+        <p class="gfoot">El firmware no se puede actualizar en remoto: el bootloader exige USB y doble reset. Aquí solo se leen y ajustan parámetros.</p>
+      </div>
+
+      <div class="card statcard" data-g="repetidor" data-ancho="2" aria-labelledby="g-t-legal">
+        <div class="gtit"><span class="n" id="g-t-legal">Comprobar que es legal</span><span class="gchip off" id="g-legal-chip" role="status">Sin comprobar</span></div>
+        <p class="gsub">Pregunta al repetidor su configuración y la compara con lo que permite la normativa de la banda (ERC/REC 70-03). Necesita la sesión abierta y puede tardar hasta 75 s.</p>
+        <button class="p" id="btn-rak-legal" disabled>Comprobar que el repetidor es legal</button>
+        <pre class="loglet" id="rak-legal-out" style="display:none;max-height:none"></pre>
+      </div>
+
+      <!-- ===== Equipos ===== -->
+      <div class="card statcard" data-g="equipos" aria-labelledby="g-t-w1">
+        <div class="gtit"><span class="n cfg-wio1" id="g-t-w1">WIO1</span><span class="gchip warn" id="g-w1-chip" role="status">● Sin conectar</span></div>
+        <p class="gsub">Seeed L1 Pro · terminal casa 1 · Bluetooth</p>
+        <div class="gfilak"><div><div class="t">Conexión</div><div class="d" id="g-w1-estado">Sin datos todavía.</div></div><button class="p" id="g-w1-conectar">Conectar</button></div>
+        <div class="gfilak" hidden><div><div class="t">Lo he apagado</div><div class="d">El PC deja de buscarlo hasta que lo marques de nuevo.</div></div><button id="btn-w1-pausa" hidden>Lo he apagado: deja de buscarlo</button></div>
+        <div class="gfilak"><div><div class="t">Posición en el mapa</div><div class="d">Dónde está esta casa. Te lleva al mapa para marcarla.</div></div><button id="btn-w1-place">Colocar en mapa</button></div>
+        <div class="gfilak"><div><div class="t">Copia de la clave</div><div class="d">Guarda la clave privada del WIO para poder recuperarlo si se estropea. Guárdala en un sitio seguro.</div></div><button id="btn-w1-export" onclick="wioExportKey(1)">Exportar clave</button></div>
+      </div>
+
+      <div class="card statcard fila-w2" data-g="equipos" aria-labelledby="g-t-w2">
+        <div class="gtit"><span class="n cfg-wio2" id="g-t-w2">WIO2</span><span class="gchip warn" id="g-w2-chip" role="status">● Sin conectar</span></div>
+        <p class="gsub">Seeed L1 Pro · terminal casa 2 · Bluetooth</p>
+        <div class="gfilak"><div><div class="t">Conexión</div><div class="d" id="g-w2-estado">Sin datos todavía.</div></div><button class="p" id="g-w2-conectar">Conectar</button></div>
+        <div class="gfilak" hidden><div><div class="t">Lo he apagado</div><div class="d">El PC deja de buscarlo hasta que lo marques de nuevo.</div></div><button id="btn-w2-pausa" hidden>Lo he apagado: deja de buscarlo</button></div>
+        <div class="gfilak"><div><div class="t">Posición en el mapa</div><div class="d">Dónde está esta casa. Te lleva al mapa para marcarla.</div></div><button id="btn-w2-place">Colocar en mapa</button></div>
+        <div class="gfilak"><div><div class="t">Copia de la clave</div><div class="d">Guarda la clave privada del WIO para poder recuperarlo si se estropea. Guárdala en un sitio seguro.</div></div><button id="btn-w2-export" onclick="wioExportKey(2)">Exportar clave</button></div>
+      </div>
+
+      <div class="card statcard" data-g="equipos" data-ancho="2" aria-labelledby="g-t-relay">
+        <div class="gtit"><span class="n" id="g-t-relay">Relay del PC</span><span class="gchip off" id="g-relay-chip" role="status">—</span></div>
+        <p class="gsub">El PC con Bluetooth que habla con tus WIO y los enlaza con la Raspberry.</p>
+        <div class="gfilak"><div><div class="t">Enlace con la Raspberry</div><div class="d" id="g-relay-txt">—</div></div></div>
+        <div class="gfilak"><div><div class="t">Si cambias de PC</div><div class="d">Hay que decirle a la Raspberry la IP del nuevo y reiniciar el relay.</div></div><a class="gboton" href="https://github.com/odegaard12/Panel-Meshcore#readme" target="_blank" rel="noopener">Ver la guía ↗</a></div>
+      </div>
+
+      <!-- ===== Acceso ===== -->
+      <div class="card statcard" data-g="acceso" aria-labelledby="g-t-ses">
+        <div class="gtit"><span class="n" id="g-t-ses">Tu sesión</span><span class="gchip off" id="g-ses-chip" role="status">—</span></div>
+        <p class="gsub" id="g-sesion-txt">Comprobando la sesión…</p>
+        <div class="gfilak"><div><div class="t">Cerrar sesión</div><div class="d">En este navegador. Tendrás que volver a poner la contraseña.</div></div><button id="g-logout">Cerrar sesión</button></div>
+      </div>
+
+      <div class="card statcard" data-g="acceso" id="g-terminal-card" aria-labelledby="g-t-term" hidden>
+        <div class="gtit"><span class="n" id="g-t-term">Terminal de la Raspberry</span><span class="gchip off" id="g-term-chip" role="status">—</span></div>
+        <p class="gsub" id="g-term-txt">Una consola con permisos de administrador.</p>
+        <div class="gaviso">Úsala con cuidado: cualquier comando se ejecuta de verdad en la Raspberry.</div>
+        <a class="gboton p" id="g-terminal" href="#" target="_blank" rel="noopener">Abrir terminal ↗</a>
+      </div>
+
+      <div class="card statcard" data-g="acceso" data-ancho="2" aria-labelledby="g-t-quien">
+        <div class="gtit"><span class="n" id="g-t-quien">Quién puede entrar</span></div>
+        <p class="gsub">El panel solo lo ve quien tiene usuario y contraseña. El PC del relay entra con su propio token y desde su IP.</p>
+        <details class="gdet">
+          <summary>Cambiar la contraseña del panel</summary>
+          <p class="gsub">Se cambia en la Raspberry, no aquí. Al cambiarla, todas las sesiones abiertas se cierran y habrá que volver a entrar.</p>
+          <pre class="loglet">sudo htpasswd -B /etc/nginx/meshcore-tls/htpasswd TU_USUARIO</pre>
+        </details>
+      </div>
+
+      <!-- ===== Datos ===== -->
+      <div class="card statcard" data-g="datos" aria-labelledby="g-t-chat">
+        <div class="gtit"><span class="n" id="g-t-chat">Tu chat</span></div>
+        <p class="gsub">Se guarda solo en este navegador, no en la Raspberry. Borrarlo no toca los mensajes de los nodos: si llegan de nuevo, volverán a aparecer.</p>
+        <div class="gfilak"><div><div class="t" id="g-chat-n">—</div><div class="d" id="g-chat-viejo"></div></div>
+          <span class="gbotones"><button id="g-chat-descargar">Descargar</button><button class="peligro" id="g-chat-borrar">Borrar el chat…</button></span></div>
+      </div>
+
+      <div class="card statcard" data-g="datos" aria-labelledby="g-t-mapa">
+        <div class="gtit"><span class="n" id="g-t-mapa">Mapa y vecinos</span></div>
+        <p class="gsub">Lo que han oído tus WIO, guardado en este navegador.</p>
+        <div class="gfilak"><div><div class="t" id="g-contactos-n">—</div><div class="d">Exporta la lista para abrirla en una hoja de cálculo o compartirla con la comunidad.</div></div><button id="g-csv">Exportar a CSV</button></div>
+      </div>
+
+      <div class="card statcard" data-g="datos" data-ancho="2" aria-labelledby="g-t-panel">
+        <div class="gtit"><span class="n" id="g-t-panel">Este panel</span><span class="gchip off" id="g-version">—</span></div>
+        <div class="gfilak"><div><div class="t">Olvidar mis preferencias</div><div class="d">La sección que tenías abierta, el fondo del mapa y la marca de «mensajes nuevos». No borra el chat, las notas ni las posiciones.</div></div><button class="peligro" id="g-olvidar">Olvidar mis preferencias…</button></div>
+        <div class="gfilak"><div><div class="t">Volver a cargar el panel</div><div class="d">Si algo no se actualiza.</div></div><button id="g-recargar">Recargar</button></div>
+      </div>
+
+    </div>
+  </section>
 </div>
 
 <footer>Panel MeshCore <span id="panelVersion"></span> · <span class="linklike" onclick="location.reload()">recargar</span></footer>
@@ -1638,7 +1786,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.32.0';
+const PANEL_VERSION='1.33.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1697,7 +1845,7 @@ let unreadChat=0;
 function showTab(name){
   const venia=document.querySelector('.tabview.on')?.id;   // pestaña de la que se sale
   if(name==='mapa'){ name='equipos'; setTimeout(()=>document.querySelector('.devTab[data-dev="mapa"]')?.click(),0); }
-  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  document.querySelectorAll('nav.tabs button').forEach(b=>{ const on=b.dataset.tab===name; b.classList.toggle('on',on); b.setAttribute('aria-current',on?'page':'false'); });
   document.querySelectorAll('.tabview').forEach(v=>v.classList.toggle('on',v.id==='tab-'+name));
   if(venia==='tab-chat' && name!=='chat') marcarChatVisto();
   if(name==='chat'){ unreadChat=0; updateChatBadge(); fitChatCardToViewport(); requestAnimationFrame(()=>posicionarChat()); }
@@ -1710,6 +1858,7 @@ function showTab(name){
     setTimeout(pintarEqMap,30);
   }
   if(name==='stats'){ statsAnimaKpis=true; renderStats(true); pintarHistoricoRak(); }
+  if(name==='gestion') gestionAlAbrir();
   try{ history.replaceState(null,'',name==='equipos'?location.pathname+location.search:'#'+name); }catch(e){}
 }
 // Al recargar se vuelve a la pestaña en la que estabas (va en la URL: #mapa…).
@@ -1849,6 +1998,18 @@ L.circle(REPEATER_POS,{radius:4000,color:'#3fd67a',weight:1,opacity:.4,fillOpaci
   .addTo(layerRak).bindTooltip('Alcance orientativo ~4 km (terreno llano, SF7)',{permanent:false});
 
 let w1Marker=null, w2Marker=null, placingIdx=null;
+// Aviso flotante sobre el mapa (colocar y medir). Se crea al hacer falta y se esconde solo.
+function avisoMapa(texto,color){
+  let h=document.getElementById('mapHint');
+  if(!h){
+    h=document.createElement('div'); h.id='mapHint'; h.setAttribute('role','status');
+    h.style.position='fixed'; h.style.left='50%'; h.style.bottom='34px';
+    document.body.appendChild(h);
+  }
+  h.textContent=texto||''; h.hidden=!texto; h.style.color=color||'';
+  clearTimeout(h._t);
+  if(texto) h._t=setTimeout(()=>{ if(!placingIdx && !measuring) h.hidden=true; },9000);
+}
 function loadSavedPos(idx){
   const raw=localStorage.getItem('meshcore-w'+idx+'-pos');
   if(!raw) return null;
@@ -1946,9 +2107,9 @@ function refreshMarkers(){
   const saved=loadSavedPos(idx);
   if(saved) placeMarker(idx,saved.lat,saved.lon);
   $('#btn-w'+idx+'-place').onclick=()=>{
+    showTab('equipos');   // el mapa está en el Panel (también si se pulsa desde Gestión)
     placingIdx=idx;
-    $('#mapHint').textContent='Modo colocar activo para WIO'+idx+': haz clic en el mapa donde está esa casa.';
-    $('#mapHint').style.color='var(--warn)';
+    avisoMapa('Modo colocar activo para WIO'+idx+': haz clic en el mapa donde está esa casa.','var(--warn)');
     map.getContainer().style.cursor='crosshair';
   };
 });
@@ -2533,8 +2694,7 @@ $('#btn-measure').onclick=()=>{
   const btn=$('#btn-measure');
   btn.style.background = measuring ? '#182130' : '';
   btn.style.borderColor = measuring ? '#3a4a60' : '';
-  $('#mapHint').textContent = measuring ? 'Modo medir: haz clic en dos puntos del mapa.' : 'Los nodos se colocan solos con las coordenadas que anuncian.';
-  $('#mapHint').style.color = measuring ? 'var(--warn)' : '';
+  avisoMapa(measuring ? 'Modo medir: haz clic en dos puntos del mapa.' : '', measuring ? 'var(--warn)' : '');
   map.getContainer().style.cursor = measuring ? 'crosshair' : '';
 };
 map.on('click',(e)=>{
@@ -2542,8 +2702,7 @@ map.on('click',(e)=>{
     const {lat,lng}=e.latlng;
     placeMarker(placingIdx,lat,lng);
     try{ localStorage.setItem('meshcore-w'+placingIdx+'-pos',JSON.stringify({lat,lon:lng})); }catch(e){}
-    $('#mapHint').textContent='WIO'+placingIdx+' colocado. Puedes arrastrar el pin para ajustar, o "Colocar en mapa" de nuevo para cambiarlo.';
-    $('#mapHint').style.color='var(--dim)';
+    avisoMapa('WIO'+placingIdx+' colocado. Puedes arrastrar el pin para ajustar, o «Colocar en mapa» (en Gestión) para cambiarlo.','var(--dim)');
     map.getContainer().style.cursor='';
     placingIdx=null;
     return;
@@ -2566,7 +2725,7 @@ map.on('click',(e)=>{
 });
 
 // Registro de la tarjeta del repetidor (diagnóstico y gestión remota).
-function rlog(t){ const e=$('#rak-log'); e.textContent=(e.textContent+'\n'+t).split('\n').slice(-8).join('\n'); }
+function rlog(t){ const e=$('#rak-log'); e.textContent=(e.textContent+'\n'+t).split('\n').slice(-8).join('\n'); gLog(t); }
 
 // ============ WIO: utilidades de la tarjeta ============
 // Todo el Bluetooth lo lleva el relay del PC a traves del gateway de la Pi
@@ -2617,6 +2776,7 @@ function setRakRemoteReady(ready){
   $('#rak-remote-cmd').disabled=!ready; $('#btn-rak-remote-send').disabled=!ready;
   $$('.quick-rak-cmd').forEach(b=>b.disabled=!ready);
   $('#btn-rak-legal').disabled=!ready;
+  gestionRepetidorEstado();
 }
 // Las respuestas CLI del repetidor llegan como mensajes privados suyos: quien
 // espera una se engancha aqui (una a la vez) en vez de leer el chat a mano.
@@ -2720,7 +2880,7 @@ async function sendRemoteCmd(cmd,confirmed=false){
   }catch(e){
     // El gateway decide qué es arriesgado; aquí solo se pregunta al usuario.
     if(!confirmed && /^CONFIRMAR:/.test(e.message)){
-      if(confirm(e.message.replace(/^CONFIRMAR:\s*/,'')+'\n\n¿Enviar «'+cmd+'» al repetidor?'))
+      if(await preguntar('¿Enviar «'+cmd+'» al repetidor?',e.message.replace(/^CONFIRMAR:\s*/,''),'Enviar'))
         return sendRemoteCmd(cmd,true);
       rlog('Cancelado: '+cmd);
       return;
@@ -3048,8 +3208,9 @@ function rehacerChat(){
   if(typeof pintarContactos==='function') pintarContactos();
   posicionarChat();
 }
-$('#chatClear').onclick=()=>{
-  const a=alcanceBorrado(), n=a.cuantos.length;
+function alcanceTodo(){ return {titulo:'todo el chat', cuantos:loadChatLog(), resto:()=>false}; }
+function abrirBorrado(todo){
+  const a=todo?alcanceTodo():alcanceBorrado(), n=a.cuantos.length;
   let dlg=document.getElementById('dlgBorrar');
   if(!dlg){
     dlg=document.createElement('dialog'); dlg.id='dlgBorrar'; dlg.className='dlgBorrar';
@@ -3070,7 +3231,8 @@ $('#chatClear').onclick=()=>{
     if(a.conv&&typeof elegirCanal==='function') elegirCanal('all');
   };
   dlg.showModal();
-};
+}
+$('#chatClear').onclick=()=>abrirBorrado(false);
 // ==================== ANALITICA DE RADIO ====================
 // Las medidas RF (SNR/RSSI por paquete) las da el nodo en el aviso 0x88 y las
 // acumula el gateway en la Pi: aqui solo se agrupan y se dibujan.
@@ -3692,6 +3854,10 @@ function statsRedibuja(){
   }
   renderStats(); dibujarHistoricoRak(); setTimeout(()=>animarSvg($('#repHistChart')),30);
 }
+document.querySelectorAll('#tab-stats .statcard').forEach(c=>{
+  const s=c.querySelector('svg.statSvg'), t=c.querySelector('.statName'), h=c.querySelector('.statHint');
+  if(s&&t){ s.setAttribute('role','img'); s.setAttribute('aria-label',t.textContent.trim()+(h?'. '+h.textContent.trim():'')); }
+});
 document.querySelectorAll('#statsTabs button').forEach(b=>{
   b.onclick=()=>{ statsIr(b.dataset.sub); statsRedibuja(); };
   b.onkeydown=e=>{
@@ -3701,6 +3867,161 @@ document.querySelectorAll('#statsTabs button').forEach(b=>{
   };
 });
 (function(){ let g='resumen'; try{ g=localStorage.getItem('meshcore-stats-sub')||'resumen'; }catch(e){} statsIr(g); })();
+
+// ===== Gestión (1.33): lo que cambia cosas, separado de lo que solo mira =====
+const GEST_SUBS=['repetidor','equipos','acceso','datos'];
+const TERMINAL_MAX_H=2;   // la terminal (nginx) solo deja pasar una sesión abierta hace menos de 2 h
+const PREFS_UI=['meshcore-chat-visto','meshcore-devtab','meshcore-map-fondo','meshcore-stats-sub','meshcore-gestion-sub'];
+let gSesion=null;
+
+// Pregunta con nombre (en vez del confirm() del navegador): devuelve true si se acepta.
+function preguntar(titulo,texto,si){
+  return new Promise(res=>{
+    let dlg=document.getElementById('dlgPregunta');
+    if(!dlg){
+      dlg=document.createElement('dialog'); dlg.id='dlgPregunta'; dlg.className='dlgBorrar'; dlg.setAttribute('aria-labelledby','dlgPreguntaT');
+      dlg.innerHTML='<h3 id="dlgPreguntaT"></h3><p></p><div class="dlgBt"><button type="button" id="dlgPNo" autofocus>Cancelar</button><button type="button" id="dlgPSi" class="peligro"></button></div>';
+      document.body.appendChild(dlg);
+      dlg.addEventListener('click',e=>{ if(e.target===dlg) dlg.close('no'); });
+    }
+    dlg.querySelector('h3').textContent=titulo; dlg.querySelector('p').textContent=texto; dlg.querySelector('#dlgPSi').textContent=si;
+    dlg.querySelector('#dlgPNo').onclick=()=>dlg.close('no'); dlg.querySelector('#dlgPSi').onclick=()=>dlg.close('si');
+    dlg.onclose=()=>res(dlg.returnValue==='si');
+    dlg.returnValue='no'; dlg.showModal();
+  });
+}
+
+function gestionIr(g,foco){
+  if(!GEST_SUBS.includes(g)) g='repetidor';
+  $('#tab-gestion').dataset.sub=g;
+  document.querySelectorAll('#gestionTabs button').forEach(b=>{
+    const on=b.dataset.sub===g;
+    b.classList.toggle('on',on); b.setAttribute('aria-selected',on); b.tabIndex=on?0:-1;
+    if(on&&foco) b.focus();
+  });
+  try{ localStorage.setItem('meshcore-gestion-sub',g); }catch(e){}
+}
+function gestionAnima(){ const e=$('#gestionGrid'); e.classList.remove('subIn'); void e.offsetWidth; e.classList.add('subIn'); }
+document.querySelectorAll('#gestionTabs button').forEach(b=>{
+  b.onclick=()=>{ gestionIr(b.dataset.sub); gestionAnima(); gestionAlAbrir(); };
+  b.onkeydown=e=>{
+    const bs=[...document.querySelectorAll('#gestionTabs button')], i=bs.indexOf(b);
+    const j=e.key==='ArrowRight'?(i+1)%bs.length:e.key==='ArrowLeft'?(i+bs.length-1)%bs.length:e.key==='Home'?0:e.key==='End'?bs.length-1:null;
+    if(j!=null){ e.preventDefault(); gestionIr(bs[j].dataset.sub,true); gestionAnima(); gestionAlAbrir(); }
+  };
+});
+(function(){ let g='repetidor'; try{ g=localStorage.getItem('meshcore-gestion-sub')||'repetidor'; }catch(e){} gestionIr(g); })();
+document.querySelectorAll('[data-ir]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault(); showTab(a.dataset.ir); }));
+
+// Respuestas del repetidor con su hora (lo mismo que sale en el Panel, pero aquí, donde se escribe).
+function gLog(t){
+  const c=$('#g-resp'); if(!c) return;
+  c.querySelector('.vacio')?.remove();
+  const f=new Date(), l=document.createElement('div'); l.className='l';
+  l.innerHTML='<span class="t">'+hh2(f.getHours())+':'+hh2(f.getMinutes())+'</span><span class="r">'+esc(t)+'</span>';
+  c.prepend(l);
+  while(c.children.length>30) c.lastElementChild.remove();
+}
+function gestionRepetidorEstado(){
+  const listo=!!rakRemotePubkey, c=$('#g-sesion-chip'), k=$('#g-consola-chip');
+  if(!c||!k) return;
+  c.className='gchip '+(listo?'ok':'off'); c.textContent=listo?'● Sesión abierta':'● Sin sesión';
+  k.className='gchip '+(listo?'ok':'off'); k.textContent=listo?'Lista':'Se activa al abrir la sesión';
+  $('#g-consola').classList.toggle('gdim',!listo);
+}
+new MutationObserver(()=>{
+  const t=$('#rak-legal-out').textContent, c=$('#g-legal-chip');
+  if(/✅ LEGAL/.test(t)){ c.className='gchip ok'; c.textContent='Todo en regla'; }
+  else if(/❌ REVISAR/.test(t)){ c.className='gchip warn'; c.textContent='Revisar'; }
+  else if(/❓/.test(t)){ c.className='gchip warn'; c.textContent='Sin veredicto'; }
+  else { c.className='gchip off'; c.textContent='Sin comprobar'; }
+}).observe($('#rak-legal-out'),{childList:true,characterData:true,subtree:true});
+
+// Estado de los WIO y del relay, copiado de lo que ya calcula el Panel (una sola fuente).
+function gestionSync(){
+  [1,2].forEach(i=>{
+    const p=$('#devpanel-w'+i), cb=$('#btn-w'+i+'-connect'), txt=(($('#w'+i+'-device-status')||{}).textContent||'').trim();
+    const pausa=p.classList.contains('pausado'), online=p.classList.contains('online');
+    let cls='warn', t='● Sin conectar';
+    if(pausa){ cls='off'; t='○ En pausa'; }
+    else if(online){ cls='ok'; t='● Conectado'; }
+    else if(/^Enlazado/.test(txt)){ t='● Enlazado, no contesta'; }
+    const chip=$('#g-w'+i+'-chip'); chip.className='gchip '+cls; chip.textContent=t;
+    $('#g-w'+i+'-estado').textContent=pausa?'En pausa: lo marcaste como apagado y el PC no lo busca.':(txt||'Sin datos todavía.');
+    const gb=$('#g-w'+i+'-conectar'); gb.textContent=cb.textContent; gb.disabled=cb.disabled||pausa; gb.classList.toggle('p',/Conectar/.test(cb.textContent));
+    const pb=$('#btn-w'+i+'-pausa'), fila=pb.closest('.gfilak');
+    if(fila){
+      fila.hidden=pb.hidden;
+      const enc=/encendido/.test(pb.textContent);
+      fila.querySelector('.t').textContent=enc?'Lo he encendido':'Lo he apagado';
+      fila.querySelector('.d').textContent=enc?'Vuelve a buscarlo ahora.':'El PC deja de buscarlo hasta que lo marques de nuevo.';
+    }
+  });
+  const rel=(($('#status-relay')||{}).textContent||'—').trim(), rc=$('#g-relay-chip');
+  $('#g-relay-txt').textContent=rel;
+  const ok=/activo/i.test(rel);
+  rc.className='gchip '+(ok?'ok':(rel==='—'?'off':'warn')); rc.textContent=ok?'● Conectado':(rel==='—'?'—':'● Sin enlace');
+  gestionRepetidorEstado();
+}
+function gestionDatos(){
+  const log=loadChatLog();
+  $('#g-chat-n').textContent=log.length?log.length+(log.length===1?' mensaje guardado':' mensajes guardados'):'No hay mensajes guardados';
+  const ats=log.map(e=>e.at).filter(Number.isFinite);
+  $('#g-chat-viejo').textContent=ats.length?'El más antiguo: '+humanAgo(Math.min(...ats))+'.':'Cuando lleguen mensajes, se guardan aquí.';
+  $('#g-chat-borrar').disabled=!log.length; $('#g-chat-descargar').disabled=!log.length;
+  const todos=new Set(), conPos=new Set();
+  [1,2].forEach(i=>{ const dt=loadNeighbors(i); ((dt&&dt.contacts)||[]).forEach(c=>{ const k=c.pubkey||c.name; todos.add(k); if(c.lat||c.lon) conPos.add(k); }); });
+  $('#g-contactos-n').textContent=todos.size?todos.size+(todos.size===1?' contacto guardado':' contactos guardados')+' ('+conPos.size+' con posición)':'Aún no hay contactos guardados';
+  $('#g-csv').disabled=!todos.size;
+  const v=$('#g-version'); v.textContent='Versión '+PANEL_VERSION; v.className='gchip ok';
+}
+async function gestionAcceso(){
+  const t=$('#g-sesion-txt'), chip=$('#g-ses-chip'), card=$('#g-terminal-card');
+  gSesion=null;
+  try{
+    const r=await fetch('/api/auth/whoami',{cache:'no-store'}), j=await r.json();
+    if(j&&j.ok&&j.abierta) gSesion=j;
+  }catch(e){}
+  if(gSesion){
+    const f=new Date(gSesion.caduca*1000).toLocaleString('es-ES',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+    t.innerHTML='Entraste como <b>'+esc(gSesion.user)+'</b> '+humanAgo(gSesion.abierta*1000)+'. La sesión caduca el '+esc(f)+'.';
+    chip.className='gchip ok'; chip.textContent='● Activa';
+  }else{
+    t.textContent='No se pudo comprobar la sesión (puede que estés usando el panel sin pasar por el acceso).';
+    chip.className='gchip off'; chip.textContent='Sin datos';
+  }
+  // Terminal: solo si está configurada; y avisa si tu sesión es demasiado vieja para abrirla.
+  if(typeof CFG!=='undefined' && CFG.terminalUrl){
+    card.hidden=false; $('#g-terminal').href=CFG.terminalUrl;
+    const tc=$('#g-term-chip'), tx=$('#g-term-txt');
+    const edadH=gSesion?(Date.now()/1000-gSesion.abierta)/3600:null;
+    if(edadH!=null && edadH>TERMINAL_MAX_H){
+      tc.className='gchip warn'; tc.textContent='Vuelve a entrar';
+      tx.textContent='Una consola con permisos de administrador. Pide haber entrado hace menos de '+TERMINAL_MAX_H+' horas y tu sesión es más vieja ('+humanAgo(gSesion.abierta*1000).replace('hace ','de hace ')+'): cierra sesión y vuelve a entrar para poder abrirla.';
+    }else{
+      tc.className='gchip ok'; tc.textContent='Puedes abrirla';
+      tx.textContent='Una consola con permisos de administrador. Pide haber entrado hace menos de '+TERMINAL_MAX_H+' horas.';
+    }
+  }else card.hidden=true;
+}
+function gestionAlAbrir(){ gestionSync(); gestionDatos(); gestionAcceso(); }
+
+[1,2].forEach(i=>{ $('#g-w'+i+'-conectar').onclick=()=>$('#btn-w'+i+'-connect').click(); });
+$('#g-chat-descargar').onclick=()=>$('#chatDownload').click();
+$('#g-chat-borrar').onclick=()=>abrirBorrado(true);
+$('#g-csv').onclick=()=>$('#btn-export-contacts').click();
+$('#g-recargar').onclick=()=>location.reload();
+$('#g-logout').onclick=async()=>{
+  const b=$('#g-logout'); b.disabled=true;
+  try{ await fetch('/api/auth/logout',{method:'POST'}); }catch(e){}
+  location.href='/login.html';
+};
+$('#g-olvidar').onclick=async()=>{
+  if(!await preguntar('¿Olvidar tus preferencias?','Se olvidan la sección que tenías abierta, el fondo del mapa y la marca de «mensajes nuevos». No se borran el chat, las notas ni las posiciones. El panel se recargará.','Olvidar y recargar')) return;
+  PREFS_UI.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  location.reload();
+};
+setInterval(()=>{ if($('#tab-gestion').classList.contains('on')) gestionSync(); },1500);
 
 // Historico del repetidor: dos paneles con el mismo eje de tiempo. Con las dos
 // series en un solo panel y ejes a izquierda y derecha las curvas se montaban
@@ -4057,7 +4378,7 @@ $('#ccBuscar').addEventListener('input',pintarContactos);
   $('#mapHint')?.remove();
   $('#btn-map-fullscreen')?.remove();
   const btn=document.createElement('button'); btn.className='devTab'; btn.dataset.dev='mapa';
-  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Ajustes</span><span class="devTabSub">capas, vecinos y enlaces</span></span>';
+  btn.innerHTML='<span class="devTabIcon">🗺️</span><span class="devTabInfo"><span class="devTabName">Mapa</span><span class="devTabSub">capas, vecinos y enlaces</span></span>';
   $('.devSidebar').appendChild(btn);
   // Al cambiar de ficha cambia el alto del panel: el mapa debe recolocarse o
   // deja rectángulos negros (visto en el teléfono, 19/10).

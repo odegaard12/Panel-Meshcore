@@ -3,6 +3,47 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.33.0] - 2026-10-24
+
+### Añadido
+- Página **Gestión**: separa lo que cambia cosas de lo que solo mira (el Panel).
+  Cuatro secciones, con el mismo selector que Analítica:
+  - **Repetidor**: sesión de administración con su estado, consola con atajos
+    separados en «leer» y «acción», respuestas con su hora y la comprobación de
+    que el repetidor es legal, con su resultado a la vista.
+  - **Equipos**: estado claro de cada WIO (conectado, sin responder, en pausa) con
+    conectar, «lo he apagado / encendido», colocar en el mapa y copia de la
+    clave; y el estado del relay del PC.
+  - **Acceso**: tu sesión (quién eres, cuándo entraste y cuándo caduca), cerrar
+    sesión, la terminal de la Raspberry (avisa si tu sesión es demasiado vieja
+    para abrirla: pide haber entrado hace menos de 2 horas) y cómo cambiar la
+    contraseña.
+  - **Datos**: tu chat (descargar y borrar con confirmación), exportar contactos
+    a CSV, olvidar preferencias y recargar el panel.
+- `/api/auth/whoami` devuelve también cuándo se abrió la sesión y cuándo caduca.
+- Pruebas: `tools/test_estructura.js` (ids únicos, lo que vive en Gestión,
+  zonas y nombres para lectores de pantalla) y la de `whoami`.
+
+### Cambiado
+- El Panel ya no mezcla leer y cambiar: «Cambiar el repetidor» y la pausa, la
+  posición y la copia de clave de los WIO pasan a Gestión (con enlaces desde el
+  Panel). La ficha «Ajustes» se llama **Mapa**, que es lo que contiene.
+- Las preguntas de lo arriesgado usan una ventana con nombre en lugar del
+  `confirm()` del navegador.
+
+### Corregido
+- «Colocar en mapa» no funcionaba (daba un error y no llevaba al mapa) y la
+  herramienta de medir fallaba igual: el aviso que buscaban ya no existía. Ahora
+  «Colocar en mapa» lleva al mapa y avisa, y medir también avisa.
+- Cinco pestañas caben en pantallas de 360 px.
+
+### Accesibilidad
+- Auditado con axe-core en las 14 pantallas y estados: cero fallos.
+- Zona principal, nombre para las dos barras de navegación, enlace «Saltar al
+  contenido», `aria-current` en la pestaña activa, nombre para 9 desplegables,
+  nombre para las gráficas, un botón que contenía un enlace, y mejor contraste
+  en las etiquetas de la consola. La página de acceso también tiene zona principal.
+
 ## [1.32.0] - 2026-10-24
 
 ### Cambiado
