@@ -243,7 +243,8 @@ with sync_playwright() as p:
         ESTADOS += [('gestion-' + s, '', "showTab('gestion'); gestionIr('%s')" % s) for s in GESTION]
         malos = []
         for nombre, pagina, accion in ESTADOS:
-            ctx = b.new_context(viewport={'width': 1440, 'height': 900})
+            # La CSP se salta solo aquí: axe se inyecta como script inline; el resto de pruebas van con la CSP real.
+            ctx = b.new_context(viewport={'width': 1440, 'height': 900}, bypass_csp=True)
             pg = ctx.new_page()
             pg.add_init_script(DATOS)
             pg.goto(URL + pagina)

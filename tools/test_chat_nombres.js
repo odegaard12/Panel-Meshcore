@@ -1,7 +1,7 @@
 // El destino de un mensaje privado se compara entero: «· a Ana» no es «· a Anabel».
 // (1.30.1: borrar el chat de Ana borraba también lo enviado a Anabel.)
 const fs = require('fs');
-const src = fs.readFileSync(__dirname + '/../dashboard.html', 'utf8');
+const src = fs.readFileSync(__dirname + '/../dashboard.html', 'utf8') + '\n' + fs.readFileSync(__dirname + '/../bridge/panel-principal.js', 'utf8');
 const m = src.match(/function metaEsA\(meta,n\)\{[^\n]*\}/);
 if (!m) { console.error('FALLO: no encuentro metaEsA en dashboard.html'); process.exit(1); }
 const metaEsA = new Function(m[0] + '; return metaEsA;')();

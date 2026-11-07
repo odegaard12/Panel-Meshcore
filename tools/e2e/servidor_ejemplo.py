@@ -8,16 +8,21 @@ import json
 import math
 import mimetypes
 import random
+import re
 import sys
 import time
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[2]
 
+# La misma CSP que pone nginx en producción: así las pruebas ven las violaciones de la página real.
+_CONF = (RAIZ / 'deploy' / 'nginx-meshcore-panel.conf').read_text(encoding='utf-8')
+CSP = re.search(r'add_header Content-Security-Policy "([^"]+)"', _CONF).group(1)
+
 # ruta pública -> fichero del repo (config.js es el de ejemplo: nunca el de nadie)
 ARCHIVOS = {
     '/': 'dashboard.html', '/dashboard.html': 'dashboard.html', '/login.html': 'bridge/login.html',
-    '/meshcore-ble-gateway.js': 'bridge/meshcore-ble-gateway.js', '/meshcore-ble-guard.js': 'bridge/meshcore-ble-guard.js',
+    '/meshcore-ble-gateway.js': 'bridge/meshcore-ble-gateway.js', '/meshcore-ble-guard.js': 'bridge/meshcore-ble-guard.js', '/panel-cabecera.js': 'bridge/panel-cabecera.js', '/panel-equipos.js': 'bridge/panel-equipos.js', '/panel-principal.js': 'bridge/panel-principal.js', '/login.js': 'bridge/login.js',
     '/config.js': 'config.example.js', '/sw.js': 'pwa/sw.js', '/manifest.webmanifest': 'pwa/manifest.webmanifest',
     '/icon-192.png': 'pwa/icon-192.png', '/icon-512.png': 'pwa/icon-512.png', '/apple-touch-icon.png': 'pwa/apple-touch-icon.png',
 }
@@ -77,6 +82,7 @@ class Manejador(http.server.BaseHTTPRequestHandler):
         self.send_header('Content-Type', tipo)
         self.send_header('Content-Length', str(len(cuerpo)))
         self.send_header('Cache-Control', 'no-store')
+        self.send_header('Content-Security-Policy', CSP)
         self.end_headers()
         self.wfile.write(cuerpo)
 

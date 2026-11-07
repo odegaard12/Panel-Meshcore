@@ -17,6 +17,10 @@ python3 -m venv "$VENV" 2>/dev/null || true
 mkdir -p "$PANEL/www"
 cp "$ROOT/bridge/meshcore-ble-gateway.js" "$PANEL/www/meshcore-ble-gateway.js"
 cp "$ROOT/bridge/meshcore-ble-guard.js" "$PANEL/www/meshcore-ble-guard.js"
+cp "$ROOT/bridge/panel-cabecera.js" "$PANEL/www/panel-cabecera.js"
+cp "$ROOT/bridge/panel-equipos.js" "$PANEL/www/panel-equipos.js"
+cp "$ROOT/bridge/panel-principal.js" "$PANEL/www/panel-principal.js"
+cp "$ROOT/bridge/login.js" "$PANEL/www/login.js"
 cp "$ROOT/bridge/login.html" "$PANEL/www/login.html"
 cp "$ROOT"/pwa/* "$PANEL/www/"
 # dashboard.html ya trae sus <script> del guard y del gateway: no se parchea.

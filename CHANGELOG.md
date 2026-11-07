@@ -3,6 +3,19 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.0] - 2026-11-07
+
+### Cambiado
+- Seguridad: la CSP del panel ya no permite scripts inline (`script-src 'self'
+  https://unpkg.com`). El código que estaba escrito dentro del HTML pasa a
+  `bridge/panel-cabecera.js`, `panel-equipos.js`, `panel-principal.js` y `login.js`,
+  y los tres botones que tenían `onclick` ahora se enlazan desde JavaScript.
+  Así un script colado en la página ya no se ejecuta.
+- `install-pi.sh` copia esos cuatro archivos a `www/`. **Al actualizar una Pi hay
+  que copiarlos también**, si no el panel se queda sin scripts.
+- Las pruebas de navegador usan la misma CSP que nginx (la leen de
+  `deploy/nginx-meshcore-panel.conf`), así que cualquier script inline falla en la CI.
+
 ## [1.33.3] - 2026-10-25
 
 ### Corregido
