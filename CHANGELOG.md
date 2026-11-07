@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.1] - 2026-11-07
+
+### Corregido
+- El punto de estado del chat no decía nada. Ahora explica si hay un WIO listo
+  para enviar o si solo se puede leer (texto y `aria-label`).
+
 ## [1.34.0] - 2026-11-07
 
 ### Cambiado

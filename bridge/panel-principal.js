@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.0';
+const PANEL_VERSION='1.34.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2446,7 +2446,11 @@ function refreshChatUI(){
   $('#chatSend').disabled=!n;
   if(!n) inp.placeholder='Sin WIO: no se puede enviar';
   else if(inp.placeholder.startsWith('Sin WIO')) inp.placeholder=convSel?'Privado a '+convSel+'…':'Escribe un mensaje...';
-  $('#dot-chat').classList.toggle('on',!!n);
+  const punto=$('#dot-chat');
+  punto.classList.toggle('on',!!n);
+  punto.setAttribute('role','img');
+  punto.setAttribute('aria-label',n?'Hay un WIO listo: puedes enviar':'Ningún WIO conectado: solo puedes leer');
+  punto.title=punto.getAttribute('aria-label');
   updateListening();
 }
 $('#chatNode').onchange=refreshChatUI;
