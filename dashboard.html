@@ -1250,27 +1250,35 @@ footer{color:var(--dim2)}
     <div class="card rescard" id="red-wiki" style="grid-column:1/-1">
       <div class="cardhead">
         <div class="icon">📖</div>
-        <div><div class="cardtitle">Cómo funciona MeshCore</div><div class="cardsub">verificado contra meshcore_py y la documentación de la comunidad</div></div>
+        <div><div class="cardtitle">Cómo funciona MeshCore</div><div class="cardsub">qué es, cómo viaja un mensaje y qué significan los números</div></div>
       </div>
       <div class="okbox">
-        <b>Roles de dispositivo</b><br>
-        · <b>Companion</b> — tu WIO. Va por Bluetooth al relay del PC (no al navegador), que lo sirve a este panel; no reenvía tráfico ajeno.<br>
-        · <b>Repeater</b> — tu RAK. Reenvía paquetes para ampliar el alcance de la malla.<br>
-        · <b>Room Server</b> — sala de chat persistente en un nodo fijo.<br>
-        · <b>Sensor</b> / <b>Observer</b> — publican telemetría o solo escuchan, sin retransmitir.
+        <b>En pocas palabras</b><br>
+        MeshCore es una red de radio LoRa: los equipos se comunican entre sí sin internet ni operador.
+        Este panel es la ventana desde la que ves y usas esa red.<br><br>
+        <b>Las piezas</b><br>
+        · <b>WIO (companion)</b> — tu equipo para escribir y leer mensajes. Se conecta por Bluetooth al PC del relay, que lo muestra aquí. No reenvía los mensajes de otros.<br>
+        · <b>RAK (repetidor)</b> — un equipo fijo que reenvía los paquetes para que lleguen más lejos. Es el que da alcance a la red.<br>
+        · <b>Room server</b> — una sala de chat en un equipo fijo.<br>
+        · <b>Sensor / observer</b> — envían datos o solo escuchan; no retransmiten.
       </div>
       <div class="lead">
-        <b>Modelo de red</b>: no hay direccionamiento IP. Los nodos se anuncian (adverts) con su clave pública;
-        los demás los guardan como <b>contactos</b>. Los mensajes son privados (a un contacto) o de <b>canal</b>
-        (compartido, como el "Public" que usas en el Chat). Cada repeater que reenvía un paquete añade un salto
-        (<code>hop</code>) — por eso "Vecinos vistos por radio" te dice a cuántos saltos está cada nodo: menos
-        saltos = enlace más fiable.
+        <b>Cómo viaja un mensaje</b>: lo escribes en el panel, el WIO lo emite por radio y, si el destino está cerca,
+        llega directo. Si no, uno o varios repetidores lo reenvían. Cada reenvío es un <b>salto</b>: menos saltos
+        significa un enlace más fiable (el mapa lo muestra con colores).<br>
+        <b>Canal o privado</b>: un canal (como "Public") lo leen todos los que están en él; un privado va solo a un contacto.<br>
+        <b>Contactos</b>: cuando un equipo se anuncia, los demás lo guardan como contacto. Por eso aparece en el mapa y en "Vecinos".
+      </div>
+      <div class="okbox">
+        <b>Para entender los números</b><br>
+        · <b>SNR</b> — cuánto destaca la señal sobre el ruido. Más alto, mejor; por debajo de 0 dB aún se puede decodificar, pero justo.<br>
+        · <b>RSSI</b> — la fuerza con la que llega la señal (en dBm; cuanto más cerca de 0, más fuerte).<br>
+        · <b>Duty cycle</b> — el tiempo que un equipo puede emitir por hora. En Europa el límite legal es el 10 %; el panel lo vigila.<br>
+        · <b>Ruido de fondo</b> — lo que oye el repetidor cuando nadie habla. Un pico sostenido suele ser interferencia.
       </div>
       <div class="warnbox">
-        <b>Gestión remota de un repetidor</b> (lo que hace la sección "Gestión remota" de la tarjeta del RAK):
-        se manda un <b>login</b> con la contraseña de admin a través de un Companion ya conectado, viaja por LoRa
-        hasta el repetidor. Una vez logueado, los comandos CLI (<code>get freq</code>, <code>set tx</code>...)
-        se mandan igual, por la malla — nunca hace falta Bluetooth directo con el repetidor.
+        <b>Cambiar un repetidor</b>: para leer o cambiar algo de un RAK hace falta su contraseña de admin. Se envía
+        a través de un WIO conectado, por radio, con comandos como <code>get freq</code>. No hace falta Bluetooth directo con el repetidor.
       </div>
       <div class="lead">
         Comparativa completa con Meshtastic (la otra red LoRa comunitaria, no interoperable con MeshCore):

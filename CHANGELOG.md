@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.2] - 2026-11-07
+
+### Cambiado
+- «Cómo funciona MeshCore» (Red y notas) reescrito en lenguaje sencillo: qué es
+  la red, las piezas (WIO, RAK, room server, sensor), cómo viaja un mensaje,
+  canal frente a privado, contactos y un glosario de SNR, RSSI, duty cycle y ruido
+  de fondo. Antes era técnico («adverts», «hop», «CLI») y no definía los términos.
+
 ## [1.34.1] - 2026-11-07
 
 ### Corregido
