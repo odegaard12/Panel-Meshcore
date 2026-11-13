@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.3] - 2026-11-13
+
+### Cambiado
+- Los avisos del Mapa (traceroute, análisis de enlace, contactos) y de la copia
+  de clave de un WIO ya no usan `alert()` del navegador, que bloqueaba la página
+  y no seguía el diseño del panel: salen como aviso en pantalla (`avisoMapa`),
+  con textos que dicen qué hacer (antes «Error: respuesta tipo 14»).
+
+### Añadido
+- Prueba `tools/test_version.js`: falla si la versión del panel, el gateway, el
+  README y la última entrada del CHANGELOG no coinciden.
+
 ## [1.34.2] - 2026-11-07
 
 ### Cambiado

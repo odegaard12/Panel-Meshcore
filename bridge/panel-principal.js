@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.2';
+const PANEL_VERSION='1.34.3';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -716,13 +716,13 @@ function puntoDestinoEnlace(){
 }
 $('#btn-trace').onclick=async()=>{
   const btn=$('#btn-trace'), out=$('#traceOut');
-  if(typeof rakSendTrace!=='function'){ alert('Puente no cargado'); return; }
+  if(typeof rakSendTrace!=='function'){ avisoMapa('El puente con los WIO no ha cargado: recarga la página.','var(--warn)'); return; }
   const via = (wNodes[2]&&wNodes[2].device&&wNodes[2].device.gatt.connected) ? 2
             : (wNodes[1]&&wNodes[1].device&&wNodes[1].device.gatt.connected) ? 1 : null;
-  if(!via){ alert('Ningún WIO conectado'); return; }
+  if(!via){ avisoMapa('Ningún WIO conectado: no se puede enviar el traceroute.','var(--warn)'); return; }
   const destVal=$('#link-target').value;
   if(!destVal || destVal==='__infra0'){
-    alert('Elige un repetidor de tus contactos en "Análisis de enlace" (la infraestructura de referencia no tiene pubkey conocida). El traceroute necesita indicarle la ruta: no la descubre solo.');
+    avisoMapa('Elige un repetidor de tus contactos en "Análisis de enlace": la infraestructura de referencia no tiene clave conocida y el traceroute necesita indicarle la ruta.','var(--warn)');
     return;
   }
   const pathHex=destVal.slice(0,2); // 1 byte de prefijo (flags=0), el firmware manda por sendDirect con esta ruta
@@ -748,9 +748,9 @@ $('#btn-trace').onclick=async()=>{
 
 $('#btn-link-analyze').onclick=async()=>{
   const btn=$('#btn-link-analyze'), panel=$('#linkPanel'), verdict=$('#linkVerdict');
-  if(typeof rakElevations!=='function'){ alert('Puente no cargado'); return; }
+  if(typeof rakElevations!=='function'){ avisoMapa('El puente con los WIO no ha cargado: recarga la página.','var(--warn)'); return; }
   const dst=puntoDestinoEnlace();
-  if(!dst){ alert('Destino no encontrado'); return; }
+  if(!dst){ avisoMapa('No encuentro el destino del enlace: elígelo de nuevo.','var(--warn)'); return; }
   const h1=parseFloat($('#link-h1').value)||0, h2=parseFloat($('#link-h2').value)||0;
   btn.disabled=true; panel.style.display=''; verdict.textContent='Midiendo terreno...';
   try{
@@ -891,7 +891,7 @@ $('#btn-export-contacts').onclick=()=>{
       rows.push([idx,c.name||'',TIPOS[c.advType]||c.advType,c.hops??'',c.lat||'',c.lon||'',c.pubkey||'']);
     }
   }
-  if(rows.length===1){ alert('No hay contactos guardados todavía. Pulsa "Actualizar vía WIO1/2" primero.'); return; }
+  if(rows.length===1){ avisoMapa('No hay contactos guardados todavía. Pulsa "Actualizar vía WIO1/2" primero.','var(--warn)'); return; }
   // Los nombres los pone cualquiera en la malla: entre comillas (comas y
   // saltos de linea no parten la fila) y sin =,+,-,@ al principio, que Excel
   // ejecutaria como formula. El BOM hace que Excel lea bien las tildes.
@@ -2872,10 +2872,10 @@ $('#chatInput').onkeydown=e=>{ if(e.key==='Enter') $('#chatSend').click(); };
 // Exportar clave privada (EXPORT_PRIVATE_KEY = 0x17)
 async function wioExportKey(idx){
   const n=wNodes[idx];
-  if(!n||!n.device||!n.device.gatt.connected){ alert('WIO'+idx+' no conectado'); return; }
+  if(!n||!n.device||!n.device.gatt.connected){ avisoMapa('WIO'+idx+' no está conectado: conéctalo para exportar su clave.','var(--warn)'); return; }
   try{
     const r=await n._send([0x17]);
-    if(r.type!==14){ alert('Error: respuesta tipo '+r.type); return; }
+    if(r.type!==14){ avisoMapa('El WIO ha respondido algo inesperado (tipo '+r.type+'): no se ha exportado la clave.','var(--warn)'); return; }
     const key=r.bytes.slice(1);
     const hex=Array.from(key).map(x=>x.toString(16).padStart(2,'0')).join('');
     const fn='WIO'+idx+'_PRIVATE_KEY_'+new Date().toISOString().slice(0,10)+'.txt';
@@ -2883,8 +2883,8 @@ async function wioExportKey(idx){
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;a.download=fn;a.click();
-    alert('Clave exportada a '+fn+'. Guárdala en sitio seguro para importar en ZephCore.');
-  }catch(e){ alert('Error: '+e.message); }
+    avisoMapa('Clave exportada a '+fn+'. Guárdala en un sitio seguro para importarla en ZephCore.');
+  }catch(e){ avisoMapa('No se pudo exportar la clave: '+e.message,'var(--warn)'); }
 }
 // Barra de estado del enlace: antes solo se veia entrando en cada tarjeta.
 // Ademas avisa si el puente se cae del todo (no solo si falla un comando
