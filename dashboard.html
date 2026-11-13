@@ -868,7 +868,11 @@ body.sin-w2 .devTab[data-dev="w2"],body.sin-w2 #devpanel-w2,body.sin-w2 .fila-w2
 #rak-live .metric:last-child:nth-child(3n+1){grid-column:1/-1}
 #devpanel-mapa .mapQuick{display:flex;gap:8px}
 @media (max-width:860px){
-  header{top:8px!important;padding:3px!important}
+  header{top:calc(8px + env(safe-area-inset-top))!important;padding:3px!important}
+  #tab-stats.on,#tab-red.on{padding-top:calc(64px + env(safe-area-inset-top))}
+  #tab-gestion.on{padding-top:calc(34px + env(safe-area-inset-top))}
+  #tab-equipos #cfgAviso{top:calc(68px + env(safe-area-inset-top))!important}
+  #tab-equipos>#map .leaflet-top,#tab-chat>#map .leaflet-top{margin-top:env(safe-area-inset-top)}
   header h1,header nav.top{display:none!important}
   header nav.tabs{overflow-x:auto;scrollbar-width:none}
   #tab-equipos.on,#tab-chat.on{height:100dvh!important}

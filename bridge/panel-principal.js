@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.3';
+const PANEL_VERSION='1.34.4';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2444,7 +2444,7 @@ function refreshChatUI(){
   const inp=$('#chatInput');
   inp.disabled=!n;
   $('#chatSend').disabled=!n;
-  if(!n) inp.placeholder='Sin WIO: no se puede enviar';
+  if(!n) inp.placeholder='Sin WIO: solo lectura';
   else if(inp.placeholder.startsWith('Sin WIO')) inp.placeholder=convSel?'Privado a '+convSel+'…':'Escribe un mensaje...';
   const punto=$('#dot-chat');
   punto.classList.toggle('on',!!n);

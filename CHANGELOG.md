@@ -3,6 +3,23 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.4] - 2026-11-13
+
+### Corregido
+- iPhone como app instalada: la barra de navegación quedaba pegada arriba,
+  debajo del reloj y la isla dinámica, porque una regla posterior anulaba la que
+  respeta la zona segura. Ahora baja lo que mide la muesca, y el contenido de
+  Analítica, Gestión y Red y notas baja con ella.
+- Gestión: en móvil la barra de navegación tapaba el título y la descripción.
+- Mapa: los controles de capas ya no se mezclan con la barra de navegación en
+  un móvil con muesca.
+- Chat: el texto del campo de escribir sin WIO se cortaba en pantallas
+  estrechas; ahora dice «Sin WIO: solo lectura».
+
+### Añadido
+- Prueba `tools/e2e/test_iphone.py` (también en la CI): simula la muesca de un
+  iPhone y falla si la barra tapa un título o la página se desplaza en horizontal.
+
 ## [1.34.3] - 2026-11-13
 
 ### Cambiado

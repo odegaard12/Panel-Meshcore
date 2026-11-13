@@ -36,3 +36,4 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - run: npm ci --prefix tools/e2e
       - run: python tools/e2e/test_e2e.py
+      - run: python tools/e2e/test_iphone.py
