@@ -3,6 +3,62 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.4] - 2026-11-13
+
+### Corregido
+- iPhone como app instalada: la barra de navegación quedaba pegada arriba,
+  debajo del reloj y la isla dinámica, porque una regla posterior anulaba la que
+  respeta la zona segura. Ahora baja lo que mide la muesca, y el contenido de
+  Analítica, Gestión y Red y notas baja con ella.
+- Gestión: en móvil la barra de navegación tapaba el título y la descripción.
+- Mapa: los controles de capas ya no se mezclan con la barra de navegación en
+  un móvil con muesca.
+- Chat: el texto del campo de escribir sin WIO se cortaba en pantallas
+  estrechas; ahora dice «Sin WIO: solo lectura».
+
+### Añadido
+- Prueba `tools/e2e/test_iphone.py` (también en la CI): simula la muesca de un
+  iPhone y falla si la barra tapa un título o la página se desplaza en horizontal.
+
+## [1.34.3] - 2026-11-13
+
+### Cambiado
+- Los avisos del Mapa (traceroute, análisis de enlace, contactos) y de la copia
+  de clave de un WIO ya no usan `alert()` del navegador, que bloqueaba la página
+  y no seguía el diseño del panel: salen como aviso en pantalla (`avisoMapa`),
+  con textos que dicen qué hacer (antes «Error: respuesta tipo 14»).
+
+### Añadido
+- Prueba `tools/test_version.js`: falla si la versión del panel, el gateway, el
+  README y la última entrada del CHANGELOG no coinciden.
+
+## [1.34.2] - 2026-11-07
+
+### Cambiado
+- «Cómo funciona MeshCore» (Red y notas) reescrito en lenguaje sencillo: qué es
+  la red, las piezas (WIO, RAK, room server, sensor), cómo viaja un mensaje,
+  canal frente a privado, contactos y un glosario de SNR, RSSI, duty cycle y ruido
+  de fondo. Antes era técnico («adverts», «hop», «CLI») y no definía los términos.
+
+## [1.34.1] - 2026-11-07
+
+### Corregido
+- El punto de estado del chat no decía nada. Ahora explica si hay un WIO listo
+  para enviar o si solo se puede leer (texto y `aria-label`).
+
+## [1.34.0] - 2026-11-07
+
+### Cambiado
+- Seguridad: la CSP del panel ya no permite scripts inline (`script-src 'self'
+  https://unpkg.com`). El código que estaba escrito dentro del HTML pasa a
+  `bridge/panel-cabecera.js`, `panel-equipos.js`, `panel-principal.js` y `login.js`,
+  y los tres botones que tenían `onclick` ahora se enlazan desde JavaScript.
+  Así un script colado en la página ya no se ejecuta.
+- `install-pi.sh` copia esos cuatro archivos a `www/`. **Al actualizar una Pi hay
+  que copiarlos también**, si no el panel se queda sin scripts.
+- Las pruebas de navegador usan la misma CSP que nginx (la leen de
+  `deploy/nginx-meshcore-panel.conf`), así que cualquier script inline falla en la CI.
+
 ## [1.33.3] - 2026-10-25
 
 ### Corregido

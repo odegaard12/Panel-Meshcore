@@ -1,6 +1,6 @@
 // La página de acceso se puede rediseñar, pero estas protecciones y datos no se pueden perder.
 const fs = require('fs');
-const s = fs.readFileSync(__dirname + '/../bridge/login.html', 'utf8');
+const s = fs.readFileSync(__dirname + '/../bridge/login.html', 'utf8') + '\n' + fs.readFileSync(__dirname + '/../bridge/login.js', 'utf8');
 let fallos = 0;
 const exige = (cond, msg) => { if (!cond) { console.error('FALLO:', msg); fallos++; } };
 for (const id of ['f', 'u', 'p', 'b', 'm', 'ojo', 'caps']) exige(new RegExp('id="' + id + '"').test(s), 'falta el elemento #' + id);

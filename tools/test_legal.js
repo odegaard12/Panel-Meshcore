@@ -1,5 +1,5 @@
 const fs = require('fs'), assert = require('assert');
-const html = fs.readFileSync(process.argv[2], 'utf8').replace(/\r\n/g, '\n');
+const html = (fs.readFileSync(process.argv[2], 'utf8') + '\n' + fs.readFileSync(__dirname + '/../bridge/panel-principal.js', 'utf8')).replace(/\r\n/g, '\n');
 const ini = html.indexOf('let esperaCli=null;');
 const fin = html.indexOf("$('#btn-rak-legal').onclick");
 assert(ini > 0 && fin > ini);

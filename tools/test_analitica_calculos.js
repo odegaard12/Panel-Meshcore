@@ -1,7 +1,7 @@
 // Cálculos de Analítica que no se ven a simple vista: contadores del repetidor que dan la vuelta o se
 // reinician, picos de ruido y tramos con huecos. Se extraen de dashboard.html tal cual están.
 const fs = require('fs');
-const src = fs.readFileSync(__dirname + '/../dashboard.html', 'utf8');
+const src = fs.readFileSync(__dirname + '/../dashboard.html', 'utf8') + '\n' + fs.readFileSync(__dirname + '/../bridge/panel-principal.js', 'utf8');
 function extrae(nombre) {
   const i = src.indexOf('function ' + nombre + '(');
   if (i < 0) throw new Error('no encuentro la función ' + nombre);
