@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.4';
+const PANEL_VERSION='1.34.5';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1455,7 +1455,7 @@ function abrirBorrado(todo){
     saveChatLog(loadChatLog().filter(a.resto));
     if(a.conv) convSel=null;
     rehacerChat();
-    if(a.conv&&typeof elegirCanal==='function') elegirCanal('all');
+    if(a.conv&&typeof elegirCanal==='function') elegirCanal('0');
   };
   dlg.showModal();
 }
@@ -2537,7 +2537,7 @@ $('#chatBox').addEventListener('click',e=>{
 // Barra lateral del chat: canales arriba, conversaciones privadas debajo y el
 // resto de contactos solo al buscar. Lo elegido filtra el chat y es el destino.
 var convSel=null;            // nombre del contacto cuya conversación se ve
-var canalSel='all';          // 'all' | '0' | '1' | '2' cuando no hay conversación
+var canalSel='0';            // '0' | '1' | '2' cuando no hay conversación (Public por defecto)
 function ultimosPrivados(){
   const ultimo=new Map();
   for(const e of loadChatLog()){
@@ -2557,8 +2557,8 @@ function pintarContactos(){
   let h='';
   if(!q){
     h+='<div class="ccSec">Canales</div>';
-    for(const [v,t] of [['all','Todo'],['0','Public'],['1','Canal 1'],['2','Canal 2']])
-      h+=item('data-canal="'+v+'"',!convSel&&canalSel===v,t,v==='all'?'todos los mensajes':'',null);
+    for(const [v,t] of [['0','Public'],['1','Canal 1'],['2','Canal 2']])
+      h+=item('data-canal="'+v+'"',!convSel&&canalSel===v,t,'',null);
     const convs=[...ultimo.entries()].sort((x,y)=>(y[1].at||0)-(x[1].at||0));
     h+='<div class="ccSec">Privados</div>';
     h+=convs.length?convs.map(([n,u])=>item('data-conv="'+esc(n)+'"',convSel===n,n,(u.cls==='out'?'Tú: ':'')+String(u.text).slice(0,42),u.at?hora(u.at):null)).join('')

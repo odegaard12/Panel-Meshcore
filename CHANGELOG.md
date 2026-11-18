@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.5] - 2026-11-18
+
+### Cambiado
+- Chat: se quita la entrada «Todo» de la lista de canales y del selector de
+  móvil. El chat abre en «Public» y los otros canales (y los privados) se eligen
+  aparte. «Borrar canal» borra el canal elegido; para borrar todo el chat sigue
+  estando Gestión → Datos → «Borrar el chat…».
+
 ## [1.34.4] - 2026-11-13
 
 ### Corregido
