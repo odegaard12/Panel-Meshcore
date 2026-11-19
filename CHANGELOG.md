@@ -3,6 +3,15 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.6] - 2026-11-19
+
+### Corregido
+- Chat: los mensajes salían siempre por el mismo WIO aunque estuviera elegido
+  el otro. Había dos versiones de la función que decide el WIO y mandaba la
+  peor (solo miraba un desplegable oculto). Ahora es automático: envía por el
+  WIO que oyó el último mensaje y, si no, por el que esté conectado. La nota
+  del chat dice por cuál va a salir.
+
 ## [1.34.5] - 2026-11-18
 
 ### Cambiado

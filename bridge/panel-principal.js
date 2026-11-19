@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.5';
+const PANEL_VERSION='1.34.6';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2474,6 +2474,7 @@ async function pullMessages(node){
     }
     if(seenMsgs.has(key)) continue;
     seenMsgs.add(key);
+    const wi=wNodes.indexOf(node); if(wi>0) window._chatUltimoWio=wi;
     const when=new Date(m.ts*1000).toLocaleString();
     const via=node.info?node.info.name:'nodo';
     const snr=(m.snr!=null)?(' · SNR '+m.snr+' dB'):'';
@@ -3103,7 +3104,7 @@ function updateListening(){
     return;
   }
   note.textContent='Escuchando en: '+ns.map(n=>n.info?n.info.name:'nodo').join(', ')+
-                   ' · máx. 130 caracteres · se envía por el nodo del desplegable';
+                   ' · máx. 130 caracteres · envía por '+(()=>{const n=activeChatNode();return n&&n.info?n.info.name:'—';})()+' (el último que oyó)';
 }
 setInterval(updateListening,3000);
 

@@ -567,10 +567,6 @@
   window.connectedNodes = function(){
     return [1,2].map(i=>nodes[i]).filter(n=>n&&n.device&&n.device.gatt.connected);
   };
-  window.activeChatNode = function(){
-    const idx=+$('#chatNode').value; const n=nodes[idx];
-    return n&&n.device&&n.device.gatt.connected?n:null;
-  };
 
   window.wioExportKey = async function(idx){
     const n=nodes[idx];
