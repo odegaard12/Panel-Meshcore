@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.10] - 2026-11-19
+
+### Seguridad
+- CSP: se quitan `fonts.googleapis.com` y `fonts.gstatic.com`, que el panel no
+  usa (no carga ninguna fuente externa). Menos orígenes permitidos.
+
 ## [1.34.9] - 2026-11-19
 
 ### Mejorado
