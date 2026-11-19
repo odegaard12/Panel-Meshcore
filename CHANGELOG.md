@@ -3,6 +3,13 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.7] - 2026-11-19
+
+### Corregido
+- Exportar la clave de un WIO: los fallos salían como ventana `alert()` (que
+  se queda tapada en el móvil); ahora usan el aviso sobre el mapa, como el
+  resto del panel. Se borra la copia muerta de la función en `panel-principal.js`.
+
 ## [1.34.6] - 2026-11-19
 
 ### Corregido

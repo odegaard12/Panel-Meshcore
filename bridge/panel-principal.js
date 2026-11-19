@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.6';
+const PANEL_VERSION='1.34.7';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2870,23 +2870,7 @@ $('#chatSend').onclick=async()=>{
 $('#chatInput').onkeydown=e=>{ if(e.key==='Enter') $('#chatSend').click(); };
 
 
-// Exportar clave privada (EXPORT_PRIVATE_KEY = 0x17)
-async function wioExportKey(idx){
-  const n=wNodes[idx];
-  if(!n||!n.device||!n.device.gatt.connected){ avisoMapa('WIO'+idx+' no está conectado: conéctalo para exportar su clave.','var(--warn)'); return; }
-  try{
-    const r=await n._send([0x17]);
-    if(r.type!==14){ avisoMapa('El WIO ha respondido algo inesperado (tipo '+r.type+'): no se ha exportado la clave.','var(--warn)'); return; }
-    const key=r.bytes.slice(1);
-    const hex=Array.from(key).map(x=>x.toString(16).padStart(2,'0')).join('');
-    const fn='WIO'+idx+'_PRIVATE_KEY_'+new Date().toISOString().slice(0,10)+'.txt';
-    const blob=new Blob([hex], {type:'text/plain'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=fn;a.click();
-    avisoMapa('Clave exportada a '+fn+'. Guárdala en un sitio seguro para importarla en ZephCore.');
-  }catch(e){ avisoMapa('No se pudo exportar la clave: '+e.message,'var(--warn)'); }
-}
+// wioExportKey vive en meshcore-ble-gateway.js (se carga después).
 // Barra de estado del enlace: antes solo se veia entrando en cada tarjeta.
 // Ademas avisa si el puente se cae del todo (no solo si falla un comando
 // suelto) y recuerda exportar la clave si nunca se hizo o hace >30 dias.
