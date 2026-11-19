@@ -3,6 +3,21 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.35.0] - 2026-11-20
+
+### Mejorado
+- Mapa a pantalla completa en el móvil: al entrar en la pestaña Mapa el panel
+  inferior baja solo al mínimo y el mapa se ve entero; al pasar a otra pestaña
+  vuelve a su altura.
+- El Chat tiene ahora la misma barra de arrastre: tres alturas (solo título,
+  media y alta) para ver el mapa de fondo cuando quieras. A altura mínima
+  solo se ve el título y los botones.
+
+### Corregido
+- «Ampliar» el chat en el móvil salía descentrado y cortado, con la barra de
+  navegación pisando el título. Ahora ocupa toda la pantalla y deja sitio a la
+  barra y a la muesca.
+
 ## [1.34.11] - 2026-11-20
 
 ### Corregido

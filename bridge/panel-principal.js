@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.11';
+const PANEL_VERSION='1.35.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2689,22 +2689,42 @@ if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostn
 
 // (1.21) Hoja arrastrable en el teléfono, ayuda corta y Red y notas plegada.
 (function(){
-  // 1. Hoja del Panel en el teléfono: barra para arrastrar, se queda en 3 alturas
-  const wrap=$('#tab-equipos .devWrap');
-  if(wrap){
+  // 1. Hojas del teléfono (Panel y Chat): barra para arrastrar, se quedan en varias alturas.
+  //    La mínima deja casi todo el mapa a la vista; pulsar la barra va rotando entre alturas.
+  const hoja=(wrap,alturas,i0,soloTitulo)=>{
+    if(!wrap) return null;
     const asa=document.createElement('div'); asa.className='sheetAsa'; asa.title='Arrastra o pulsa: más mapa o más panel';
+    asa.setAttribute('role','button'); asa.setAttribute('aria-label','Subir o bajar el panel para ver más mapa');
     wrap.prepend(asa);
-    const alturas=[.13,.28,.62,.86]; let i=2;  // mínima (solo fichas), baja, media, alta
-    const poner=k=>{ i=Math.max(0,Math.min(alturas.length-1,k)); wrap.style.height=wrap.style.maxHeight=(alturas[i]*100)+'%'; setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },300); };
+    let i=i0;
+    const fija=v=>{ wrap.style.setProperty('height',v,'important'); wrap.style.setProperty('max-height',v,'important'); };
+    const poner=k=>{ if(innerWidth>860) return; i=Math.max(0,Math.min(alturas.length-1,k)); fija((alturas[i]*100)+'%'); if(soloTitulo) wrap.classList.toggle('hoja-min',i===0); setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },300); };
     let y0=null, hIni=0;
     asa.addEventListener('pointerdown',e=>{ if(innerWidth>860) return; y0=e.clientY; hIni=wrap.getBoundingClientRect().height; asa.setPointerCapture(e.pointerId); wrap.style.transition='none'; });
-    asa.addEventListener('pointermove',e=>{ if(y0==null) return; const H=wrap.parentElement.getBoundingClientRect().height; const nh=Math.max(H*.12,Math.min(H*.86,hIni+(y0-e.clientY))); wrap.style.height=wrap.style.maxHeight=nh+'px'; });
+    asa.addEventListener('pointermove',e=>{ if(y0==null) return; const H=wrap.parentElement.getBoundingClientRect().height; fija(Math.max(H*alturas[0],Math.min(H*alturas[alturas.length-1],hIni+(y0-e.clientY)))+'px'); });
     asa.addEventListener('pointerup',e=>{
       if(y0==null) return;
       const H=wrap.parentElement.getBoundingClientRect().height, fr=wrap.getBoundingClientRect().height/H, movido=Math.abs(e.clientY-y0)>6;
       wrap.style.transition=''; y0=null;
       if(!movido) return poner((i+1)%alturas.length);
       let mejor=0; alturas.forEach((a,k)=>{ if(Math.abs(a-fr)<Math.abs(alturas[mejor]-fr)) mejor=k; }); poner(mejor);
+    });
+    return {poner,get i(){return i;}};
+  };
+  const hojaPanel=hoja($('#tab-equipos .devWrap'),[.13,.28,.62,.86],2);
+  const hojaChat=hoja($('#tab-chat .chatcard'),[.16,.45,.78],2,true);
+  // «Ampliar» (pantalla completa del chat) manda sobre la altura de la hoja.
+  if(hojaChat) $('#btn-chat-full').addEventListener('click',()=>{
+    const c=$('#card-chat');
+    if(c.classList.contains('chat-full')){ c.style.removeProperty('height'); c.style.removeProperty('max-height'); } else hojaChat.poner(hojaChat.i);
+  });
+  // En la pestaña Mapa el panel baja solo al mínimo (mapa a pantalla completa); en las otras vuelve a su altura.
+  if(hojaPanel){
+    let previa=2;
+    document.addEventListener('click',e=>{
+      const t=e.target.closest('.devTab'); if(!t||innerWidth>860) return;
+      if(t.dataset.dev==='mapa'){ if(hojaPanel.i>0) previa=hojaPanel.i; hojaPanel.poner(0); }
+      else if(hojaPanel.i===0) hojaPanel.poner(previa);
     });
   }
   // 2. «¿Qué significa cada dato?»: una línea por dato con su resumen; el detalle al pulsar
