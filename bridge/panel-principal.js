@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.7';
+const PANEL_VERSION='1.34.8';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2433,10 +2433,10 @@ $('#chatInput').addEventListener('input',()=>{
   }
 })();
 function activeChatNode(){
-  // Envía por el WIO elegido si está conectado; si no, por el que lo esté.
+  // Automático: por el WIO que oyó el último mensaje; si no, por el que esté listo.
   const ok=i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected&&wNodes[i]._hydrated;
-  const sel=+$('#chatNode').value;
-  const idx=ok(sel)?sel:ok(2)?2:ok(1)?1:0;
+  const ult=window._chatUltimoWio;
+  const idx=ok(ult)?ult:ok(2)?2:ok(1)?1:0;
   return idx?wNodes[idx]:null;
 }
 function refreshChatUI(){

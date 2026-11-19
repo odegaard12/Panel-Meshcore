@@ -3,6 +3,17 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.8] - 2026-11-19
+
+### Corregido
+- Chat: la elección automática del WIO de envío (1.34.6) no estaba aplicada en
+  el código del panel; seguía usando el desplegable oculto. Ahora sí: envía por
+  el WIO que oyó el último mensaje.
+
+### Tests
+- `tools/test_chat_envio.js` prueba la función real con 7 combinaciones de WIO
+  conectados y se añade a `tools/run-tests.sh` (antes no corría en la CI).
+
 ## [1.34.7] - 2026-11-19
 
 ### Corregido
