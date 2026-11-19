@@ -664,6 +664,9 @@ header nav.top a{border-radius:999px!important;padding:8px 14px!important;color:
 .wrap{padding-top:28px}
 #tab-stats.on,#tab-red.on{padding-top:64px}
 #tab-equipos.on,#tab-chat.on{height:100dvh!important}
+/* Mapa y chat ocupan la pantalla entera: la página no se desliza (antes medía 96 px más y el mapa se quedaba a medias). */
+html:has(#tab-equipos.on),html:has(#tab-chat.on){overflow:hidden;overscroll-behavior:none}
+body:has(#tab-equipos.on),body:has(#tab-chat.on){overflow:hidden;height:100dvh;overscroll-behavior:none}
 #tab-equipos .devWrap,#tab-equipos .equiposWrap .grid{top:12px!important}
 #tab-chat .chatcard{top:72px!important}
 #tab-equipos>#map,#tab-chat>#map{position:absolute!important;inset:0!important;height:auto!important;z-index:0}
@@ -1168,7 +1171,6 @@ footer{color:var(--dim2)}
         </div>
         <div class="chatTools">
           <select id="chatFilter" title="Qué mensajes ver" aria-label="Qué mensajes ver">
-            <option value="all">Todo</option>
             <option value="chan0">Canal Public</option>
             <option value="chan1">Canal 1</option>
             <option value="chan2">Canal 2</option>

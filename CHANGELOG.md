@@ -3,6 +3,73 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.11] - 2026-11-20
+
+### Corregido
+- Mapa y chat a pantalla completa de verdad: en estas pestañas la página medía
+  96 px más que la pantalla, así que al deslizar hacia abajo se movía todo y el
+  mapa se quedaba a medias. Ahora la página no se desliza en Panel/Mapa ni en
+  Chat (móvil, iPad y PC); el contenido largo sigue desplazándose por dentro.
+
+### Tests
+- `test_e2e.py` comprueba que Panel y Chat no se desplazan en vertical (falla
+  con el CSS anterior). `test_iphone.py` hace lo mismo con la muesca simulada.
+
+## [1.34.10] - 2026-11-19
+
+### Seguridad
+- CSP: se quitan `fonts.googleapis.com` y `fonts.gstatic.com`, que el panel no
+  usa (no carga ninguna fuente externa). Menos orígenes permitidos.
+
+## [1.34.9] - 2026-11-19
+
+### Mejorado
+- nginx: se comprimen también los JS, CSS y SVG (`gzip_types` en el `server`
+  del panel). Con el gzip global solo salía comprimido el HTML y los scripts
+  (unos 340 KB) viajaban enteros: más lento en el móvil con poca cobertura.
+
+### Auditoría 19/11/2026 (sin hallazgos que corregir)
+- Sin secretos ni datos personales en el repo; el gateway da 401 sin token y
+  el puerto 8765 solo escucha en local; cabeceras de seguridad y CSP correctas;
+  Leaflet con SRI; el service worker no cachea (no hay JS viejo).
+- Quedan sin uso en la CSP `fonts.googleapis.com` y `fonts.gstatic.com`.
+- Se quitan tres imports que sobraban.
+
+## [1.34.8] - 2026-11-19
+
+### Corregido
+- Chat: la elección automática del WIO de envío (1.34.6) no estaba aplicada en
+  el código del panel; seguía usando el desplegable oculto. Ahora sí: envía por
+  el WIO que oyó el último mensaje.
+
+### Tests
+- `tools/test_chat_envio.js` prueba la función real con 7 combinaciones de WIO
+  conectados y se añade a `tools/run-tests.sh` (antes no corría en la CI).
+
+## [1.34.7] - 2026-11-19
+
+### Corregido
+- Exportar la clave de un WIO: los fallos salían como ventana `alert()` (que
+  se queda tapada en el móvil); ahora usan el aviso sobre el mapa, como el
+  resto del panel. Se borra la copia muerta de la función en `panel-principal.js`.
+
+## [1.34.6] - 2026-11-19
+
+### Corregido
+- Chat: los mensajes salían siempre por el mismo WIO aunque estuviera elegido
+  el otro. Había dos versiones de la función que decide el WIO y mandaba la
+  peor (solo miraba un desplegable oculto). Ahora es automático: envía por el
+  WIO que oyó el último mensaje y, si no, por el que esté conectado. La nota
+  del chat dice por cuál va a salir.
+
+## [1.34.5] - 2026-11-18
+
+### Cambiado
+- Chat: se quita la entrada «Todo» de la lista de canales y del selector de
+  móvil. El chat abre en «Public» y los otros canales (y los privados) se eligen
+  aparte. «Borrar canal» borra el canal elegido; para borrar todo el chat sigue
+  estando Gestión → Datos → «Borrar el chat…».
+
 ## [1.34.4] - 2026-11-13
 
 ### Corregido

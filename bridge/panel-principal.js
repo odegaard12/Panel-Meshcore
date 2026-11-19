@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.4';
+const PANEL_VERSION='1.34.11';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -1455,7 +1455,7 @@ function abrirBorrado(todo){
     saveChatLog(loadChatLog().filter(a.resto));
     if(a.conv) convSel=null;
     rehacerChat();
-    if(a.conv&&typeof elegirCanal==='function') elegirCanal('all');
+    if(a.conv&&typeof elegirCanal==='function') elegirCanal('0');
   };
   dlg.showModal();
 }
@@ -2433,10 +2433,10 @@ $('#chatInput').addEventListener('input',()=>{
   }
 })();
 function activeChatNode(){
-  // Envía por el WIO elegido si está conectado; si no, por el que lo esté.
+  // Automático: por el WIO que oyó el último mensaje; si no, por el que esté listo.
   const ok=i=>wNodes[i]&&wNodes[i].device&&wNodes[i].device.gatt.connected&&wNodes[i]._hydrated;
-  const sel=+$('#chatNode').value;
-  const idx=ok(sel)?sel:ok(2)?2:ok(1)?1:0;
+  const ult=window._chatUltimoWio;
+  const idx=ok(ult)?ult:ok(2)?2:ok(1)?1:0;
   return idx?wNodes[idx]:null;
 }
 function refreshChatUI(){
@@ -2474,6 +2474,7 @@ async function pullMessages(node){
     }
     if(seenMsgs.has(key)) continue;
     seenMsgs.add(key);
+    const wi=wNodes.indexOf(node); if(wi>0) window._chatUltimoWio=wi;
     const when=new Date(m.ts*1000).toLocaleString();
     const via=node.info?node.info.name:'nodo';
     const snr=(m.snr!=null)?(' · SNR '+m.snr+' dB'):'';
@@ -2537,7 +2538,7 @@ $('#chatBox').addEventListener('click',e=>{
 // Barra lateral del chat: canales arriba, conversaciones privadas debajo y el
 // resto de contactos solo al buscar. Lo elegido filtra el chat y es el destino.
 var convSel=null;            // nombre del contacto cuya conversación se ve
-var canalSel='all';          // 'all' | '0' | '1' | '2' cuando no hay conversación
+var canalSel='0';            // '0' | '1' | '2' cuando no hay conversación (Public por defecto)
 function ultimosPrivados(){
   const ultimo=new Map();
   for(const e of loadChatLog()){
@@ -2557,8 +2558,8 @@ function pintarContactos(){
   let h='';
   if(!q){
     h+='<div class="ccSec">Canales</div>';
-    for(const [v,t] of [['all','Todo'],['0','Public'],['1','Canal 1'],['2','Canal 2']])
-      h+=item('data-canal="'+v+'"',!convSel&&canalSel===v,t,v==='all'?'todos los mensajes':'',null);
+    for(const [v,t] of [['0','Public'],['1','Canal 1'],['2','Canal 2']])
+      h+=item('data-canal="'+v+'"',!convSel&&canalSel===v,t,'',null);
     const convs=[...ultimo.entries()].sort((x,y)=>(y[1].at||0)-(x[1].at||0));
     h+='<div class="ccSec">Privados</div>';
     h+=convs.length?convs.map(([n,u])=>item('data-conv="'+esc(n)+'"',convSel===n,n,(u.cls==='out'?'Tú: ':'')+String(u.text).slice(0,42),u.at?hora(u.at):null)).join('')
@@ -2869,23 +2870,7 @@ $('#chatSend').onclick=async()=>{
 $('#chatInput').onkeydown=e=>{ if(e.key==='Enter') $('#chatSend').click(); };
 
 
-// Exportar clave privada (EXPORT_PRIVATE_KEY = 0x17)
-async function wioExportKey(idx){
-  const n=wNodes[idx];
-  if(!n||!n.device||!n.device.gatt.connected){ avisoMapa('WIO'+idx+' no está conectado: conéctalo para exportar su clave.','var(--warn)'); return; }
-  try{
-    const r=await n._send([0x17]);
-    if(r.type!==14){ avisoMapa('El WIO ha respondido algo inesperado (tipo '+r.type+'): no se ha exportado la clave.','var(--warn)'); return; }
-    const key=r.bytes.slice(1);
-    const hex=Array.from(key).map(x=>x.toString(16).padStart(2,'0')).join('');
-    const fn='WIO'+idx+'_PRIVATE_KEY_'+new Date().toISOString().slice(0,10)+'.txt';
-    const blob=new Blob([hex], {type:'text/plain'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=fn;a.click();
-    avisoMapa('Clave exportada a '+fn+'. Guárdala en un sitio seguro para importarla en ZephCore.');
-  }catch(e){ avisoMapa('No se pudo exportar la clave: '+e.message,'var(--warn)'); }
-}
+// wioExportKey vive en meshcore-ble-gateway.js (se carga después).
 // Barra de estado del enlace: antes solo se veia entrando en cada tarjeta.
 // Ademas avisa si el puente se cae del todo (no solo si falla un comando
 // suelto) y recuerda exportar la clave si nunca se hizo o hace >30 dias.
@@ -3103,7 +3088,7 @@ function updateListening(){
     return;
   }
   note.textContent='Escuchando en: '+ns.map(n=>n.info?n.info.name:'nodo').join(', ')+
-                   ' · máx. 130 caracteres · se envía por el nodo del desplegable';
+                   ' · máx. 130 caracteres · envía por '+(()=>{const n=activeChatNode();return n&&n.info?n.info.name:'—';})()+' (el último que oyó)';
 }
 setInterval(updateListening,3000);
 

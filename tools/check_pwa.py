@@ -2,7 +2,6 @@
 import json
 import os
 import struct
-import sys
 
 raiz = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'pwa')
 m = json.load(open(os.path.join(raiz, 'manifest.webmanifest'), encoding='utf-8'))

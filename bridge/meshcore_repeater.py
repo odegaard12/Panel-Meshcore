@@ -35,7 +35,6 @@ No todas las tramas quieren la misma longitud, y equivocarse da errores mudos:
 """
 from __future__ import annotations
 
-import os
 import random
 import time
 from dataclasses import dataclass

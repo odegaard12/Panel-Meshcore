@@ -567,21 +567,19 @@
   window.connectedNodes = function(){
     return [1,2].map(i=>nodes[i]).filter(n=>n&&n.device&&n.device.gatt.connected);
   };
-  window.activeChatNode = function(){
-    const idx=+$('#chatNode').value; const n=nodes[idx];
-    return n&&n.device&&n.device.gatt.connected?n:null;
-  };
 
+  const aviso=(t,ok)=>window.avisoMapa?avisoMapa(t,ok?undefined:'var(--warn)'):console.warn(t);
   window.wioExportKey = async function(idx){
     const n=nodes[idx];
-    if(!n||!n.device.gatt.connected){alert('WIO'+idx+' no conectado');return;}
+    if(!n||!n.device.gatt.connected){aviso('WIO'+idx+' no está conectado: conéctalo para exportar su clave.');return;}
     try{
       const r=await n._send([0x17]);
-      if(r[0]!==14){alert('Error: respuesta tipo '+r[0]);return;}
+      if(r[0]!==14){aviso('El WIO ha respondido algo inesperado (tipo '+r[0]+'): no se ha exportado la clave.');return;}
       const hex=Array.from(r.slice(1)).map(x=>x.toString(16).padStart(2,'0')).join('');
       const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([hex],{type:'text/plain'}));a.download='WIO'+idx+'_PRIVATE_KEY_'+new Date().toISOString().slice(0,10)+'.txt';a.click();
       try{ localStorage.setItem('meshcore-key-export-'+idx, String(Date.now())); }catch(e){}
-    }catch(e){alert('Error: '+e.message);}
+      aviso('Clave de WIO'+idx+' exportada. Guárdala en un sitio seguro.',1);
+    }catch(e){aviso('No se pudo exportar la clave: '+e.message);}
   };
   window.getGatewaySnapshot = ()=>api('/status');
 

@@ -1,10 +1,20 @@
 name: tests
-on: [push, pull_request]
+# Push solo a main, más los PR (las etiquetas de versión no lo necesitan: ya pasaron en main).
+# Antes cada rama de Dependabot corría todo dos veces, por el push y por el PR.
+on:
+  push:
+    branches: [main]
+  pull_request:
 permissions:
   contents: read
+# Si llega un push nuevo a la misma rama, la ejecución anterior ya no sirve.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -12,7 +22,7 @@ jobs:
           python-version: '3.12'
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '20'
+          node-version: '22'
       # openssl y htpasswd (apache2-utils) los usan los tests de login bcrypt.
       - run: sudo apt-get update && sudo apt-get install -y openssl apache2-utils
       # requirements.txt solo trae aiohttp y bleak; bleak va en Linux y winrt se importa
@@ -31,7 +41,7 @@ jobs:
           python-version: '3.12'
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '20'
+          node-version: '22'
       - run: pip install playwright==1.63.0
       - run: python -m playwright install --with-deps chromium
       - run: npm ci --prefix tools/e2e
