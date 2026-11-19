@@ -158,6 +158,13 @@ with sync_playwright() as p:
             if pg.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth") > 1:
                 malos.append(t)
         ok(not malos, 'sin desborde horizontal a %d px %s' % (ancho, malos))
+        # Mapa y chat son pantalla entera: si la página se desliza, el mapa se queda a medias.
+        sube = []
+        for t in ('equipos', 'chat'):
+            ir(pg, t, 600)
+            if pg.evaluate("document.documentElement.scrollHeight - innerHeight") > 1:
+                sube.append(t)
+        ok(not sube, 'mapa y chat sin desplazamiento vertical a %d px %s' % (ancho, sube))
         pg.context.close()
 
     # ---------------------------------------------------------------- Gestión: flujos

@@ -3,6 +3,18 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.11] - 2026-11-20
+
+### Corregido
+- Mapa y chat a pantalla completa de verdad: en estas pestañas la página medía
+  96 px más que la pantalla, así que al deslizar hacia abajo se movía todo y el
+  mapa se quedaba a medias. Ahora la página no se desliza en Panel/Mapa ni en
+  Chat (móvil, iPad y PC); el contenido largo sigue desplazándose por dentro.
+
+### Tests
+- `test_e2e.py` comprueba que Panel y Chat no se desplazan en vertical (falla
+  con el CSS anterior). `test_iphone.py` hace lo mismo con la muesca simulada.
+
 ## [1.34.10] - 2026-11-19
 
 ### Seguridad

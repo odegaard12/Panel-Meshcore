@@ -53,7 +53,8 @@ with sync_playwright() as p:
             const h = document.querySelector('header').getBoundingClientRect();
             const el = t && document.querySelector(t);
             return {top: h.top, bottom: h.bottom, titulo: el ? el.getBoundingClientRect().top : null,
-                    ancho: document.documentElement.scrollWidth, vw: innerWidth};
+                    ancho: document.documentElement.scrollWidth, vw: innerWidth,
+                    alto: document.documentElement.scrollHeight, vh: innerHeight};
         }""", titulo)
         if m['top'] < ARRIBA:
             malos.append('%s: la barra de navegación queda bajo la muesca (top %d < %d)' % (nombre, m['top'], ARRIBA))
