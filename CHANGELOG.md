@@ -3,6 +3,20 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.34.9] - 2026-11-19
+
+### Mejorado
+- nginx: se comprimen también los JS, CSS y SVG (`gzip_types` en el `server`
+  del panel). Con el gzip global solo salía comprimido el HTML y los scripts
+  (unos 340 KB) viajaban enteros: más lento en el móvil con poca cobertura.
+
+### Auditoría 19/11/2026 (sin hallazgos que corregir)
+- Sin secretos ni datos personales en el repo; el gateway da 401 sin token y
+  el puerto 8765 solo escucha en local; cabeceras de seguridad y CSP correctas;
+  Leaflet con SRI; el service worker no cachea (no hay JS viejo).
+- Quedan sin uso en la CSP `fonts.googleapis.com` y `fonts.gstatic.com`.
+- Se quitan tres imports que sobraban.
+
 ## [1.34.8] - 2026-11-19
 
 ### Corregido

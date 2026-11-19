@@ -5,7 +5,7 @@ Lo importante: las tramas se comparan con las que construye la libreria oficial
 meshcore-py, reimplementando su logica byte a byte. Si el formato cambia, esto
 falla en vez de descubrirlo en campo.
 """
-import pathlib, sys, time
+import pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import meshcore_repeater as R
 
