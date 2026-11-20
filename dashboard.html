@@ -831,6 +831,17 @@ body.pastilla-choca #tab-equipos .devWrap,body.pastilla-choca #tab-equipos .equi
 body.pastilla-choca #tab-equipos>#map .leaflet-top.leaflet-left{top:68px}
 .sheetAsa{display:none}
 .chat-full .sheetAsa{display:none!important}
+/* Enlaces con corriente: raya de 12 px de periodo que avanza hacia el repetidor. */
+@keyframes flujo{to{stroke-dashoffset:-12}}
+@keyframes flujoInv{to{stroke-dashoffset:12}}
+.leaflet-control .flujoBtn{display:block;width:34px!important;height:34px!important;margin-top:6px;padding:0!important;border:1px solid #3a4656!important;border-radius:10px!important;background:rgba(13,17,22,.96)!important;color:#c8d2e0!important;font-size:21px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.leaflet-control .flujoBtn[aria-pressed="true"]{background:#3fd67a!important;border-color:#3fd67a!important;color:#06210f!important}
+@media (prefers-reduced-motion:no-preference){
+  body:not(.sin-flujo) .enlace-flujo{animation:flujo 1s linear infinite}
+  body:not(.sin-flujo) .enlace-flujo.inv{animation-name:flujoInv}
+  body.pestana-oculta .enlace-flujo{animation-play-state:paused}
+}
+@media (prefers-reduced-motion:reduce){.flujoBtn{display:none}}
 .hoja-min>*:not(.sheetAsa):not(.chatHead){display:none!important}
 @media (max-width:860px){
   .sheetAsa{display:block;height:22px;flex-shrink:0;cursor:grab;touch-action:none;position:relative}

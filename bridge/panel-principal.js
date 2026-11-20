@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.35.0';
+const PANEL_VERSION='1.36.0';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -159,6 +159,22 @@ function humanAgo(ts){
 // ================= MAP =================
 // Arranca alrededor del repetidor; "Ver todo" enseña la red entera.
 const map=L.map('map',{scrollWheelZoom:true,zoomControl:true}).setView(REPEATER_POS,CFG.mapaZoom);
+// «Corriente» en los enlaces (idea de clarared.es): las rayas avanzan por el enlace, hacia el repetidor.
+// Se puede apagar con el botón del mapa; con «reducir movimiento» del sistema nunca se anima.
+(function(){
+  let on=true; try{ on=localStorage.getItem('mc-flujo')!=='0'; }catch(e){}
+  const aplicar=()=>document.body.classList.toggle('sin-flujo',!on);
+  aplicar();
+  document.addEventListener('visibilitychange',()=>document.body.classList.toggle('pestana-oculta',document.hidden));
+  const Flujo=L.Control.extend({onAdd(){
+    const b=L.DomUtil.create('button','flujoBtn'); b.type='button'; b.textContent='≋';
+    const pon=()=>{ b.setAttribute('aria-pressed',on); const t=on?'Enlaces animados: pulsa para pararlos':'Enlaces quietos: pulsa para animarlos'; b.title=t; b.setAttribute('aria-label',t); };
+    pon(); L.DomEvent.disableClickPropagation(b);
+    b.onclick=()=>{ on=!on; try{ localStorage.setItem('mc-flujo',on?'1':'0'); }catch(e){} aplicar(); pon(); };
+    return b;
+  }});
+  new Flujo({position:'topleft'}).addTo(map);
+})();
 window.map=map;
 // Fondo oscuro por defecto (el claro de OSM deslumbraba junto al panel), con
 // selector para calles, satelite o relieve; se recuerda la eleccion.
@@ -285,7 +301,7 @@ function drawLink(idx,pos,online){
   if(links[idx]) map.removeLayer(links[idx]);
   const d=distKm(pos,REPEATER_POS);
   links[idx]=L.polyline([pos,REPEATER_POS],{
-    color: online?'#3fd67a':'#4a5666', weight:2, dashArray:'6,6', opacity:.8
+    color: online?'#3fd67a':'#4a5666', weight:2, dashArray:'6,6', opacity:.8, className: online?'enlace-flujo':''
   }).addTo(layerWio).bindTooltip(d.toFixed(2)+' km al repetidor',{permanent:false});
 }
 [1,2].forEach(idx=>{
@@ -437,7 +453,7 @@ function plotNeighborsInto(idx,contacts,maxKm){
     // Interconexion: a 0 saltos es contacto de radio directo con tu repetidor,
     // asi que trazamos el enlace real, no solo el pin.
     if(c.hops===0){
-      L.polyline([REPEATER_POS,[c.lat,c.lon]],{color:'#3fd67a',weight:1.5,opacity:.55,dashArray:'2,5'})
+      L.polyline([REPEATER_POS,[c.lat,c.lon]],{color:'#3fd67a',weight:1.5,opacity:.55,dashArray:'4,8',className:'enlace-flujo inv'})
         .addTo(layerNeighbors).bindTooltip('Enlace directo · '+esc(c.name||'nodo'),{permanent:false});
     }
     const popup=

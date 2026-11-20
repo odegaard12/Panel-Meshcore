@@ -171,6 +171,7 @@ with sync_playwright() as p:
             pg.wait_for_timeout(600)
             fr = pg.evaluate("document.querySelector('#tab-equipos .devWrap').getBoundingClientRect().height / innerHeight")
             ok(fr < 0.2, 'en la pestaña Mapa el panel baja y deja el mapa a pantalla completa (%.2f del alto)' % fr)
+            ok(pg.evaluate("!!document.querySelector('.flujoBtn[aria-label]')"), 'el mapa tiene el botón de enlaces animados, con nombre')
         pg.context.close()
 
     # ---------------------------------------------------------------- Gestión: flujos
