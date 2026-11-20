@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.36.1] - 2026-11-20
+
+### Documentación
+- Capturas del README regeneradas con el panel actual (chat con Public / Canal 1 /
+  Canal 2, botón de enlaces animados en el mapa).
+
 ## [1.36.0] - 2026-11-20
 
 ### Mejorado
