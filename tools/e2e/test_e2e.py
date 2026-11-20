@@ -165,6 +165,13 @@ with sync_playwright() as p:
             if pg.evaluate("document.documentElement.scrollHeight - innerHeight") > 1:
                 sube.append(t)
         ok(not sube, 'mapa y chat sin desplazamiento vertical a %d px %s' % (ancho, sube))
+        if ancho == 390:
+            ir(pg, 'equipos', 400)
+            pg.evaluate("document.querySelector('.devTab[data-dev=mapa]').click()")
+            pg.wait_for_timeout(600)
+            fr = pg.evaluate("document.querySelector('#tab-equipos .devWrap').getBoundingClientRect().height / innerHeight")
+            ok(fr < 0.2, 'en la pestaña Mapa el panel baja y deja el mapa a pantalla completa (%.2f del alto)' % fr)
+            ok(pg.evaluate("!!document.querySelector('.flujoBtn[aria-label]')"), 'el mapa tiene el botón de enlaces animados, con nombre')
         pg.context.close()
 
     # ---------------------------------------------------------------- Gestión: flujos

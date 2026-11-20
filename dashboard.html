@@ -830,6 +830,19 @@ html:not(.cargando) #splash{opacity:0;pointer-events:none}
 body.pastilla-choca #tab-equipos .devWrap,body.pastilla-choca #tab-equipos .equiposWrap .grid{top:68px!important}
 body.pastilla-choca #tab-equipos>#map .leaflet-top.leaflet-left{top:68px}
 .sheetAsa{display:none}
+.chat-full .sheetAsa{display:none!important}
+/* Enlaces con corriente: raya de 12 px de periodo que avanza hacia el repetidor. */
+@keyframes flujo{to{stroke-dashoffset:-12}}
+@keyframes flujoInv{to{stroke-dashoffset:12}}
+.leaflet-control .flujoBtn{display:block;width:34px!important;height:34px!important;margin-top:6px;padding:0!important;border:1px solid #3a4656!important;border-radius:10px!important;background:rgba(13,17,22,.96)!important;color:#c8d2e0!important;font-size:21px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.leaflet-control .flujoBtn[aria-pressed="true"]{background:#3fd67a!important;border-color:#3fd67a!important;color:#06210f!important}
+@media (prefers-reduced-motion:no-preference){
+  body:not(.sin-flujo) .enlace-flujo{animation:flujo 1s linear infinite}
+  body:not(.sin-flujo) .enlace-flujo.inv{animation-name:flujoInv}
+  body.pestana-oculta .enlace-flujo{animation-play-state:paused}
+}
+@media (prefers-reduced-motion:reduce){.flujoBtn{display:none}}
+.hoja-min>*:not(.sheetAsa):not(.chatHead){display:none!important}
 @media (max-width:860px){
   .sheetAsa{display:block;height:22px;flex-shrink:0;cursor:grab;touch-action:none;position:relative}
   .sheetAsa::before{content:'';position:absolute;left:50%;top:8px;width:44px;height:5px;border-radius:3px;background:#3a4452;transform:translateX(-50%)}
@@ -918,6 +931,7 @@ nav.tabs button .badge2{margin-left:6px}
 @media (max-width:860px){
   #tab-chat.on{height:calc(100dvh - 96px)}
   #tab-chat .chatcard{top:auto;left:0;right:0;bottom:0;width:auto!important;height:78%!important;background:var(--panel,#0d1116)!important;border-radius:20px 20px 0 0!important}
+  #tab-chat .chatcard.chat-full{top:0!important;left:0!important;right:0;bottom:0;width:100vw!important;height:100dvh!important;max-height:none!important;border-radius:0!important;padding-top:calc(66px + env(safe-area-inset-top))!important}
   nav.tabs{border-radius:999px!important;margin:4px 0 8px!important;width:auto!important}
   nav.tabs button{height:34px!important;padding:0 12px!important;flex:0 0 auto!important}
 }

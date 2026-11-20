@@ -3,6 +3,38 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.36.1] - 2026-11-20
+
+### Documentación
+- Capturas del README regeneradas con el panel actual (chat con Public / Canal 1 /
+  Canal 2, botón de enlaces animados en el mapa).
+
+## [1.36.0] - 2026-11-20
+
+### Mejorado
+- Mapa: los enlaces con «corriente», idea tomada de clarared.es (que mueve las
+  rayas de sus líneas eléctricas). El enlace de cada WIO conectado y los
+  enlaces directos con tu repetidor llevan ahora rayas que avanzan hacia el
+  repetidor. Es solo CSS (`stroke-dashoffset`), sin JavaScript por fotograma.
+- Botón `≋` bajo el zoom del mapa para pararlas o ponerlas (se recuerda).
+  Con «reducir movimiento» del sistema no se animan nunca y el botón se oculta;
+  con la pestaña del navegador oculta se pausan.
+
+## [1.35.0] - 2026-11-20
+
+### Mejorado
+- Mapa a pantalla completa en el móvil: al entrar en la pestaña Mapa el panel
+  inferior baja solo al mínimo y el mapa se ve entero; al pasar a otra pestaña
+  vuelve a su altura.
+- El Chat tiene ahora la misma barra de arrastre: tres alturas (solo título,
+  media y alta) para ver el mapa de fondo cuando quieras. A altura mínima
+  solo se ve el título y los botones.
+
+### Corregido
+- «Ampliar» el chat en el móvil salía descentrado y cortado, con la barra de
+  navegación pisando el título. Ahora ocupa toda la pantalla y deja sitio a la
+  barra y a la muesca.
+
 ## [1.34.11] - 2026-11-20
 
 ### Corregido

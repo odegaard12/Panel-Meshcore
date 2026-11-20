@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.34.11';
+const PANEL_VERSION='1.36.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -159,6 +159,22 @@ function humanAgo(ts){
 // ================= MAP =================
 // Arranca alrededor del repetidor; "Ver todo" enseña la red entera.
 const map=L.map('map',{scrollWheelZoom:true,zoomControl:true}).setView(REPEATER_POS,CFG.mapaZoom);
+// «Corriente» en los enlaces (idea de clarared.es): las rayas avanzan por el enlace, hacia el repetidor.
+// Se puede apagar con el botón del mapa; con «reducir movimiento» del sistema nunca se anima.
+(function(){
+  let on=true; try{ on=localStorage.getItem('mc-flujo')!=='0'; }catch(e){}
+  const aplicar=()=>document.body.classList.toggle('sin-flujo',!on);
+  aplicar();
+  document.addEventListener('visibilitychange',()=>document.body.classList.toggle('pestana-oculta',document.hidden));
+  const Flujo=L.Control.extend({onAdd(){
+    const b=L.DomUtil.create('button','flujoBtn'); b.type='button'; b.textContent='≋';
+    const pon=()=>{ b.setAttribute('aria-pressed',on); const t=on?'Enlaces animados: pulsa para pararlos':'Enlaces quietos: pulsa para animarlos'; b.title=t; b.setAttribute('aria-label',t); };
+    pon(); L.DomEvent.disableClickPropagation(b);
+    b.onclick=()=>{ on=!on; try{ localStorage.setItem('mc-flujo',on?'1':'0'); }catch(e){} aplicar(); pon(); };
+    return b;
+  }});
+  new Flujo({position:'topleft'}).addTo(map);
+})();
 window.map=map;
 // Fondo oscuro por defecto (el claro de OSM deslumbraba junto al panel), con
 // selector para calles, satelite o relieve; se recuerda la eleccion.
@@ -285,7 +301,7 @@ function drawLink(idx,pos,online){
   if(links[idx]) map.removeLayer(links[idx]);
   const d=distKm(pos,REPEATER_POS);
   links[idx]=L.polyline([pos,REPEATER_POS],{
-    color: online?'#3fd67a':'#4a5666', weight:2, dashArray:'6,6', opacity:.8
+    color: online?'#3fd67a':'#4a5666', weight:2, dashArray:'6,6', opacity:.8, className: online?'enlace-flujo':''
   }).addTo(layerWio).bindTooltip(d.toFixed(2)+' km al repetidor',{permanent:false});
 }
 [1,2].forEach(idx=>{
@@ -437,7 +453,7 @@ function plotNeighborsInto(idx,contacts,maxKm){
     // Interconexion: a 0 saltos es contacto de radio directo con tu repetidor,
     // asi que trazamos el enlace real, no solo el pin.
     if(c.hops===0){
-      L.polyline([REPEATER_POS,[c.lat,c.lon]],{color:'#3fd67a',weight:1.5,opacity:.55,dashArray:'2,5'})
+      L.polyline([REPEATER_POS,[c.lat,c.lon]],{color:'#3fd67a',weight:1.5,opacity:.55,dashArray:'4,8',className:'enlace-flujo inv'})
         .addTo(layerNeighbors).bindTooltip('Enlace directo · '+esc(c.name||'nodo'),{permanent:false});
     }
     const popup=
@@ -2689,22 +2705,42 @@ if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostn
 
 // (1.21) Hoja arrastrable en el teléfono, ayuda corta y Red y notas plegada.
 (function(){
-  // 1. Hoja del Panel en el teléfono: barra para arrastrar, se queda en 3 alturas
-  const wrap=$('#tab-equipos .devWrap');
-  if(wrap){
+  // 1. Hojas del teléfono (Panel y Chat): barra para arrastrar, se quedan en varias alturas.
+  //    La mínima deja casi todo el mapa a la vista; pulsar la barra va rotando entre alturas.
+  const hoja=(wrap,alturas,i0,soloTitulo)=>{
+    if(!wrap) return null;
     const asa=document.createElement('div'); asa.className='sheetAsa'; asa.title='Arrastra o pulsa: más mapa o más panel';
+    asa.setAttribute('role','button'); asa.setAttribute('aria-label','Subir o bajar el panel para ver más mapa');
     wrap.prepend(asa);
-    const alturas=[.13,.28,.62,.86]; let i=2;  // mínima (solo fichas), baja, media, alta
-    const poner=k=>{ i=Math.max(0,Math.min(alturas.length-1,k)); wrap.style.height=wrap.style.maxHeight=(alturas[i]*100)+'%'; setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },300); };
+    let i=i0;
+    const fija=v=>{ wrap.style.setProperty('height',v,'important'); wrap.style.setProperty('max-height',v,'important'); };
+    const poner=k=>{ if(innerWidth>860) return; i=Math.max(0,Math.min(alturas.length-1,k)); fija((alturas[i]*100)+'%'); if(soloTitulo) wrap.classList.toggle('hoja-min',i===0); setTimeout(()=>{ if(typeof map!=='undefined') map.invalidateSize(); },300); };
     let y0=null, hIni=0;
     asa.addEventListener('pointerdown',e=>{ if(innerWidth>860) return; y0=e.clientY; hIni=wrap.getBoundingClientRect().height; asa.setPointerCapture(e.pointerId); wrap.style.transition='none'; });
-    asa.addEventListener('pointermove',e=>{ if(y0==null) return; const H=wrap.parentElement.getBoundingClientRect().height; const nh=Math.max(H*.12,Math.min(H*.86,hIni+(y0-e.clientY))); wrap.style.height=wrap.style.maxHeight=nh+'px'; });
+    asa.addEventListener('pointermove',e=>{ if(y0==null) return; const H=wrap.parentElement.getBoundingClientRect().height; fija(Math.max(H*alturas[0],Math.min(H*alturas[alturas.length-1],hIni+(y0-e.clientY)))+'px'); });
     asa.addEventListener('pointerup',e=>{
       if(y0==null) return;
       const H=wrap.parentElement.getBoundingClientRect().height, fr=wrap.getBoundingClientRect().height/H, movido=Math.abs(e.clientY-y0)>6;
       wrap.style.transition=''; y0=null;
       if(!movido) return poner((i+1)%alturas.length);
       let mejor=0; alturas.forEach((a,k)=>{ if(Math.abs(a-fr)<Math.abs(alturas[mejor]-fr)) mejor=k; }); poner(mejor);
+    });
+    return {poner,get i(){return i;}};
+  };
+  const hojaPanel=hoja($('#tab-equipos .devWrap'),[.13,.28,.62,.86],2);
+  const hojaChat=hoja($('#tab-chat .chatcard'),[.16,.45,.78],2,true);
+  // «Ampliar» (pantalla completa del chat) manda sobre la altura de la hoja.
+  if(hojaChat) $('#btn-chat-full').addEventListener('click',()=>{
+    const c=$('#card-chat');
+    if(c.classList.contains('chat-full')){ c.style.removeProperty('height'); c.style.removeProperty('max-height'); } else hojaChat.poner(hojaChat.i);
+  });
+  // En la pestaña Mapa el panel baja solo al mínimo (mapa a pantalla completa); en las otras vuelve a su altura.
+  if(hojaPanel){
+    let previa=2;
+    document.addEventListener('click',e=>{
+      const t=e.target.closest('.devTab'); if(!t||innerWidth>860) return;
+      if(t.dataset.dev==='mapa'){ if(hojaPanel.i>0) previa=hojaPanel.i; hojaPanel.poner(0); }
+      else if(hojaPanel.i===0) hojaPanel.poner(previa);
     });
   }
   // 2. «¿Qué significa cada dato?»: una línea por dato con su resumen; el detalle al pulsar
