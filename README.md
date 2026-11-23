@@ -58,7 +58,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway 127.0.0.1:8780 
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.37.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.37.1** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
@@ -93,6 +93,9 @@ PANEL_PASS='tu-contraseña' ./deploy/install.sh
 Edita `~/meshcore-panel/www/config.js` (lo crea el instalador a partir de
 [`config.example.js`](config.example.js)): nombre y posición de tu repetidor, nombres de tus
 companion, infraestructura de referencia de tu zona y tus notas.
+Si quieres que el panel te avise cuando un WIO no tiene los ajustes de tu red, añade `esperado` a ese WIO
+(potencia, frecuencia, ancho, SF y CR; ver el ejemplo). El reloj se pone en hora solo al conectar, y los
+ajustes se cambian desde Gestión sin tocar la app del fabricante.
 
 **4. PC con Bluetooth: el relay**
 

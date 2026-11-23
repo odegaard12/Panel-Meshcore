@@ -16,6 +16,9 @@ window.PANEL_CONFIG = {
   // arrastra la chincheta al sitio real (se guarda en tu navegador).
   wios: {
     1: { nombre: 'MeshCore-WIO1', sitio: 'Casa 1', lat: 40.42, lon: -3.70 },
+    // Opcional: lo que ESPERAS de ese dispositivo. Si no coincide, el panel avisa al conectarlo y
+    // Gestión → Ajustes del dispositivo permite corregirlo. Pon los de TU red (los mismos en todos
+    // tus nodos), por ejemplo: esperado: { tx_power: 14, freq: 869.525, bw: 250, sf: 11, cr: 5 },
     2: { nombre: 'MeshCore-WIO2', sitio: 'Casa 2', lat: 40.41, lon: -3.71 },
   },
 

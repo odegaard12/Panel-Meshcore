@@ -70,5 +70,15 @@ eval(fs.readFileSync(path.join(__dirname, 'meshcore-ble-gateway.js'), 'utf8'));
   v = rakLoginPushVerdict(await rakGetWioStatus(1));
   assert.strictEqual(v, 'failed');
   console.log('login ok');
+  // Ajustes esperados por WIO: solo se comparan los campos que el usuario fijó.
+  const info = { name: 'WIO-1', tx_power: 14, freq: 869.525, bw: 250, sf: 11, cr: 5 };
+  assert.deepStrictEqual(window.wioDiferencias(info, {}), []);
+  assert.deepStrictEqual(window.wioDiferencias(info, undefined), []);
+  assert.deepStrictEqual(window.wioDiferencias(info, { nombre: 'WIO-1', tx_power: 14, freq: 869.525, bw: 250, sf: 11, cr: 5 }), []);
+  assert.strictEqual(window.wioDiferencias(info, { freq: 869.5254 }).length, 0, 'tolerancia de redondeo');
+  const d = window.wioDiferencias(info, { nombre: 'OTRO', tx_power: 20, sf: 8 });
+  assert.strictEqual(d.length, 3);
+  assert.ok(d[0].startsWith('nombre es WIO-1') && d[1].includes('potencia') && d[2].includes('SF'));
+  console.log('esperado ok');
   console.log('OK');
 })().catch((e) => { console.error('FALLO', e); process.exit(1); });

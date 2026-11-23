@@ -593,6 +593,12 @@
     const w=(typeof CFG!=='undefined'&&CFG.wios&&CFG.wios[idx])||{};
     return Object.assign({}, window.PANEL_CONFIG&&w.nombre?{nombre:w.nombre}:{}, w.esperado||{});
   }
+  // Diferencias entre lo que dice el WIO y lo esperado (solo los campos que el usuario fijó).
+  window.wioDiferencias=function(info,e){
+    const act=valorInfo(info||{}), dif=[];
+    for(const k of CAMPOS){ if(e&&e[k]!==undefined && !igual(k,act[k],e[k])) dif.push(ETQ[k]+' es '+act[k]+' y debería ser '+e[k]); }
+    return dif;
+  };
   window.wioRevisar=async function(idx){
     const n=nodes[idx];
     if(!n||!n.info||!n.info.name||revisados[idx]) return;
@@ -603,8 +609,7 @@
       if(h.ajustada) aviso('WIO'+idx+': reloj corregido (iba '+(min?min+' min ':Math.abs(h.desvio_s)+' s ')+(h.desvio_s<0?'atrasado':'adelantado')+').',1);
       else if(h.motivo) aviso('WIO'+idx+': el reloj va desviado '+min+' min y '+h.motivo+'.');
     }catch(e){}
-    const e=esperado(idx), act=valorInfo(n.info), dif=[];
-    for(const k of CAMPOS){ if(e[k]!==undefined && !igual(k,act[k],e[k])) dif.push(ETQ[k]+' es '+act[k]+' y debería ser '+e[k]); }
+    const dif=window.wioDiferencias(n.info,esperado(idx));
     if(dif.length) aviso('WIO'+idx+' no coincide con lo esperado: '+dif.join('; ')+'. Se cambia en Gestión → WIO'+idx+' → Ajustes del dispositivo.');
   };
   setInterval(()=>{ for(const i of [1,2]){ const n=nodes[i]; if(!n) continue; if(n.device&&n.device.gatt.connected) window.wioRevisar(i); else revisados[i]=false; } },4000);

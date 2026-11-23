@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.37.1] - 2026-11-23
+
+### Documentación y pruebas
+- `config.example.js` y el README explican `esperado` por WIO (potencia, frecuencia, ancho, SF y CR): cada usuario pone los valores de su red; sin él solo se comprueba el nombre.
+- La comparación con lo esperado es una función propia (`wioDiferencias`) con prueba: solo compara los campos que fijó el usuario y tolera el redondeo.
+
 ## [1.37.0] - 2026-11-23
 
 ### Ajustes del dispositivo desde el panel
