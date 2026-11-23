@@ -3,6 +3,19 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.37.0] - 2026-11-23
+
+### Ajustes del dispositivo desde el panel
+- Al conectar un WIO, el panel lee su reloj y lo corrige si va más de 30 s desviado (`POST /api/ble/wio/N/hora`). Sin reloj en hora, los repetidores descartan sus mensajes.
+- Aviso si el WIO no coincide con lo esperado. Por defecto compara el nombre con `wios[N].nombre`; en `config.js` se puede añadir `esperado: {tx_power, freq, bw, sf, cr}` por WIO.
+- Gestión → cada WIO → «Ajustes del dispositivo»: nombre, potencia, frecuencia, ancho, SF y CR (`POST /api/ble/wio/N/ajuste`). Dos pulsaciones para confirmar, valores validados (EU868, potencia 1-22 dBm), el valor anterior se guarda y hay botón «Volver al valor anterior». También «Poner en hora».
+- Las tramas de ajuste siguen prohibidas por `/command` en crudo: solo entran por `/hora` y `/ajuste`. El endpoint admite también coordenadas, pero la interfaz no las ofrece (se emitirían por radio).
+
+### Revisión
+- El gateway anota en el registro los mensajes del relay que descarta y los fallos de Home Assistant, en vez de tragárselos.
+- Auditoría completa del proyecto: sin fallos graves. Deudas anotadas: `panel-principal.js` demasiado grande, `unsafe-inline` en estilos y `MESHCORE_ALLOWED_IPS` vacío en la Pi.
+- `meshcore_ble_relay_v2.py` y `meshcore_ble_gateway_v3.py` se quedan: el relé del PC aún usa el primero.
+
 ## [1.36.1] - 2026-11-20
 
 ### Documentación

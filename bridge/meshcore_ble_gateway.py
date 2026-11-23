@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.36.1'
+PANEL_VERSION = '1.37.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -754,7 +754,8 @@ async def caja(req):
                         out[clave] = j.get('state')
                         if clave == 'temp':
                             out['at'] = j.get('last_updated')
-        except Exception:
+        except Exception as e:
+            print(f'caja: Home Assistant no responde ({type(e).__name__})', flush=True)
             out = {'ok': False, 'motivo': 'Home Assistant no responde'}
         _caja.update(at=time.time(), data=out)
     return web.json_response(_caja['data'])
@@ -772,6 +773,111 @@ async def wio_pausa(req):
     except Exception:
         raise web.HTTPServiceUnavailable(text='el relay se desconectó a mitad')
     return web.json_response({'ok': True})
+
+
+# ---- Ajustes del dispositivo (1.37) ----------------------------------------
+# Opcodes del companion: GET_DEVICE_TIME 5 (-> 9 + u32), SET_DEVICE_TIME 6,
+# SET_ADVERT_NAME 8, SET_RADIO_PARAMS 11, SET_RADIO_TX_POWER 12, SET_ADVERT_LATLON 14.
+# Respuesta 0 = OK, 1 = error. El panel NO manda estas tramas en crudo por
+# /command (403): solo por /hora y /ajuste, que validan los valores.
+DRIFT_MAX_S = 30
+BW_VALIDOS = {62500, 125000, 250000, 500000}
+
+
+def validar_ajuste(body: dict) -> list[tuple[str, bytes]]:
+    """Convierte los cambios pedidos en tramas, o lanza ValueError con el motivo."""
+    tramas: list[tuple[str, bytes]] = []
+    if 'nombre' in body:
+        nombre = str(body['nombre']).strip()
+        raw = nombre.encode('utf-8')
+        if not 1 <= len(raw) <= 31 or any(ord(c) < 32 for c in nombre):
+            raise ValueError('el nombre tiene que tener de 1 a 31 bytes y sin caracteres de control')
+        tramas.append(('nombre', bytes([0x08]) + raw))
+    if 'lat' in body or 'lon' in body:
+        try:
+            lat, lon = float(body['lat']), float(body['lon'])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError('lat y lon van juntas y tienen que ser números')
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            raise ValueError('coordenadas fuera de rango')
+        tramas.append(('coordenadas', bytes([0x0E]) + int(round(lat * 1e6)).to_bytes(4, 'little', signed=True)
+                       + int(round(lon * 1e6)).to_bytes(4, 'little', signed=True)))
+    if 'tx_power' in body:
+        try:
+            tx = int(body['tx_power'])
+        except (TypeError, ValueError):
+            raise ValueError('la potencia tiene que ser un número entero')
+        if not 1 <= tx <= 22:
+            raise ValueError('potencia fuera de rango (1 a 22 dBm)')
+        tramas.append(('potencia', bytes([0x0C, tx])))
+    radio = body.get('radio')
+    if radio is not None:
+        if not isinstance(radio, dict):
+            raise ValueError('radio tiene que ser un objeto')
+        try:
+            freq = round(float(radio['freq']) * 1000)   # MHz -> kHz
+            bw = round(float(radio['bw']) * 1000)       # kHz -> Hz
+            sf, cr = int(radio['sf']), int(radio['cr'])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError('radio necesita freq (MHz), bw (kHz), sf y cr')
+        if not 863000 <= freq <= 870000:
+            raise ValueError('frecuencia fuera de la banda EU868 (863 a 870 MHz)')
+        if bw not in BW_VALIDOS:
+            raise ValueError('ancho de banda no válido (62.5, 125, 250 o 500 kHz)')
+        if not (5 <= sf <= 12 and 5 <= cr <= 8):
+            raise ValueError('SF de 5 a 12 y CR de 5 a 8')
+        tramas.append(('radio', bytes([0x0B]) + freq.to_bytes(4, 'little') + bw.to_bytes(4, 'little') + bytes([sf, cr])))
+    if not tramas:
+        raise ValueError('no hay nada que cambiar')
+    return tramas
+
+
+async def wio_hora(req):
+    """Pone en hora el WIO si va más de DRIFT_MAX_S segundos desviado. No pide confirmación:
+    solo corrige el reloj (sin él, los mensajes salen con fecha vieja y los repetidores los descartan)."""
+    await guard(req)
+    idx = int(req.match_info['idx'])
+    try:
+        r = await g.command(idx, bytes([0x05]))
+        if not r or r[0] != 0x09 or len(r) < 5:
+            raise RuntimeError('respuesta de hora inesperada')
+        dev = int.from_bytes(r[1:5], 'little')
+        ahora = int(time.time())
+        out = {'ok': True, 'dispositivo': dev, 'servidor': ahora, 'desvio_s': dev - ahora, 'ajustada': False}
+        if abs(dev - ahora) > DRIFT_MAX_S:
+            r2 = await g.command(idx, bytes([0x06]) + ahora.to_bytes(4, 'little'))
+            if r2[:1] == b'\x00':
+                out['ajustada'] = True
+            else:
+                out['motivo'] = 'el nodo no acepta esa hora (suele rechazar retroceder el reloj)'
+    except Exception as exc:
+        raise web.HTTPServiceUnavailable(text=str(exc))
+    return web.json_response(out)
+
+
+async def wio_ajuste(req):
+    """Cambia nombre, coordenadas, potencia o radio de un WIO. Exige confirmed=true.
+    Un valor de radio equivocado lo deja fuera de la red: por eso solo valores validados."""
+    await guard(req)
+    idx = int(req.match_info['idx'])
+    body = await cuerpo(req)
+    if body.get('confirmed') is not True:
+        raise web.HTTPConflict(text='confirma el cambio (confirmed=true)')
+    try:
+        tramas = validar_ajuste(body)
+    except ValueError as exc:
+        raise web.HTTPBadRequest(text=str(exc))
+    hechos = []
+    for que, frame in tramas:
+        try:
+            r = await g.command(idx, frame)
+        except Exception as exc:
+            raise web.HTTPServiceUnavailable(text=f'{que}: {exc}')
+        if r[:1] != b'\x00':
+            return web.json_response({'ok': False, 'fallo': que, 'hechos': hechos}, status=502)
+        hechos.append(que)
+    return web.json_response({'ok': True, 'hechos': hechos})
+
 
 
 async def history(req):
@@ -893,8 +999,8 @@ async def relay(req):
             if msg.type is web.WSMsgType.TEXT:
                 try:
                     await g.receive(json.loads(msg.data))
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(f'relay: mensaje descartado ({type(e).__name__}: {e})', flush=True)
     finally:
         await g.detach(ws)
     return ws
@@ -1041,6 +1147,8 @@ app.router.add_post('/api/ble/wio/{idx:[12]}/contacts', contacts)
 app.router.add_post('/api/ble/wio/{idx:[12]}/login', wio_login)
 app.router.add_post('/api/ble/wio/{idx:[12]}/remote_cmd', wio_remote_cmd)
 app.router.add_post('/api/ble/wio/{idx:[12]}/pausa', wio_pausa)
+app.router.add_post('/api/ble/wio/{idx:[12]}/hora', wio_hora)
+app.router.add_post('/api/ble/wio/{idx:[12]}/ajuste', wio_ajuste)
 app.router.add_post('/api/ble/wio/{idx:[12]}/binary_req', wio_binary_req)
 app.router.add_post('/api/ble/wio/{idx:[12]}/trace', wio_trace)
 app.router.add_get('/api/ble/wio/{idx:[12]}/pushes', wio_pushes)

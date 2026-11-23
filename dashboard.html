@@ -718,6 +718,12 @@ body:has(#tab-equipos.on),body:has(#tab-chat.on){overflow:hidden;height:100dvh;o
 .gfilak{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--brd);flex-wrap:wrap}
 .gfilak:last-child{border-bottom:0;padding-bottom:0}
 .gfilak[hidden]{display:none}
+.gfilak details>summary{cursor:pointer;list-style:none}.gfilak details>summary::-webkit-details-marker{display:none}
+.gfilak details>summary::after{content:" ›";color:var(--dim)}.gfilak details[open]>summary::after{content:" ⌄"}
+.gform{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0 8px}
+.gform label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dim)}
+.gform input,.gform select{width:100%}
+.gacc{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .gfilak .t{font-weight:600;font-size:14px}.gfilak .d{color:var(--dim);font-size:12.5px;margin-top:2px;max-width:60ch}
 .gbotones{display:flex;gap:8px;flex-wrap:wrap}
 button.peligro{color:#ffb3b3;border-color:rgba(242,107,107,.45)}
@@ -1705,6 +1711,18 @@ footer{color:var(--dim2)}
         <div class="gfilak" hidden><div><div class="t">Lo he apagado</div><div class="d">El PC deja de buscarlo hasta que lo marques de nuevo.</div></div><button id="btn-w1-pausa" hidden>Lo he apagado: deja de buscarlo</button></div>
         <div class="gfilak"><div><div class="t">Posición en el mapa</div><div class="d">Dónde está esta casa. Te lleva al mapa para marcarla.</div></div><button id="btn-w1-place">Colocar en mapa</button></div>
         <div class="gfilak"><div><div class="t">Copia de la clave</div><div class="d">Guarda la clave privada del WIO para poder recuperarlo si se estropea. Guárdala en un sitio seguro.</div></div><button id="btn-w1-export" data-wio-clave="1">Exportar clave</button></div>
+        <div class="gfilak"><div style="flex:1 1 100%"><details id="g-w1-aj"><summary class="t">Ajustes del dispositivo</summary>
+          <div class="gform">
+            <label>Nombre<input type="text" id="aj1-nombre" maxlength="31" autocomplete="off"></label>
+            <label>Potencia (dBm)<input type="number" id="aj1-tx" min="1" max="22" step="1"></label>
+            <label>Frecuencia (MHz)<input type="number" id="aj1-freq" min="863" max="870" step="0.001"></label>
+            <label>Ancho (kHz)<select id="aj1-bw" aria-label="Ancho de banda en kHz"><option value="62.5">62,5</option><option value="125">125</option><option value="250">250</option><option value="500">500</option></select></label>
+            <label>SF<input type="number" id="aj1-sf" min="5" max="12" step="1"></label>
+            <label>CR<input type="number" id="aj1-cr" min="5" max="8" step="1"></label>
+          </div>
+          <div class="d" id="aj1-estado" role="status">Conecta el WIO para ver y cambiar sus ajustes.</div>
+          <div class="gacc"><button class="p" id="aj1-aplicar" disabled>Aplicar cambios</button><button id="aj1-volver" hidden>Volver al valor anterior</button><button id="aj1-hora" disabled>Poner en hora</button></div>
+        </details></div></div>
       </div>
 
       <div class="card statcard fila-w2" data-g="equipos" aria-labelledby="g-t-w2">
@@ -1714,6 +1732,18 @@ footer{color:var(--dim2)}
         <div class="gfilak" hidden><div><div class="t">Lo he apagado</div><div class="d">El PC deja de buscarlo hasta que lo marques de nuevo.</div></div><button id="btn-w2-pausa" hidden>Lo he apagado: deja de buscarlo</button></div>
         <div class="gfilak"><div><div class="t">Posición en el mapa</div><div class="d">Dónde está esta casa. Te lleva al mapa para marcarla.</div></div><button id="btn-w2-place">Colocar en mapa</button></div>
         <div class="gfilak"><div><div class="t">Copia de la clave</div><div class="d">Guarda la clave privada del WIO para poder recuperarlo si se estropea. Guárdala en un sitio seguro.</div></div><button id="btn-w2-export" data-wio-clave="2">Exportar clave</button></div>
+        <div class="gfilak"><div style="flex:1 1 100%"><details id="g-w2-aj"><summary class="t">Ajustes del dispositivo</summary>
+          <div class="gform">
+            <label>Nombre<input type="text" id="aj2-nombre" maxlength="31" autocomplete="off"></label>
+            <label>Potencia (dBm)<input type="number" id="aj2-tx" min="1" max="22" step="1"></label>
+            <label>Frecuencia (MHz)<input type="number" id="aj2-freq" min="863" max="870" step="0.001"></label>
+            <label>Ancho (kHz)<select id="aj2-bw" aria-label="Ancho de banda en kHz"><option value="62.5">62,5</option><option value="125">125</option><option value="250">250</option><option value="500">500</option></select></label>
+            <label>SF<input type="number" id="aj2-sf" min="5" max="12" step="1"></label>
+            <label>CR<input type="number" id="aj2-cr" min="5" max="8" step="1"></label>
+          </div>
+          <div class="d" id="aj2-estado" role="status">Conecta el WIO para ver y cambiar sus ajustes.</div>
+          <div class="gacc"><button class="p" id="aj2-aplicar" disabled>Aplicar cambios</button><button id="aj2-volver" hidden>Volver al valor anterior</button><button id="aj2-hora" disabled>Poner en hora</button></div>
+        </details></div></div>
       </div>
 
       <div class="card statcard" data-g="equipos" data-ancho="2" aria-labelledby="g-t-relay">

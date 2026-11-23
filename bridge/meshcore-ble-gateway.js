@@ -581,6 +581,84 @@
       aviso('Clave de WIO'+idx+' exportada. Guárdala en un sitio seguro.',1);
     }catch(e){aviso('No se pudo exportar la clave: '+e.message);}
   };
+  // ---- Ajustes del dispositivo (1.37) ----
+  // Al conectar: pone el reloj en hora y avisa si el WIO no coincide con lo esperado.
+  // Cambiar nombre/potencia/radio exige dos pulsaciones y guarda el valor anterior.
+  const revisados={};
+  const CAMPOS=['nombre','tx_power','freq','bw','sf','cr'];
+  const valorInfo=(i)=>({nombre:i.name,tx_power:i.tx_power,freq:i.freq,bw:i.bw,sf:i.sf,cr:i.cr});
+  const igual=(k,a,b)=>k==='nombre'?String(a)===String(b):Math.abs(Number(a)-Number(b))<0.0015;
+  const ETQ={nombre:'nombre',tx_power:'potencia',freq:'frecuencia',bw:'ancho',sf:'SF',cr:'CR'};
+  function esperado(idx){
+    const w=(typeof CFG!=='undefined'&&CFG.wios&&CFG.wios[idx])||{};
+    return Object.assign({}, window.PANEL_CONFIG&&w.nombre?{nombre:w.nombre}:{}, w.esperado||{});
+  }
+  window.wioRevisar=async function(idx){
+    const n=nodes[idx];
+    if(!n||!n.info||!n.info.name||revisados[idx]) return;
+    revisados[idx]=true;
+    try{
+      const h=await api(n.base+'/hora',{method:'POST',body:'{}'});
+      const min=Math.round(Math.abs(h.desvio_s)/60);
+      if(h.ajustada) aviso('WIO'+idx+': reloj corregido (iba '+(min?min+' min ':Math.abs(h.desvio_s)+' s ')+(h.desvio_s<0?'atrasado':'adelantado')+').',1);
+      else if(h.motivo) aviso('WIO'+idx+': el reloj va desviado '+min+' min y '+h.motivo+'.');
+    }catch(e){}
+    const e=esperado(idx), act=valorInfo(n.info), dif=[];
+    for(const k of CAMPOS){ if(e[k]!==undefined && !igual(k,act[k],e[k])) dif.push(ETQ[k]+' es '+act[k]+' y debería ser '+e[k]); }
+    if(dif.length) aviso('WIO'+idx+' no coincide con lo esperado: '+dif.join('; ')+'. Se cambia en Gestión → WIO'+idx+' → Ajustes del dispositivo.');
+  };
+  setInterval(()=>{ for(const i of [1,2]){ const n=nodes[i]; if(!n) continue; if(n.device&&n.device.gatt.connected) window.wioRevisar(i); else revisados[i]=false; } },4000);
+
+  function ajustesUI(idx){
+    const $i=(id)=>document.getElementById('aj'+idx+'-'+id);
+    const det=document.getElementById('g-w'+idx+'-aj'); if(!det||!$i('aplicar')) return;
+    const clave='mc-wio-prev-'+idx;
+    let armado=null;
+    const leer=()=>({nombre:$i('nombre').value.trim(),tx_power:+$i('tx').value,freq:+$i('freq').value,bw:+$i('bw').value,sf:+$i('sf').value,cr:+$i('cr').value});
+    const rellenar=(v)=>{ $i('nombre').value=v.nombre; $i('tx').value=v.tx_power; $i('freq').value=v.freq; $i('bw').value=String(v.bw); $i('sf').value=v.sf; $i('cr').value=v.cr; };
+    const previo=()=>{ try{ return JSON.parse(localStorage.getItem(clave)||'null'); }catch(e){ return null; } };
+    const desarmar=()=>{ armado=null; $i('aplicar').textContent='Aplicar cambios'; $i('volver').textContent='Volver al valor anterior'; };
+    function refrescar(){
+      const n=nodes[idx], on=!!(n&&n.info&&n.info.name&&n.device.gatt.connected);
+      for(const b of ['aplicar','hora']) $i(b).disabled=!on;
+      $i('volver').hidden=!previo(); $i('volver').disabled=!on;
+      if(!on){ $i('estado').textContent='Conecta el WIO para ver y cambiar sus ajustes.'; return; }
+      if(!armado) rellenar(valorInfo(n.info));
+      $i('estado').textContent='Valores actuales del dispositivo. Cambiar la radio puede dejarlo fuera de la red.';
+    }
+    det.addEventListener('toggle',()=>{ if(det.open) refrescar(); });
+    const diff=(nuevo,act)=>CAMPOS.filter(k=>!igual(k,nuevo[k],act[k]));
+    async function enviar(nuevo,act,cual){
+      const cambios=diff(nuevo,act);
+      if(!cambios.length){ $i('estado').textContent='Nada que cambiar.'; desarmar(); return; }
+      const texto=cambios.map(k=>ETQ[k]).join(', ');
+      if(armado!==cual){
+        armado=cual; $i(cual).textContent='Confirmar: cambia '+texto;
+        $i('estado').textContent='Pulsa otra vez para confirmar. Se guarda el valor actual para poder volver.';
+        setTimeout(()=>{ if(armado===cual) desarmar(); },8000); return;
+      }
+      desarmar();
+      const body={confirmed:true};
+      if(cambios.includes('nombre')) body.nombre=nuevo.nombre;
+      if(cambios.includes('tx_power')) body.tx_power=nuevo.tx_power;
+      if(['freq','bw','sf','cr'].some(k=>cambios.includes(k))) body.radio={freq:nuevo.freq,bw:nuevo.bw,sf:nuevo.sf,cr:nuevo.cr};
+      try{
+        await api('/wio/'+idx+'/ajuste',{method:'POST',body:JSON.stringify(body)});
+        try{ localStorage.setItem(clave,JSON.stringify(act)); }catch(e){}
+        const n=nodes[idx]; n.info=await n.appStart();
+        aviso('WIO'+idx+': '+texto+' cambiado.',1); refrescar();
+      }catch(e){ $i('estado').textContent='No se pudo cambiar: '+e.message; aviso('WIO'+idx+': no se pudo cambiar ('+e.message+').'); }
+    }
+    $i('aplicar').addEventListener('click',()=>{ const n=nodes[idx]; if(n&&n.info) enviar(leer(),valorInfo(n.info),'aplicar'); });
+    $i('volver').addEventListener('click',()=>{ const n=nodes[idx], p=previo(); if(n&&n.info&&p) enviar(p,valorInfo(n.info),'volver'); });
+    $i('hora').addEventListener('click',async()=>{
+      try{
+        const h=await api('/wio/'+idx+'/hora',{method:'POST',body:'{}'});
+        $i('estado').textContent=h.ajustada?'Reloj corregido.':(h.motivo||'El reloj ya estaba en hora (desvío '+Math.round(h.desvio_s)+' s).');
+      }catch(e){ $i('estado').textContent='No se pudo: '+e.message; }
+    });
+  }
+  [1,2].forEach(ajustesUI);
   window.getGatewaySnapshot = ()=>api('/status');
 
   setTimeout(refreshGateway, 50);
