@@ -20,6 +20,8 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import ipaddress
+import json
 import os
 import secrets
 import subprocess
@@ -36,7 +38,11 @@ SESSION_HOURS = float(os.getenv('MESHCORE_SESSION_HOURS', '168'))  # 7 dias
 # puedan probar miles de contrasenas por segundo contra un hash apr1.
 MAX_FAILS = 8
 LOCKOUT_SECONDS = 300
+# Por usuario, además de por IP: rotando IP (IPv6 o proxies) no frenaba nada. Más alto que
+# el de IP para que un extraño no pueda dejar fuera al dueño con 8 intentos.
+MAX_FAILS_USER = 30
 _fails: dict[str, list[float]] = {}
+REVOKED_FILE = Path(os.getenv('MESHCORE_REVOKED_FILE', str(Path.home() / '.meshcore-sesiones-cerradas.json')))
 
 
 def _secret() -> bytes:
@@ -92,22 +98,43 @@ def _firma(user: str, expiry: int) -> bytes:
     return hmac.new(_secret(), payload.encode(), hashlib.sha256).digest()
 
 
-def locked_out(ip: str) -> bool:
+def _clave_ip(ip: str) -> str:
+    # IPv6: cada casa tiene un /64 entero; por dirección suelta se rotaba sin fin.
+    try:
+        a = ipaddress.ip_address(ip)
+    except ValueError:
+        return ip
+    if a.version == 6:
+        if a.ipv4_mapped:
+            return str(a.ipv4_mapped)
+        return str(ipaddress.ip_network(f'{a}/64', strict=False))
+    return str(a)
+
+
+def _recientes(clave: str) -> int:
     now = time.time()
-    recent = [t for t in _fails.get(ip, []) if now - t < LOCKOUT_SECONDS]
+    recent = [t for t in _fails.get(clave, []) if now - t < LOCKOUT_SECONDS]
     if not recent:
-        _fails.pop(ip, None)   # sin esto el dict guardaba para siempre cada IP que falló una vez
-        return False
-    _fails[ip] = recent
-    return len(recent) >= MAX_FAILS
+        _fails.pop(clave, None)   # sin esto el dict guardaba para siempre cada IP que falló una vez
+        return 0
+    _fails[clave] = recent
+    return len(recent)
 
 
-def _note_failure(ip: str) -> None:
-    _fails.setdefault(ip, []).append(time.time())
+def locked_out(ip: str, user: str | None = None) -> bool:
+    if _recientes(_clave_ip(ip)) >= MAX_FAILS:
+        return True
+    return bool(user) and _recientes('u:' + user[:64]) >= MAX_FAILS_USER
+
+
+def _note_failure(ip: str, user: str | None = None) -> None:
+    _fails.setdefault(_clave_ip(ip), []).append(time.time())
+    if user:
+        _fails.setdefault('u:' + user[:64], []).append(time.time())
 
 
 def check_password(user: str, password: str, ip: str = '-') -> bool:
-    if locked_out(ip):
+    if locked_out(ip, user):
         return False
     digest = _stored_hash(user)
     # Se calcula igual aunque el usuario no exista, para no filtrar por tiempo
@@ -122,7 +149,7 @@ def check_password(user: str, password: str, ip: str = '-') -> bool:
                                input=b'\x00' + password.encode(), capture_output=True, timeout=10)
             except (OSError, subprocess.TimeoutExpired):
                 pass
-            _note_failure(ip)
+            _note_failure(ip, user)
             return False
     reference = digest or '$apr1$xxxxxxxx$xxxxxxxxxxxxxxxxxxxxxx'
     # bcrypt (htpasswd -B): mucho mas lento de romper que apr1, que es MD5. Lo
@@ -136,13 +163,13 @@ def check_password(user: str, password: str, ip: str = '-') -> bool:
         except (OSError, subprocess.TimeoutExpired):
             ok = False
         if ok:
-            _fails.pop(ip, None)
+            _fails.pop(_clave_ip(ip), None)
         else:
-            _note_failure(ip)
+            _note_failure(ip, user)
         return ok
     parts = reference.split('$')
     if len(parts) < 4 or parts[1] != 'apr1':
-        _note_failure(ip)
+        _note_failure(ip, user)
         return False
     salt = parts[2]
     try:
@@ -150,15 +177,44 @@ def check_password(user: str, password: str, ip: str = '-') -> bool:
             ['openssl', 'passwd', '-apr1', '-salt', salt, '-stdin'],
             input=password.encode(), capture_output=True, timeout=5)
     except (OSError, subprocess.TimeoutExpired):
-        _note_failure(ip)
+        _note_failure(ip, user)
         return False
     calculated = out.stdout.decode().strip()
     ok = bool(digest) and hmac.compare_digest(calculated, reference)
     if not ok:
-        _note_failure(ip)
+        _note_failure(ip, user)
     else:
-        _fails.pop(ip, None)
+        _fails.pop(_clave_ip(ip), None)
     return ok
+
+
+def _huella(cookie: str) -> str:
+    return hashlib.sha256(cookie.encode()).hexdigest()
+
+
+def _revocadas() -> dict:
+    try:
+        return json.loads(REVOKED_FILE.read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def revoke(cookie: str | None) -> None:
+    """Cerrar sesión anula esa cookie en el servidor (antes solo se borraba en el navegador)."""
+    if not cookie:
+        return
+    try:
+        expiry = int(base64.urlsafe_b64decode(cookie.encode()).decode().rsplit('|', 2)[1])
+    except Exception:
+        return
+    now = time.time()
+    vivas = {h: e for h, e in _revocadas().items() if e > now}
+    vivas[_huella(cookie)] = expiry
+    tmp = REVOKED_FILE.with_suffix('.tmp')
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, 'w') as fh:
+        json.dump(vivas, fh)
+    os.replace(tmp, REVOKED_FILE)
 
 
 def make_session(user: str) -> str:
@@ -193,7 +249,9 @@ def read_session(cookie: str | None, max_age_s: float | None = None) -> str | No
         return None
     if not hmac.compare_digest(expected, given):
         return None
-    # Borrar a alguien del htpasswd tiene que echarlo ya, no a los 30 dias.
+    if _huella(cookie) in _revocadas():
+        return None
+    # Borrar a alguien del htpasswd tiene que echarlo ya, no a los 7 dias.
     if _stored_hash(user) is None:
         return None
     return user

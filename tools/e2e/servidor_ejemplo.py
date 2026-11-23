@@ -26,6 +26,9 @@ ARCHIVOS = {
     '/config.js': 'config.example.js', '/sw.js': 'pwa/sw.js', '/manifest.webmanifest': 'pwa/manifest.webmanifest',
     '/icon-192.png': 'pwa/icon-192.png', '/icon-512.png': 'pwa/icon-512.png', '/apple-touch-icon.png': 'pwa/apple-touch-icon.png',
 }
+# Leaflet va servido desde la propia Pi (vendor/), como en producción.
+ARCHIVOS.update({'/' + p.relative_to(RAIZ).as_posix(): p.relative_to(RAIZ).as_posix()
+                 for p in (RAIZ / 'vendor').rglob('*') if p.is_file()})
 
 
 def crear_datos(ahora=None):

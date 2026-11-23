@@ -8,6 +8,11 @@ WorkingDirectory=/home/__USER__/meshcore-panel/www
 ExecStart=/usr/bin/python3 -m http.server 8765 --bind 127.0.0.1
 Restart=always
 RestartSec=3
+# Solo lee www: aunque alguien lo engañe, no puede escribir ni escalar.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
 
 [Install]
 WantedBy=multi-user.target

@@ -37,7 +37,7 @@ async def main():
 
         assert await st('post', '/api/ble/wio/x/command', json={}) == 404
         assert await st('post', '/api/ble/wio/3/command', json={}) == 404
-        assert await st('post', '/api/ble/wio/1/command', data='no json') == 400
+        assert await st('post', '/api/ble/wio/1/command', data='no json') == 415   # solo application/json (1.39)
         assert await st('post', '/api/ble/wio/1/command', json=[1, 2]) == 400
         assert await st('post', '/api/ble/wio/1/command', json={'frame': '%%%'}) == 400
         assert await st('post', '/api/ble/wio/1/binary_req',

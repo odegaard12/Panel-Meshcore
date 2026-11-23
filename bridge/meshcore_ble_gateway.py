@@ -35,6 +35,12 @@ import meshcore_repeater as rep
 # tiene que quedar a 31,25 kHz de cada borde.
 BANDA_MHZ = (869.40 + 0.03125, 869.65 - 0.03125)
 TX_MAX_DBM = 22  # tope del SX1262 del RAK4630 y de los WIO
+# Consultas `get` de solo lectura que puede pedir el panel. Antes pasaba cualquier `get *`,
+# y según el firmware eso incluye claves (get prv.key) o contraseñas de invitado.
+GET_PERMITIDOS = re.compile(r'get (name|radio|tx|freq|repeat|lat|lon|af|role|public\.key|dutycycle'
+                            r'|advert\.interval|flood\.advert\.interval|flood\.max|rxdelay|txdelay'
+                            r'|direct\.txdelay|multi\.acks|int\.thresh|agc\.reset\.interval'
+                            r'|allow\.read\.only|owner\.info|path\.hash\.mode|loop\.detect|bridge\.[a-z.]+)')
 
 
 def politica_cli(cmd: str, confirmed: bool):
@@ -42,6 +48,10 @@ def politica_cli(cmd: str, confirmed: bool):
     c = cmd.strip()
     if not c:
         return 400, 'comando vacio'
+    # Un salto de línea o un tabulador dentro del comando podía colar un segundo
+    # comando detrás de uno permitido.
+    if any(ord(ch) < 32 or ord(ch) == 127 for ch in c):
+        return 400, 'el comando lleva caracteres de control'
     partes = c.split()
     if c.startswith(('set af ', 'set dutycycle ', 'set tx ', 'set freq ')) and len(partes) > 2:
         # float() de Python acepta '1_0' (=10), 'inf' o '1e3', pero el atof
@@ -67,7 +77,7 @@ def politica_cli(cmd: str, confirmed: bool):
         # Las consultas de solo lectura fuera del catalogo (get radio,
         # get name, get repeat...) no cambian nada en el nodo.
         if c.startswith('get '):
-            return None
+            return None if GET_PERMITIDOS.fullmatch(c) else (403, f'consulta no permitida desde el panel: {c!r}')
         return 403, f'comando no permitido desde el panel: {c!r} (fuera del catalogo)'
     if info.risk == rep.BLOCKED:
         return 403, f'bloqueado desde el panel: {info.cli} ({info.note})'
@@ -90,11 +100,11 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.38.0'
+PANEL_VERSION = '1.39.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
-# 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
-# corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
-BIND = os.getenv('MESHCORE_BIND', '0.0.0.0')
+# Solo la propia Pi por defecto: el relay del PC entra por nginx con wss://. Abrirlo a la
+# LAN (MESHCORE_BIND=0.0.0.0) exige limitarlo con MESHCORE_ALLOWED_IPS.
+BIND = os.getenv('MESHCORE_BIND', '127.0.0.1')
 
 # Opcodes que el panel manda por /command (meshcore-ble-gateway.js y
 # dashboard.html). Lo demas (reset de fabrica, cambiar clave, radio...) no
@@ -114,6 +124,23 @@ TOKEN = os.getenv('MESHCORE_BLE_TOKEN', '')
 # Tramas push que el nodo manda por su cuenta (bit 0x80). La mas importante es
 # MESSAGES_WAITING: el panel la usa para saber que tiene que vaciar la cola.
 PUSH_MESSAGES_WAITING = 0x83
+# Órdenes que hacen emitir al nodo: texto, canal, advert, login, estado, traza y binaria.
+TX_OPCODES = {0x02, 0x03, 0x07, 0x1A, 0x1B, 0x24, 0x32}
+EMISION_MAX_MIN = int(os.getenv('MESHCORE_EMISION_MAX_MIN', '30'))
+
+
+class LimiteEmision(RuntimeError):
+    pass
+
+
+def fallo(exc):
+    """Error del relay o del nodo hacia el panel: el motivo útil, nunca detalles internos."""
+    if isinstance(exc, LimiteEmision):
+        return web.HTTPTooManyRequests(text=str(exc))
+    if isinstance(exc, (RuntimeError, TimeoutError, asyncio.TimeoutError, ValueError, OSError)):
+        return web.HTTPServiceUnavailable(text=(str(exc) or 'el WIO no contesta (timeout)')[:200])
+    print(f'gateway: error interno ({type(exc).__name__}: {exc})', flush=True)
+    return web.HTTPServiceUnavailable(text='error interno del gateway')
 MAX_PUSH_HISTORY = 32
 
 
@@ -174,6 +201,8 @@ PUSH_LOGIN_FAILED = 0x86
 
 async def cuerpo(req) -> dict:
     """Cuerpo JSON de la peticion; 400 si no es un objeto JSON (antes: 500)."""
+    if req.content_type != 'application/json':
+        raise web.HTTPUnsupportedMediaType(text='el cuerpo tiene que ser application/json')
     try:
         body = await req.json()
     except (ValueError, UnicodeDecodeError):
@@ -227,6 +256,9 @@ class RelayGateway:
         # que se acumulan aqui: el panel solo veria las de su propia sesion.
         self.rx_log = collections.deque(maxlen=RX_LOG_MAX)
         self._rx_sin_recortar = 0
+        self._rx_pendiente = []
+        self._rx_volcado = time.time()
+        self._tx_hechas = collections.deque()
         self._cargar_rx_log()
         self.relay_since = 0.0
 
@@ -244,15 +276,33 @@ class RelayGateway:
             RX_LOG_FILE.write_text(''.join(json.dumps(m, separators=(',', ':')) + '\n' for m in self.rx_log))
             _privado(RX_LOG_FILE)
         self._rx_sin_recortar = 0
+        self._rx_pendiente = []   # ya van en el fichero reescrito
 
     def _guardar_rx(self, m: dict):
         self.rx_log.append(m)
-        with contextlib.suppress(Exception):
-            with RX_LOG_FILE.open('a') as fh:
-                fh.write(json.dumps(m, separators=(',', ':')) + '\n')
+        self._rx_pendiente.append(m)
+        if len(self._rx_pendiente) >= 50 or time.time() - self._rx_volcado > 15:
+            self._volcar_rx()
         self._rx_sin_recortar += 1
         if self._rx_sin_recortar >= RX_LOG_MAX:
             self._reescribir_rx_log()
+
+    def _volcar_rx(self):
+        lote, self._rx_pendiente = self._rx_pendiente, []
+        self._rx_volcado = time.time()
+        with contextlib.suppress(Exception):
+            with RX_LOG_FILE.open('a') as fh:
+                fh.write(''.join(json.dumps(m, separators=(',', ':')) + '\n' for m in lote))
+
+    def _emision(self, frame: bytes):
+        if not frame or frame[0] not in TX_OPCODES:
+            return
+        ahora = time.time()
+        while self._tx_hechas and ahora - self._tx_hechas[0] > 60:
+            self._tx_hechas.popleft()
+        if len(self._tx_hechas) >= EMISION_MAX_MIN:
+            raise LimiteEmision(f'límite de emisión: {EMISION_MAX_MIN} envíos por minuto (ciclo de trabajo legal)')
+        self._tx_hechas.append(ahora)
 
     async def attach(self, ws):
         async with self.lock:
@@ -266,7 +316,24 @@ class RelayGateway:
 
     @staticmethod
     def _key(raw_idx):
-        return int(raw_idx)
+        key = int(raw_idx)
+        if key not in CHANNELS:
+            raise ValueError(f'canal desconocido: {key}')
+        return key
+
+    @staticmethod
+    def _limpio(entry) -> dict:
+        # Un relay comprometido podía meter claves y textos de cualquier tamaño en el estado.
+        if not isinstance(entry, dict):
+            return {}
+        out = {}
+        for k, v in list(entry.items())[:40]:
+            if isinstance(v, str):
+                v = v[:200]
+            elif v is not None and not isinstance(v, (bool, int, float)):
+                continue
+            out[str(k)[:40]] = v
+        return out
 
     async def detach(self, ws):
         async with self.lock:
@@ -292,11 +359,11 @@ class RelayGateway:
         if op == 'hello':
             for entry in msg.get('wios', []):
                 key = self._key(entry['idx'])
-                self.status[key] = {**entry, 'idx': key, 'transport': 'relay'}
+                self.status[key] = {**self._limpio(entry), 'idx': key, 'transport': 'relay'}
             return
         if op == 'status':
             key = self._key(msg['idx'])
-            self.status[key] = {**msg['status'], 'idx': key, 'transport': 'relay'}
+            self.status[key] = {**self._limpio(msg['status']), 'idx': key, 'transport': 'relay'}
             return
         if op == 'push':
             idx = self._key(msg['idx'])
@@ -331,6 +398,7 @@ class RelayGateway:
     async def command(self, idx, frame: bytes, timeout: float = 8, stream_until: set[int] | None = None):
         if not self.ws:
             raise RuntimeError('relay BLE no conectado')
+        self._emision(frame)
         rid = secrets.token_hex(8)
         fut = asyncio.get_running_loop().create_future()
         self.pending[rid] = fut
@@ -574,7 +642,7 @@ async def connect(req):
     try:
         await g.command(idx, frame)
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     # No se fuerza connected=True a mano: se devuelve lo que el relay reporta,
     # que es la unica fuente de verdad del estado del enlace.
     return web.json_response(g.wio(idx))
@@ -605,7 +673,7 @@ async def command(req):
     try:
         out = await g.command(idx, frame)
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     # Cada comando servido limpia el aviso: el panel acaba de hablar con el nodo.
     g.messages_waiting[idx] = False
     return web.json_response({'ok': True, 'frame': b64(out), **g.wio(idx)})
@@ -620,7 +688,7 @@ async def contacts(req):
     try:
         frames = await g.command(idx, bytes([0x04]), timeout=15, stream_until={4})
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     return web.json_response({'ok': True, 'frames': [b64(f) for f in frames]})
 
 
@@ -644,7 +712,7 @@ async def wio_login(req):
     try:
         out = await g.command(idx, frame)
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     if out and out[0] == 1:
         raise web.HTTPBadRequest(text='el nodo rechazo el envio del login')
     # Solo confirma que el mensaje salio; LOGIN_SUCCESS/FAILED llega despues
@@ -687,7 +755,7 @@ async def wio_binary_req(req):
     try:
         out = await g.command(idx, frame)
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     if out and out[0] == 1:
         raise web.HTTPBadRequest(text='el nodo rechazo la peticion binaria')
     # El panel "ensena" al gateway a quien vigilar: la primera consulta manual
@@ -820,8 +888,10 @@ def validar_ajuste(body: dict) -> list[tuple[str, bytes]]:
             sf, cr = int(radio['sf']), int(radio['cr'])
         except (KeyError, TypeError, ValueError):
             raise ValueError('radio necesita freq (MHz), bw (kHz), sf y cr')
-        if not 863000 <= freq <= 870000:
-            raise ValueError('frecuencia fuera de la banda EU868 (863 a 870 MHz)')
+        lo, hi = (863000, 870000) if os.getenv('MESHCORE_BANDA_LIBRE') == '1' else (869400, 869650)
+        if not (lo <= freq - bw / 2000 and freq + bw / 2000 <= hi):
+            raise ValueError(f'la señal se sale de {lo / 1000:g}-{hi / 1000:g} MHz con ese ancho '
+                             '(sub-banda de 500 mW y 10 %; MESHCORE_BANDA_LIBRE=1 abre 863-870)')
         if bw not in BW_VALIDOS:
             raise ValueError('ancho de banda no válido (62.5, 125, 250 o 500 kHz)')
         if not (5 <= sf <= 12 and 5 <= cr <= 8):
@@ -851,7 +921,7 @@ async def wio_hora(req):
             else:
                 out['motivo'] = 'el nodo no acepta esa hora (suele rechazar retroceder el reloj)'
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     return web.json_response(out)
 
 
@@ -879,7 +949,7 @@ async def wio_modelo(req):
     try:
         info = parse_device_info(await g.command(idx, bytes([0x16, 0x03])))
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     return web.json_response({'ok': True, **info})
 
 
@@ -976,7 +1046,7 @@ async def wio_trace(req):
     try:
         out = await g.command(idx, frame)
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     if out and out[0] == 1:
         raise web.HTTPBadRequest(text='el nodo rechazo el traceroute')
     return web.json_response({'ok': True, 'tag': tag, **g.wio(idx)})
@@ -1008,7 +1078,7 @@ async def wio_remote_cmd(req):
     try:
         out = await g.command(idx, frame)
     except Exception as exc:
-        raise web.HTTPServiceUnavailable(text=str(exc))
+        raise fallo(exc)
     if out and out[0] == 1:
         raise web.HTTPBadRequest(text='el nodo rechazo el envio del comando')
     return web.json_response({'ok': True, **g.wio(idx)})
@@ -1044,6 +1114,18 @@ async def health(_req):
 # nginx delega aqui con auth_request en vez de usar auth_basic, para poder servir
 # un formulario propio en lugar del popup del navegador.
 
+_sem_login = None
+
+
+def _verificando():
+    # Cada intento lanza htpasswd (bcrypt): como mucho 2 a la vez para que una lluvia
+    # de intentos no deje sin hilos al resto del gateway.
+    global _sem_login
+    if _sem_login is None:
+        _sem_login = asyncio.Semaphore(2)
+    return _sem_login
+
+
 def _client_ip(req) -> str:
     # El primer valor de X-Forwarded-For lo escribe el propio cliente: con el
     # cambiandolo en cada intento nunca saltaba el bloqueo por IP. X-Real-IP
@@ -1059,6 +1141,8 @@ async def auth_login(req):
     # Solo por nginx (que inyecta el token): el puerto 8780 escucha en la LAN
     # para el rele, y sin esto se podia probar contrasenas sin pasar por nginx.
     await guard(req)
+    if req.content_type != 'application/json':
+        return web.json_response({'error': 'peticion invalida'}, status=415)
     try:
         body = await req.json()
     except (ValueError, UnicodeDecodeError):
@@ -1068,19 +1152,20 @@ async def auth_login(req):
         return web.json_response({'error': 'peticion invalida'}, status=400)
     ip = _client_ip(req)
     user = str(body.get('username', ''))
-    if auth_mod.locked_out(ip):
+    if auth_mod.locked_out(ip, user):
         return web.json_response(
             {'error': 'Demasiados intentos fallidos. Espera unos minutos.'}, status=429)
     # openssl/htpasswd tardan: en un hilo para no parar el bucle (y el relay).
-    if not await asyncio.to_thread(auth_mod.check_password, user,
-                                   str(body.get('password', ''))[:64], ip):
-        print(f'auth: intento fallido usuario={user!r} ip={ip}', flush=True)
+    async with _verificando():
+        ok = await asyncio.to_thread(auth_mod.check_password, user, str(body.get('password', ''))[:64], ip)
+    if not ok:
+        print(f'auth: intento fallido usuario={user[:64]!r} ip={ip}', flush=True)
         return web.json_response({'error': 'Usuario o contrasena incorrectos.'}, status=401)
-    print(f'auth: sesion iniciada usuario={user!r} ip={ip}', flush=True)
+    print(f'auth: sesion iniciada usuario={user[:64]!r} ip={ip}', flush=True)
     resp = web.json_response({'ok': True, 'user': user})
     resp.set_cookie(auth_mod.COOKIE_NAME, auth_mod.make_session(user),
                     max_age=auth_mod.cookie_max_age(), httponly=True,
-                    secure=True, samesite='Lax', path='/')
+                    secure=True, samesite='Strict', path='/')
     return resp
 
 
@@ -1101,6 +1186,8 @@ async def auth_verify(req):
 
 
 async def auth_logout(req):
+    # La cookie robada dejaba de valer solo a los 7 días: ahora queda anulada al salir.
+    auth_mod.revoke(req.cookies.get(auth_mod.COOKIE_NAME))
     resp = web.json_response({'ok': True})
     resp.del_cookie(auth_mod.COOKIE_NAME, path='/')
     return resp
@@ -1166,8 +1253,31 @@ async def solo_ips_permitidas(req, handler):
     return await handler(req)
 
 
+@web.middleware
+async def mismo_origen(req, handler):
+    """Un POST que el navegador marca como de otra web se rechaza (Sec-Fetch-Site),
+    y nada de /api/ se guarda en caché."""
+    sitio = req.headers.get('Sec-Fetch-Site')
+    if req.method not in ('GET', 'HEAD', 'OPTIONS') and sitio and sitio not in ('same-origin', 'none'):
+        raise web.HTTPForbidden(text='petición desde otra web')
+    # Todo POST de la API va en JSON: un formulario o un text/plain de otra web no lleva
+    # preflight CORS y llegaba con la cookie (aunque el manejador no lea el cuerpo).
+    if req.method == 'POST' and req.path.startswith('/api/ble/') and req.content_type != 'application/json':
+        raise web.HTTPUnsupportedMediaType(text='las peticiones de la API van en application/json')
+    resp = await handler(req)
+    if req.path.startswith('/api/') and not resp.prepared:
+        resp.headers['Cache-Control'] = 'no-store'
+    return resp
+
+
 app = web.Application(client_max_size=64 * 1024,  # ninguna peticion legitima pasa de unos KB
-                      middlewares=[solo_ips_permitidas])
+                      middlewares=[solo_ips_permitidas, mismo_origen])
+# El registro RF va a disco por tandas: lo pendiente se escribe al parar el servicio.
+async def _volcar_al_parar(_app):
+    g._volcar_rx()
+
+
+app.on_shutdown.append(_volcar_al_parar)
 app.router.add_get('/api/ble/status', status)
 app.router.add_post('/api/ble/wio/{idx:[12]}/connect', connect)
 app.router.add_post('/api/ble/wio/{idx:[12]}/command', command)

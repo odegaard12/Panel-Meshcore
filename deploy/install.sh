@@ -40,6 +40,8 @@ ttyd --version
 echo ">> ficheros del panel"
 mkdir -p "$PANEL_DIR/www" "$PANEL_DIR/firmware"
 cp "$REPO_DIR/dashboard.html" "$PANEL_DIR/www/index.html"
+# Leaflet servido desde la Pi: la CSP ya no deja cargar scripts de unpkg.
+cp -r "$REPO_DIR/vendor" "$PANEL_DIR/www/"
 # Tu configuracion (nombres, posiciones): se crea una vez desde el ejemplo y
 # no se vuelve a tocar. Editala en $PANEL_DIR/www/config.js.
 [ -f "$PANEL_DIR/www/config.js" ] || cp "$REPO_DIR/config.example.js" "$PANEL_DIR/www/config.js"

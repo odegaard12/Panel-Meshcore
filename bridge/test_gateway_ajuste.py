@@ -52,11 +52,12 @@ for malo in ({}, {'nombre': ''}, {'nombre': 'x' * 32}, {'nombre': 'a\nb'}, {'lat
 async def main():
     async with TestClient(TestServer(gw.app)) as c:
         async def post(url, **kw):
+            kw.setdefault('json', {})  # el panel siempre manda JSON
             r = await c.post(url, headers=H, **kw)
             return r.status, (await r.json() if r.status in (200, 502) else None)
 
         # sin token
-        assert (await c.post('/api/ble/wio/1/hora')).status == 401
+        assert (await c.post('/api/ble/wio/1/hora', json={})).status == 401
         # hora en punto: no se toca
         enviados.clear()
         st, j = await post('/api/ble/wio/1/hora')

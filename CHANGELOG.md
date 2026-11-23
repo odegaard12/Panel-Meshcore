@@ -3,6 +3,16 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.39.0] - 2026-11-23
+
+### Seguridad (dos auditorías completas)
+- Login: la redirección tras entrar ya no se puede desviar a otra web (`?next=/.//otro.com`); bloqueo también por usuario y por red IPv6 /64, como mucho dos comprobaciones de contraseña a la vez, y cerrar sesión anula la cookie en el servidor (antes solo se borraba en el navegador). Cookie `SameSite=Strict`.
+- Peticiones de otras webs: todo POST de la API tiene que ir en JSON y se rechaza el que el navegador marca como de otra web (`Sec-Fetch-Site`); antes, otra página de la misma Pi podía cambiar la radio con la sesión abierta. Las respuestas de `/api/` no se guardan en caché.
+- Radio: tope de 30 emisiones por minuto (`MESHCORE_EMISION_MAX_MIN`), los ajustes de radio solo dentro de 869,40–869,65 MHz contando el ancho de banda (`MESHCORE_BANDA_LIBRE=1` lo abre), y los comandos al repetidor sin caracteres de control y con lista cerrada de consultas `get` (fuera `get prv.key` y similares).
+- Gateway: escucha solo en la Pi por defecto, el relay se niega a mandar el token por `ws://` sin cifrar, el estado que manda el relay se limpia (solo canales 1 y 2, valores cortos), los errores no enseñan detalles internos, el registro de radio va a disco por tandas y el servicio se instala con `NoNewPrivileges`/`ProtectSystem`.
+- nginx (plantilla): Leaflet servido desde la Pi (`vendor/`, misma huella SRI) y CSP sin unpkg y con solo los servidores de teselas, `/login.js` accesible sin sesión (sin eso el login no cargaba), freno de peticiones en la API, cifrados TLS de Mozilla, `server_tokens off`, nunca se sirven copias, ocultos ni datos (`.bak`, `.json`, `.log`…), `/api/auth/` solo con sus rutas y el panel no se queda en caché tras salir.
+- Terminal web: además de la sesión del panel pide una contraseña propia (`terminal.htpasswd`) con freno de intentos: una cookie robada ya no da una shell.
+
 ## [1.38.0] - 2026-11-23
 
 ### Placa, antena y límite legal

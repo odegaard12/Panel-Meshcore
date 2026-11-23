@@ -16,6 +16,17 @@ otros servicios. La Pi no usa Bluetooth: el gateway solo recibe al relay del PC.
 Pensado para tu red local. Si lo expones a internet, ponlo detrás de una capa de acceso
 (VPN, Cloudflare Access...): la terminal da acceso total a la Pi.
 
+### Terminal web: contraseña propia
+
+Desde la 1.39.0 la terminal (`:7443`) pide, además de la sesión del panel, su propia contraseña:
+
+```
+sudo htpasswd -cB /etc/nginx/meshcore-tls/terminal.htpasswd <usuario>
+sudo chgrp www-data /etc/nginx/meshcore-tls/terminal.htpasswd && sudo chmod 640 /etc/nginx/meshcore-tls/terminal.htpasswd
+```
+
+Sin ese fichero la terminal no abre (nginx da 500), nunca queda abierta.
+
 ### `MESHCORE_BIND`
 
 Dirección en la que escucha el gateway (variable de entorno del servicio

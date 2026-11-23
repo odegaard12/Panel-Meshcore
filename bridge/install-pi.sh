@@ -56,6 +56,9 @@ $BIND_LINE
 ExecStart=$VENV/bin/python $ROOT/bridge/meshcore_ble_gateway.py
 Restart=always
 RestartSec=3
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
 
 [Install]
 WantedBy=multi-user.target

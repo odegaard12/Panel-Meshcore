@@ -49,8 +49,10 @@
         // '/\\otro.com' o '/%09/otro.com' pasaban el filtro anterior y el navegador
         // los trata como '//otro.com': se resuelve y se exige el mismo origen.
         let destino = '/';
-        try { const u = new URL(next, location.origin); if (u.origin === location.origin) destino = u.pathname + u.search + u.hash; } catch (_) {}
-        location.replace(destino);
+        try { const u = new URL(next, location.origin); if (u.origin === location.origin) destino = (u.pathname + u.search + u.hash).replace(/^[\/\\]+/, '/'); } catch (_) {}
+        // '/.//otro.com' se normaliza a '//otro.com' con el mismo origen: se colapsan las
+        // barras iniciales y se navega con el origen delante, nunca a una ruta suelta.
+        location.replace(location.origin + destino);
         return;
       }
       const body = await r.json().catch(() => ({}));

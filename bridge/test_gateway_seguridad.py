@@ -93,7 +93,7 @@ async def main():
         # 7. Password recortada a 64 y cuerpo maximo de 64 KB.
         r = await c.post('/api/auth/login', headers=H, json={'username': 'x', 'password': 'p' * 500})
         assert r.status == 401 and vistos['password'] == 'p' * 64
-        assert await st('/api/auth/login', data='x' * (70 * 1024)) == 413
+        assert (await c.post('/api/auth/login', data='x' * (70 * 1024), headers={**H, 'Content-Type': 'application/json'})).status == 413
         # data de /binary_req: como mucho 256 caracteres hex (128 bytes).
         enviados.clear()
         assert await st('/api/ble/wio/1/binary_req',

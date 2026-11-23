@@ -16,6 +16,7 @@ async def main():
     g1.rx_log = gw.collections.deque(maxlen=5)
     for i in range(12):
         await g1.receive(push(i * 4))
+    g1._volcar_rx()                                    # lo que hace al apagarse
     lineas = open(os.environ['MESHCORE_RXLOG_FILE']).read().splitlines()
     assert len(lineas) <= 2 * 5, len(lineas)          # se recorta cada RX_LOG_MAX
     g2 = gw.RelayGateway()                             # "reinicio"

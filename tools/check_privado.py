@@ -17,6 +17,8 @@ PERMITIDO = re.compile(r'(?<![\d.])-?(40\.4|3\.7)\d*')   # ejemplo de config.exa
 NUNCA = ['config.js']
 
 ficheros = subprocess.run(['git', 'ls-files'], capture_output=True, text=True, check=True).stdout.split()
+# Librerías de terceros copiadas tal cual (Leaflet): sus números no son datos de nadie.
+ficheros = [f for f in ficheros if not f.startswith('vendor/')]
 fallos = [f'{f}: fichero de configuracion propio' for f in ficheros if f.split('/')[-1] in NUNCA]
 for f in ficheros:
     if f == 'tools/check_privado.py' or f.endswith(('.png', '.jpg', '.uf2')):

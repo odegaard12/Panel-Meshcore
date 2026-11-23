@@ -46,7 +46,7 @@ NAMES = {
     # LoRa a traves de un WIO. Buscarlo solo ocupaba la radio con escaneos.
 }
 
-GATEWAY_WS = os.getenv('MESHCORE_GATEWAY_WS', 'ws://raspberrypi.local:8780/api/ble/relay')
+GATEWAY_WS = os.getenv('MESHCORE_GATEWAY_WS', 'wss://raspberrypi.local/api/ble/relay')
 TOKEN = os.getenv('MESHCORE_BLE_TOKEN', '')
 # wss:// por nginx con certificado autofirmado: se fija su huella SHA-256
 # (openssl x509 -in cert.pem -noout -fingerprint -sha256). Sin huella, wss://
@@ -472,7 +472,9 @@ async def session(wios: dict[int, Wio], stop: asyncio.Event, http: aiohttp.Clien
     # Latido de 120 s (espera del pong: 60 s): conectar por Bluetooth en Windows bloquea
     # el bucle hasta 15-55 s y con 20 s el enlace se cortaba cada minuto (22/10/2026).
     if GATEWAY_WS.startswith('ws://') and not GATEWAY_WS.startswith(('ws://127.', 'ws://localhost')):
-        log.warning('el token viaja sin cifrar (ws://): mejor wss:// por nginx')
+        # Con ws:// el token maestro viajaba en claro por la LAN: ya no se conecta.
+        raise SystemExit('el token viajaria sin cifrar (ws://): usa wss:// por nginx '
+                         '(MESHCORE_GATEWAY_WS=wss://<pi>/api/ble/relay)')
     async with http.ws_connect(GATEWAY_WS, headers={'X-MeshCore-Token': TOKEN}, heartbeat=120,
                                ssl=GATEWAY_SSL if GATEWAY_WS.startswith('wss://') else True) as ws:
         log.info('gateway conectado: %s', GATEWAY_WS)
