@@ -21,6 +21,9 @@ async def falso(idx, frame, timeout=8, stream_until=None):
     enviados.append(frame)
     if frame[0] == 0x05:
         return bytes([0x09]) + reloj['dev'].to_bytes(4, 'little')
+    if frame[0] == 0x16:
+        f = lambda t, n: t.encode().ljust(n, bytes(1))
+        return bytes([0x0D, 9, 175, 40]) + (1234567).to_bytes(4, 'little') + f('20-Nov-2026', 12) + f('Seeed Wio Tracker L1', 40) + f('v1.11.0', 20)
     return reloj['responde']
 
 gw.g.command = falso
@@ -81,9 +84,14 @@ async def main():
         reloj['responde'] = b'\x01'
         st, j = await post('/api/ble/wio/2/ajuste', json={'confirmed': True, 'tx_power': 10})
         assert st == 502 and j['ok'] is False and j['fallo'] == 'potencia'
+        # modelo: DEVICE_QUERY sin devolver el PIN BLE
+        st, j = await post('/api/ble/wio/1/modelo')
+        assert st == 200 and j['modelo'] == 'Seeed Wio Tracker L1' and j['version'] == 'v1.11.0', j
+        assert j['max_contactos'] == 350 and '1234567' not in str(j) and 'pin' not in j
+        assert gw.parse_device_info(bytes([0x0D, 2])) == {'fw_code': 2}
         # y por /command en crudo siguen prohibidos
         import base64
-        for op in (0x06, 0x08, 0x0B, 0x0C, 0x0E):
+        for op in (0x06, 0x08, 0x0B, 0x0C, 0x0E, 0x16):
             r = await c.post('/api/ble/wio/1/command', headers=H,
                              json={'frame': base64.b64encode(bytes([op]) + bytes(8)).decode()})
             assert r.status == 403, op

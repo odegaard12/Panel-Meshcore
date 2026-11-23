@@ -599,6 +599,47 @@
     for(const k of CAMPOS){ if(e&&e[k]!==undefined && !igual(k,act[k],e[k])) dif.push(ETQ[k]+' es '+act[k]+' y debería ser '+e[k]); }
     return dif;
   };
+  // ---- Placa, antena y límite legal (1.38) ----
+  // El firmware dice su modelo (DEVICE_QUERY) y su potencia máxima (SELF_INFO); el catálogo
+  // añade lo que el equipo no cuenta. Si un modelo no está, se muestra el texto tal cual.
+  const PLACAS=[
+    [/wio.?tracker.?l1/i,{marca:'Seeed',chip:'nRF52840',radio:'SX1262'}],
+    [/t1000/i,{marca:'Seeed SenseCAP',chip:'nRF52840',radio:'LR1110',conector:'antena interna'}],
+    [/xiao.*(s3|esp32)/i,{marca:'Seeed',chip:'ESP32-S3',radio:'SX1262 (Wio-SX1262)'}],
+    [/xiao.*nrf/i,{marca:'Seeed',chip:'nRF52840',radio:'SX1262 (Wio-SX1262)'}],
+    [/rak.?3401/i,{marca:'RAKwireless',chip:'nRF52840',radio:'SX1262 + 1 W',pa:true}],
+    [/rak.?4631|wisblock|rak.?wismesh/i,{marca:'RAKwireless',chip:'nRF52840',radio:'SX1262',conector:'IPEX'}],
+    [/rak.?3112/i,{marca:'RAKwireless',chip:'ESP32-S3',radio:'SX1262',conector:'IPEX'}],
+    [/t114/i,{marca:'Heltec',chip:'nRF52840',radio:'SX1262',conector:'IPEX'}],
+    [/heltec.*v[34]/i,{marca:'Heltec',chip:'ESP32-S3',radio:'SX1262',conector:'IPEX'}],
+    [/heltec/i,{marca:'Heltec'}],
+    [/t-?beam.*1w/i,{marca:'LilyGo',chip:'ESP32-S3',radio:'SX1262 + 1 W',conector:'SMA',pa:true}],
+    [/t-?beam/i,{marca:'LilyGo',chip:'ESP32',radio:'SX1262/SX1276',conector:'SMA'}],
+    [/t-?echo/i,{marca:'LilyGo',chip:'nRF52840',radio:'SX1262'}],
+    [/t-?deck/i,{marca:'LilyGo',chip:'ESP32-S3',radio:'SX1262'}],
+    [/lilygo|t3.?s3/i,{marca:'LilyGo'}],
+    [/station.?g2/i,{marca:'Unit Engineering',chip:'ESP32-S3',radio:'SX1262 + PA',conector:'SMA',pa:true}],
+    [/thinknode/i,{marca:'Elecrow'}],
+  ];
+  window.placaDe=(modelo)=>{ for(const [re,d] of PLACAS) if(re.test(modelo||'')) return d; return {}; };
+  // ERP = potencia + ganancia de la antena (dBi) − pérdidas del cable − 2,15 (dBi → dBd).
+  window.wioErp=(tx,dbi,perd)=>Math.round((Number(tx)+Number(dbi||0)-Number(perd||0)-2.15)*10)/10;
+  // Límites ERP de la UE en 863–870 MHz: 500 mW (27 dBm) en 869,4–869,65; 25 mW (14 dBm) en el resto.
+  window.limiteErp=(freq)=>(freq>=869.4&&freq<=869.65)?27:14;
+  const leerLocal=(k,def)=>{ try{ return JSON.parse(localStorage.getItem(k)||'null')??def; }catch(e){ return def; } };
+  const guardarLocal=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
+  window.wioApodo=(idx)=>leerLocal('mc-wio-apodo-'+idx,'')||('WIO'+idx);
+  function antena(idx){
+    const w=(typeof CFG!=='undefined'&&CFG.wios&&CFG.wios[idx]&&CFG.wios[idx].antena)||{};
+    return leerLocal('mc-wio-antena-'+idx,{dbi:w.dbi??2,perdidas:w.perdidas??0});
+  }
+  const modelos={};
+  async function modelo(idx){
+    if(modelos[idx]) return modelos[idx];
+    try{ modelos[idx]=await api('/wio/'+idx+'/modelo',{method:'POST',body:'{}'}); }catch(e){ return null; }
+    return modelos[idx];
+  }
+
   window.wioRevisar=async function(idx){
     const n=nodes[idx];
     if(!n||!n.info||!n.info.name||revisados[idx]) return;
@@ -609,16 +650,32 @@
       if(h.ajustada) aviso('WIO'+idx+': reloj corregido (iba '+(min?min+' min ':Math.abs(h.desvio_s)+' s ')+(h.desvio_s<0?'atrasado':'adelantado')+').',1);
       else if(h.motivo) aviso('WIO'+idx+': el reloj va desviado '+min+' min y '+h.motivo+'.');
     }catch(e){}
+    const a=antena(idx), erp=window.wioErp(n.info.tx_power,a.dbi,a.perdidas), lim=window.limiteErp(n.info.freq);
+    if(erp>lim) aviso(window.wioApodo(idx)+' emite '+erp+' dBm ERP y el límite en '+n.info.freq+' MHz es '+lim+' dBm. Baja la potencia en Ajustes del dispositivo.');
     const dif=window.wioDiferencias(n.info,esperado(idx));
     if(dif.length) aviso('WIO'+idx+' no coincide con lo esperado: '+dif.join('; ')+'. Se cambia en Gestión → WIO'+idx+' → Ajustes del dispositivo.');
   };
-  setInterval(()=>{ for(const i of [1,2]){ const n=nodes[i]; if(!n) continue; if(n.device&&n.device.gatt.connected) window.wioRevisar(i); else revisados[i]=false; } },4000);
+  setInterval(()=>{ for(const i of [1,2]){ const n=nodes[i]; if(!n) continue; if(n.device&&n.device.gatt.connected) window.wioRevisar(i); else { revisados[i]=false; delete modelos[i]; } } },4000);
 
   function ajustesUI(idx){
     const $i=(id)=>document.getElementById('aj'+idx+'-'+id);
     const det=document.getElementById('g-w'+idx+'-aj'); if(!det||!$i('aplicar')) return;
     const clave='mc-wio-prev-'+idx;
     let armado=null;
+    const pintarErp=()=>{
+      const tx=+$i('tx').value, f=+$i('freq').value, erp=window.wioErp(tx,$i('dbi').value,$i('perd').value), lim=window.limiteErp(f), m=Math.round((lim-erp)*10)/10;
+      const el=$i('erp'); el.hidden=!tx;
+      el.className='d '+(erp>lim?'erp-mal':'erp-ok');
+      el.textContent='Potencia radiada: '+erp+' dBm ERP. Límite en '+f+' MHz: '+lim+' dBm ERP. '+(erp>lim?'Te pasas '+(-m)+' dB: baja la potencia o usa otra antena.':'Dentro, con '+m+' dB de margen.');
+      return erp<=lim;
+    };
+    async function pintarModelo(){
+      const n=nodes[idx]; if(!n||!n.info) return;
+      const m=await modelo(idx), p=window.placaDe(m&&m.modelo);
+      const txt=[m&&m.modelo?(p.marca&&!new RegExp(p.marca.split(' ')[0],'i').test(m.modelo)?p.marca+' ':'')+m.modelo:'modelo desconocido (firmware antiguo)', p.chip, p.radio, m&&m.version?'firmware '+m.version:'', 'máx. '+n.info.max_tx_power+' dBm', p.conector?'conector '+p.conector:''].filter(Boolean).join(' · ');
+      $i('modelo').textContent='Detectado: '+txt+(p.pa?'. Lleva amplificador: la potencia radiada real es mayor que la que marca el firmware, mira la hoja del fabricante.':'');
+      const max=Math.min(22,n.info.max_tx_power||22); $i('tx').max=max;
+    }
     const leer=()=>({nombre:$i('nombre').value.trim(),tx_power:+$i('tx').value,freq:+$i('freq').value,bw:+$i('bw').value,sf:+$i('sf').value,cr:+$i('cr').value});
     const rellenar=(v)=>{ $i('nombre').value=v.nombre; $i('tx').value=v.tx_power; $i('freq').value=v.freq; $i('bw').value=String(v.bw); $i('sf').value=v.sf; $i('cr').value=v.cr; };
     const previo=()=>{ try{ return JSON.parse(localStorage.getItem(clave)||'null'); }catch(e){ return null; } };
@@ -629,12 +686,17 @@
       $i('volver').hidden=!previo(); $i('volver').disabled=!on;
       if(!on){ $i('estado').textContent='Conecta el WIO para ver y cambiar sus ajustes.'; return; }
       if(!armado) rellenar(valorInfo(n.info));
+      const a=antena(idx); $i('dbi').value=a.dbi; $i('perd').value=a.perdidas; $i('apodo').value=leerLocal('mc-wio-apodo-'+idx,'');
+      pintarErp(); pintarModelo();
       $i('estado').textContent='Valores actuales del dispositivo. Cambiar la radio puede dejarlo fuera de la red.';
     }
     det.addEventListener('toggle',()=>{ if(det.open) refrescar(); });
     const diff=(nuevo,act)=>CAMPOS.filter(k=>!igual(k,nuevo[k],act[k]));
     async function enviar(nuevo,act,cual){
       const cambios=diff(nuevo,act);
+      if(!pintarErp()){ $i('estado').textContent='No se aplica: pasaría del límite legal de potencia radiada.'; desarmar(); return; }
+      const max=+$i('tx').max||22;
+      if(nuevo.tx_power>max){ $i('estado').textContent='Esta placa admite como mucho '+max+' dBm.'; desarmar(); return; }
       if(!cambios.length){ $i('estado').textContent='Nada que cambiar.'; desarmar(); return; }
       const texto=cambios.map(k=>ETQ[k]).join(', ');
       if(armado!==cual){
@@ -654,6 +716,10 @@
         aviso('WIO'+idx+': '+texto+' cambiado.',1); refrescar();
       }catch(e){ $i('estado').textContent='No se pudo cambiar: '+e.message; aviso('WIO'+idx+': no se pudo cambiar ('+e.message+').'); }
     }
+    for(const k of ['tx','freq','dbi','perd']) $i(k).addEventListener('input',pintarErp);
+    for(const k of ['dbi','perd']) $i(k).addEventListener('change',()=>guardarLocal('mc-wio-antena-'+idx,{dbi:+$i('dbi').value||0,perdidas:+$i('perd').value||0}));
+    $i('apodo').addEventListener('change',()=>{ guardarLocal('mc-wio-apodo-'+idx,$i('apodo').value.trim()); document.getElementById('g-w'+idx+'-aj-t').textContent='Ajustes del dispositivo · '+window.wioApodo(idx); });
+    document.getElementById('g-w'+idx+'-aj-t').textContent='Ajustes del dispositivo · '+window.wioApodo(idx);
     $i('aplicar').addEventListener('click',()=>{ const n=nodes[idx]; if(n&&n.info) enviar(leer(),valorInfo(n.info),'aplicar'); });
     $i('volver').addEventListener('click',()=>{ const n=nodes[idx], p=previo(); if(n&&n.info&&p) enviar(p,valorInfo(n.info),'volver'); });
     $i('hora').addEventListener('click',async()=>{

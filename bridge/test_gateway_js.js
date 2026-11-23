@@ -80,5 +80,16 @@ eval(fs.readFileSync(path.join(__dirname, 'meshcore-ble-gateway.js'), 'utf8'));
   assert.strictEqual(d.length, 3);
   assert.ok(d[0].startsWith('nombre es WIO-1') && d[1].includes('potencia') && d[2].includes('SF'));
   console.log('esperado ok');
+  // Potencia radiada y límite legal UE (869,4–869,65 MHz: 27 dBm ERP; resto: 14).
+  assert.strictEqual(window.wioErp(20, 5, 0.5), 22.4);
+  assert.strictEqual(window.limiteErp(869.525), 27);
+  assert.strictEqual(window.limiteErp(868.1), 14);
+  assert.ok(window.wioErp(22, 8, 0) > window.limiteErp(869.525));
+  assert.strictEqual(window.placaDe('Seeed Wio Tracker L1').marca, 'Seeed');
+  assert.strictEqual(window.placaDe('Heltec V3').conector, 'IPEX');
+  assert.ok(window.placaDe('LilyGo T-Beam 1W').pa);
+  assert.deepStrictEqual(window.placaDe('placa rara'), {});
+  assert.strictEqual(window.wioApodo(1), 'WIO1');
+  console.log('antena ok');
   console.log('OK');
 })().catch((e) => { console.error('FALLO', e); process.exit(1); });

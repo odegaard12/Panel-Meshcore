@@ -90,7 +90,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.37.1'
+PANEL_VERSION = '1.38.0'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # 0.0.0.0 por defecto porque el relay del PC entra por la LAN. Si el relay
 # corre en la propia Pi, MESHCORE_BIND=127.0.0.1 deja el puerto solo para nginx.
@@ -855,6 +855,34 @@ async def wio_hora(req):
     return web.json_response(out)
 
 
+def parse_device_info(r: bytes) -> dict:
+    """RESP_DEVICE_INFO (0x0D): versión, fecha de compilación, fabricante/modelo y versión.
+    El PIN BLE (bytes 4-7) no se devuelve nunca."""
+    if not r or r[0] != 0x0D or len(r) < 2:
+        raise ValueError('respuesta de modelo inesperada')
+    txt = lambda b: b.split(b'\x00', 1)[0].decode('utf-8', 'replace').strip()
+    out = {'fw_code': r[1]}
+    if len(r) >= 4:
+        out['max_contactos'] = r[2] * 2
+        out['max_canales'] = r[3]
+    if len(r) > 8:
+        out['compilado'] = txt(r[8:20])
+        out['modelo'] = txt(r[20:60])
+        out['version'] = txt(r[60:80])
+    return out
+
+
+async def wio_modelo(req):
+    """Pregunta al WIO qué placa y firmware es (DEVICE_QUERY 0x16), sin el PIN."""
+    await guard(req)
+    idx = int(req.match_info['idx'])
+    try:
+        info = parse_device_info(await g.command(idx, bytes([0x16, 0x03])))
+    except Exception as exc:
+        raise web.HTTPServiceUnavailable(text=str(exc))
+    return web.json_response({'ok': True, **info})
+
+
 async def wio_ajuste(req):
     """Cambia nombre, coordenadas, potencia o radio de un WIO. Exige confirmed=true.
     Un valor de radio equivocado lo deja fuera de la red: por eso solo valores validados."""
@@ -1149,6 +1177,7 @@ app.router.add_post('/api/ble/wio/{idx:[12]}/remote_cmd', wio_remote_cmd)
 app.router.add_post('/api/ble/wio/{idx:[12]}/pausa', wio_pausa)
 app.router.add_post('/api/ble/wio/{idx:[12]}/hora', wio_hora)
 app.router.add_post('/api/ble/wio/{idx:[12]}/ajuste', wio_ajuste)
+app.router.add_post('/api/ble/wio/{idx:[12]}/modelo', wio_modelo)
 app.router.add_post('/api/ble/wio/{idx:[12]}/binary_req', wio_binary_req)
 app.router.add_post('/api/ble/wio/{idx:[12]}/trace', wio_trace)
 app.router.add_get('/api/ble/wio/{idx:[12]}/pushes', wio_pushes)

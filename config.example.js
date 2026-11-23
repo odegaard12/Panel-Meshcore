@@ -19,6 +19,8 @@ window.PANEL_CONFIG = {
     // Opcional: lo que ESPERAS de ese dispositivo. Si no coincide, el panel avisa al conectarlo y
     // Gestión → Ajustes del dispositivo permite corregirlo. Pon los de TU red (los mismos en todos
     // tus nodos), por ejemplo: esperado: { tx_power: 14, freq: 869.525, bw: 250, sf: 11, cr: 5 },
+    // Antena de ese WIO para calcular la potencia radiada (ERP) y el límite legal; se puede
+    // cambiar luego en el panel: antena: { dbi: 2, perdidas: 0 },
     2: { nombre: 'MeshCore-WIO2', sitio: 'Casa 2', lat: 40.41, lon: -3.71 },
   },
 

@@ -3,6 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.38.0] - 2026-11-23
+
+### Placa, antena y límite legal
+- El panel pregunta a cada WIO qué placa y firmware es (`DEVICE_QUERY`, ruta `/api/ble/wio/N/modelo`, sin devolver el PIN Bluetooth) y lo muestra con marca, chip, radio y conector sacados de un catálogo de placas MeshCore (Seeed, RAK, Heltec, LilyGo, Elecrow, Unit Engineering).
+- La potencia admitida en el formulario es la máxima que declara la propia placa, no 1–22 dBm para todas.
+- Campos de antena (dBi) y pérdidas del cable (dB) por WIO: el panel calcula la potencia radiada (ERP) y no deja aplicar si pasa del límite de la UE (27 dBm ERP en 869,4–869,65 MHz, 14 dBm en el resto de 863–870). Avisa también al conectar. Las placas con amplificador de 1 W llevan su propia advertencia.
+- Nombre en el panel (apodo local, no toca el equipo) separado del nombre en la red.
+
 ## [1.37.1] - 2026-11-23
 
 ### Documentación y pruebas

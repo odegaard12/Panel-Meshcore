@@ -58,7 +58,7 @@ navegador ──HTTPS──> nginx (TLS + login) ──> gateway 127.0.0.1:8780 
 - El **relay** corre en un PC con Bluetooth cerca de los companion y es su único dueño.
 - El **repetidor** se gestiona por LoRa a través de un companion: no necesita Bluetooth.
 
-Versión actual: **1.37.1** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
+Versión actual: **1.38.0** · cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Requisitos
 
@@ -96,6 +96,9 @@ companion, infraestructura de referencia de tu zona y tus notas.
 Si quieres que el panel te avise cuando un WIO no tiene los ajustes de tu red, añade `esperado` a ese WIO
 (potencia, frecuencia, ancho, SF y CR; ver el ejemplo). El reloj se pone en hora solo al conectar, y los
 ajustes se cambian desde Gestión sin tocar la app del fabricante.
+El panel detecta la placa (Seeed, RAK, Heltec, LilyGo…) y su potencia máxima. Con `antena: { dbi, perdidas }`
+o desde el propio panel calcula la potencia radiada y no deja pasar del límite legal de la UE
+(27 dBm ERP en 869,4–869,65 MHz). Sirve cualquier placa con firmware MeshCore Companion BLE.
 
 **4. PC con Bluetooth: el relay**
 
