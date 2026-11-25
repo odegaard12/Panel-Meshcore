@@ -3,6 +3,12 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 según [SemVer](https://semver.org/lang/es/).
 
+## [1.39.1] - 2026-11-25
+
+### Arreglado
+- Terminal web (`:7443`): la contraseña propia ya no rebota al login del panel. El 401 de `/_auth` pasa a 403 (`@sin_sesion`) y solo ese lleva al login; el 401 de `auth_basic` saca el cuadro de contraseña. Con la sesión de más de 2 h, tras la contraseña se va al login.
+- Cerrar sesión borra del navegador el chat, las posiciones y los vecinos guardados (`meshcore-*`, `mc-*`), para que no queden en un PC compartido.
+
 ## [1.39.0] - 2026-11-23
 
 ### Seguridad (dos auditorías completas)

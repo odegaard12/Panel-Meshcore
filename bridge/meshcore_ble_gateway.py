@@ -100,7 +100,7 @@ def politica_cli(cmd: str, confirmed: bool):
         return 409, f'CONFIRMAR: {info.cli} - {info.note or info.label}'
     return None
 
-PANEL_VERSION = '1.39.0'
+PANEL_VERSION = '1.39.1'
 PORT = int(os.getenv('MESHCORE_BLE_GATEWAY_PORT', '8780'))
 # Solo la propia Pi por defecto: el relay del PC entra por nginx con wss://. Abrirlo a la
 # LAN (MESHCORE_BIND=0.0.0.0) exige limitarlo con MESHCORE_ALLOWED_IPS.

@@ -13,7 +13,7 @@ const CFG=Object.assign({
 }, window.PANEL_CONFIG||{});
 const REPEATER_POS=[CFG.repetidor.lat, CFG.repetidor.lon];
 const REP_NOMBRE=CFG.repetidor.nombre;
-const PANEL_VERSION='1.39.0';
+const PANEL_VERSION='1.39.1';
 $('#panelVersion').textContent='v'+PANEL_VERSION;
 // Sin config.js propio el panel funciona, pero con nombres de ejemplo que no
 // cuadran con ninguna radio: avisarlo para que no parezca un fallo.
@@ -2257,6 +2257,8 @@ $('#g-recargar').onclick=()=>location.reload();
 $('#g-logout').onclick=async()=>{
   const b=$('#g-logout'); b.disabled=true;
   try{ await fetch('/api/auth/logout',{method:'POST'}); }catch(e){}
+  // en un PC compartido no deben quedar chat, posiciones ni vecinos del nodo
+  try{ Object.keys(localStorage).filter(k=>/^(meshcore|mc)-/.test(k)).forEach(k=>localStorage.removeItem(k)); }catch(e){}
   location.href='/login.html';
 };
 $('#g-olvidar').onclick=async()=>{
